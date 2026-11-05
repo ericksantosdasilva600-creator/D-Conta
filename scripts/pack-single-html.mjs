@@ -1,0 +1,32 @@
+// Empacota dist-web num único HTML autónomo (JS, CSS, ícones e imagens embutidos).
+import fs from "node:fs";
+import path from "node:path";
+const [dist, out] = process.argv.slice(2);
+const base = (process.env.NYVO_BASE_URL || "").replace(/\/$/, "");
+let html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
+const strip = (p) => (base && p.startsWith(base + "/") ? p.slice(base.length) : p);
+const cssHref = strip(html.match(/<link rel="stylesheet" href="([^"]+)">/)[1]);
+const jsSrc = strip(html.match(/<script src="([^"]+)" defer><\/script>/)[1]);
+let css = fs.readFileSync(path.join(dist, cssHref), "utf8");
+let js = fs.readFileSync(path.join(dist, jsSrc), "utf8");
+const mime = { ".ttf": "font/ttf", ".png": "image/png" };
+const wanted = /(MaterialCommunityIcons\.[a-f0-9]+\.ttf|\.png)$/;
+js = js.replace(/"((?:\/[\w-]+)?\/assets\/[^"]+)"/g, (m, p) => {
+  const file = path.join(dist, decodeURIComponent(strip(p)));
+  if (!wanted.test(p) || !fs.existsSync(file)) return m;
+  return `"data:${mime[path.extname(p)]};base64,${fs.readFileSync(file).toString("base64")}"`;
+});
+js = js.replace(/<\/script/gi, "<\\/script");
+const routes = ["/", "/finance", "/notes", "/habits", "/tasks", "/settings", "/onboarding"].map((r) => base + r).concat(base ? [base] : []);
+const boot = `<script>try{if(!${JSON.stringify(routes)}.includes(location.pathname))history.replaceState(null,"",${JSON.stringify(base + "/")}+location.search+location.hash)}catch(e){}</script>`;
+const icon = fs.readFileSync(path.join(dist, "favicon.ico")).toString("base64");
+html = html
+  .replace(/<html\s+lang="en">/, '<html lang="pt-BR">')
+  .replace("</head>", "<style>html,body{background:#F7F5EF;color-scheme:light}</style></head>")
+  .replace(/<title[^>]*><\/title>/, "<title>Nyvo</title>")
+  .replace(/<link rel="icon" href="[^"]+"\/>/, `<link rel="icon" href="data:image/x-icon;base64,${icon}"/>`)
+  .replace(/<link rel="preload" href="[^"]+" as="style">/, "")
+  .replace(/<link rel="stylesheet" href="[^"]+">/, () => `<style>${css}</style>`)
+  .replace(/<script src="[^"]+" defer><\/script>/, () => `${boot}<script defer>${js}</script>`);
+fs.writeFileSync(out, html);
+console.log(out, (fs.statSync(out).size / 1048576).toFixed(2) + " MB");
