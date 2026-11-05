@@ -65,7 +65,7 @@ const config: ExpoConfig & { logoUrl: string } = {
   owner: "rickfvs-team",
   version: "1.0.0",
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663929773641/ZKjiGPeVuNToOSFY.png",
-  extra: { ...publicRuntime, ...(process.env.EAS_PROJECT_ID ? { eas: { projectId: process.env.EAS_PROJECT_ID } } : {}) },
+  extra: { ...publicRuntime, eas: { projectId: "380d4ce9-c762-4728-a7ff-9ce59feac28d" } },
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -112,24 +112,11 @@ const config: ExpoConfig & { logoUrl: string } = {
     [
       "expo-image-picker",
       {
-        cameraPermission: "Permite fotografar o recibo da tua despesa.",
+        cameraPermission: "Permite fotografar o recibo da sua despesa.",
         photosPermission: "Permite escolher uma imagem do recibo.",
       },
     ],
     ["expo-notifications", { color: "#187A61" }],
-      [
-      "expo-audio",
-      {
-        microphonePermission: "Permite que Nyvo aceda ao microfone quando ativares uma funcionalidade de voz.",
-      },
-    ],
-    [
-      "expo-video",
-      {
-        supportsBackgroundPlayback: true,
-        supportsPictureInPicture: true,
-      },
-    ],
       [
       "expo-splash-screen",
       {
