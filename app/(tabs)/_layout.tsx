@@ -11,6 +11,7 @@ import { useAppData } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
 import { QuickAddModal } from "@/components/QuickAdd";
 import { AppTour } from "@/components/AppTour";
+import { AssistantSearch } from "@/components/AssistantSearch";
 import { useReminderScheduler, useWebDarkMode } from "@/lib/web-effects";
 import { refreshLocalNotifications } from "@/lib/local-notifications";
 import { ToastHost, toast } from "@/lib/toast";
@@ -36,6 +37,7 @@ export default function TabLayout() {
   const bottomPadding = Platform.OS === "web" ? 11 : Math.max(insets.bottom, 8);
   const desktop = Platform.OS === "web" && width >= 1024;
   const [quickOpen, setQuickOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   useWebDarkMode(data.darkMode);
   useReminderScheduler(data, (title, body) => toast(`${title} · ${body}`, "bell-ring-outline", 6000));
   useEffect(() => {
@@ -73,9 +75,13 @@ export default function TabLayout() {
     {showFab ? <Pressable onPress={() => setQuickOpen(true)} accessibilityRole="button" accessibilityLabel="Registrar gasto ou receita" style={({ pressed }) => [fabStyle, { bottom: desktop ? 28 : 57 + bottomPadding + 14, opacity: pressed ? 0.85 : 1 }]}>
       <MaterialCommunityIcons name="cash-plus" size={26} color="#FFFFFF" />
     </Pressable> : null}
+    <Pressable onPress={() => setSearchOpen(true)} accessibilityRole="button" accessibilityLabel="Buscar e perguntar ao assistente" style={({ pressed }) => [searchFabStyle, { bottom: (desktop ? 28 : 57 + bottomPadding + 14) + (showFab ? 68 : 0), opacity: pressed ? 0.85 : 1 }]}>
+      <MaterialCommunityIcons name="magnify" size={24} color={C.greenDark} />
+    </Pressable>
     <AppTour />
+    <AssistantSearch visible={searchOpen} onClose={() => setSearchOpen(false)} />
     <QuickAddModal visible={quickOpen} onClose={() => setQuickOpen(false)} onSaved={(message) => toast(message)} />
-    <ToastHost bottom={desktop ? 100 : 57 + bottomPadding + 84} />
+    <ToastHost bottom={desktop ? 164 : 57 + bottomPadding + 148} />
   </>;
 
   if (!desktop) return <View style={{ flex: 1 }}>{tabs}{overlay}</View>;
@@ -136,3 +142,4 @@ const navItemHover = { backgroundColor: C.paper };
 const navLabel = { color: C.muted, fontFamily: SANS, fontSize: 13, fontWeight: "600" as const };
 const navLabelActive = { color: C.greenDark, fontWeight: "800" as const };
 const fabStyle = { position: "absolute" as const, right: 18, width: 58, height: 58, borderRadius: 29, backgroundColor: C.green, alignItems: "center" as const, justifyContent: "center" as const, shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6 };
+const searchFabStyle = { position: "absolute" as const, right: 23, width: 48, height: 48, borderRadius: 24, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, alignItems: "center" as const, justifyContent: "center" as const, shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 5 };

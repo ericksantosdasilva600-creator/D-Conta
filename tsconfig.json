@@ -23,7 +23,7 @@
     "expo-env.d.ts",
     "nativewind-env.d.ts"
   ],
-  "exclude": [
+  "exclude": ["supabase/functions", 
     "node_modules",
     "dist"
   ]

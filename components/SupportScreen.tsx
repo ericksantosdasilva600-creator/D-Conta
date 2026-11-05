@@ -5,19 +5,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Card, ChoiceChips, Field, Header, IconButton, Page, PrimaryButton, SectionTitle } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
 import { AGE_RANGES, BRAND, BR_STATES, COUNTRIES, GENDERS, GOALS, INTERESTS, OCCUPATIONS, SOURCES } from "@/lib/brand";
+import { FAQ } from "@/lib/help";
 import { privacyUrl } from "@/lib/site";
 import { C, SANS, SERIF } from "@/lib/design";
-
-const FAQ: { q: string; a: string }[] = [
-  { q: "Onde ficam meus dados?", a: "Só neste aparelho, no navegador ou no app. O Nyvo não tem servidor de dados e não pede cadastro. Por isso, faça backups em Configurações › Copiar backup." },
-  { q: "Como passo meus dados para outro celular ou computador?", a: "No aparelho antigo: Configurações › Copiar backup. No novo: Configurações › Restaurar backup e cole o texto." },
-  { q: "Como registro um gasto rápido?", a: "Na tela Hoje, escreva “gastei 45 no mercado” e toque em ✓. Ou use o botão + verde, presente em todas as telas." },
-  { q: "Como funciona o cartão de crédito?", a: "Configure o dia de fechamento e de vencimento em Finanças › Cartão. Ao registrar uma compra, escolha “Cartão de crédito” e o número de parcelas." },
-  { q: "Por que não recebi uma notificação?", a: "No site, os avisos tocam com o Nyvo aberto (pode estar minimizado). Confira em Lembretes se as notificações estão ativadas e use “Testar agora”." },
-  { q: "Como importo o extrato do banco?", a: "Exporte o extrato em OFX ou CSV no app ou site do banco e use Finanças › Importar. Movimentos repetidos são ignorados." },
-  { q: "Como instalo o Nyvo no celular?", a: "Abra o site no Chrome (Android) ou Safari (iPhone) e toque em “Adicionar à tela inicial”." },
-  { q: "Como mudo as cores?", a: "Configurações › Aparência. Escolha uma paleta pronta ou crie a sua." },
-];
 
 const openMail = (subject: string, body: string) => {
   const url = `mailto:${BRAND.supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

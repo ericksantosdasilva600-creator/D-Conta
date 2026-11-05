@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 
 /** Chave publicável: pode ficar no app. A segurança vem das regras (RLS) do banco. */
 export const SUPABASE_URL = "https://bxwcqljlbrwpasfkmdhc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_PNm5tQk2MxZ41kqnucHhjQ_mN-yjQGn";
+export const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_PNm5tQk2MxZ41kqnucHhjQ_mN-yjQGn";
 
 let client: SupabaseClient | null = null;
 
