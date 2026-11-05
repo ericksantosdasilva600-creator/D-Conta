@@ -62,6 +62,7 @@ const publicRuntime = {
 const config: ExpoConfig & { logoUrl: string } = {
   name: env.appName,
   slug: env.appSlug,
+  owner: "rickfvs-team",
   version: "1.0.0",
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663929773641/ZKjiGPeVuNToOSFY.png",
   extra: { ...publicRuntime, ...(process.env.EAS_PROJECT_ID ? { eas: { projectId: process.env.EAS_PROJECT_ID } } : {}) },
