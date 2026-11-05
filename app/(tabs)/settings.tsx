@@ -181,6 +181,7 @@ export default function SettingsScreen() {
       <View nativeID="cfg-ajuda" style={{ gap: 12 }}>
         <SectionTitle title="Ajuda" />
         <Card>
+          <PrimaryButton title="Conheça o Nyvo Pro" tone="light" icon="star-four-points-outline" onPress={() => router.push("/plans")} />
           <PrimaryButton title="Ajuda, suporte e feedback" icon="lifebuoy" onPress={() => router.push("/support")} />
           <PrimaryButton title={hasDemoData(data) ? "Remover dados de exemplo" : "Carregar dados de exemplo"} tone="light" icon="flask-outline" onPress={() => { updateData((c) => hasDemoData(c) ? removeDemoData(c) : addDemoData(c)); showToast(hasDemoData(data) ? "Dados de exemplo removidos." : "Dados de exemplo carregados. Remova quando quiser."); }} />
         </Card>

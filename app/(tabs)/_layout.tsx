@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { path: "/tasks", label: "Tarefas", icon: "checkbox-marked-circle-outline" },
   { path: "/insights", label: "Gráficos", icon: "chart-box-outline" },
   { path: "/reminders", label: "Lembretes", icon: "bell-outline" },
+  { path: "/plans", label: "Nyvo Pro", icon: "star-four-points-outline" },
   { path: "/support", label: "Ajuda e feedback", icon: "lifebuoy" },
   { path: "/settings", label: "Configurações", icon: "cog-outline" },
 ] as const;
@@ -61,6 +62,7 @@ export default function TabLayout() {
     <Tabs.Screen name="tasks" options={{ title: "Tarefas", tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="checkbox-marked-circle-outline" size={size} color={color} /> }} />
     <Tabs.Screen name="settings" options={{ href: null }} />
     <Tabs.Screen name="reminders" options={{ href: null }} />
+    <Tabs.Screen name="plans" options={{ href: null }} />
     <Tabs.Screen name="support" options={{ href: null }} />
     <Tabs.Screen name="insights" options={{ href: null }} />
   </Tabs>;

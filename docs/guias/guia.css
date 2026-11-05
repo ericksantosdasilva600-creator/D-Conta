@@ -23,3 +23,5 @@ ol li, ul li { margin-bottom:8px; }
 .cta:hover { background:#136852; }
 .more { border-top:1px solid var(--line); margin-top:56px; padding-top:20px; font-size:16px; color:var(--muted); }
 .more a { display:block; margin:6px 0; }
+
+.ad-slot { margin:36px 0; }
