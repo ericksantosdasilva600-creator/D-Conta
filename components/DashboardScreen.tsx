@@ -11,6 +11,30 @@ import { hasDemoData, removeDemoData } from "@/lib/demo-data";
 import { billStatus, cardInvoices, currentInvoiceMonth, payBill } from "@/lib/finance-extra";
 import { C, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
+import { toast } from "@/lib/toast";
+
+const readFlag = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
+const writeFlag = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* sem armazenamento */ } };
+function tipAction(tip: string): { label: string; path: "/tasks" | "/finance" | "/habits" | "/notes" } | null {
+  const t = tip.toLowerCase();
+  if (/prova|estud|trabalho|leitura/.test(t)) return { label: "Abrir Estudos", path: "/tasks" };
+  if (/gasto|dinheiro|conta|dívida|divida|reserva|cartão|cartao|meta|salário|salario/.test(t)) return { label: "Abrir Finanças", path: "/finance" };
+  if (/hábito|habito|água|agua|treino|academia|sono|saúde|saude/.test(t)) return { label: "Abrir Hábitos", path: "/habits" };
+  if (/ideia|nota|anot/.test(t)) return { label: "Abrir Anotações", path: "/notes" };
+  return null;
+}
+function habitStreak(completedByDate: Record<string, string[]>, today: string) {
+  let streak = 0;
+  const d = new Date(`${today}T12:00:00`);
+  if (!(completedByDate[today] ?? []).length) d.setDate(d.getDate() - 1);
+  for (;;) {
+    const key = localDateKey(d);
+    if (!(completedByDate[key] ?? []).length) break;
+    streak += 1;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
 
 type CaptureTarget = "notes" | "finance" | "habit" | "health" | "tasks";
 
@@ -18,14 +42,16 @@ export function DashboardScreen() {
   const { data, loading, updateData } = useAppData();
   const [captureOpen, setCaptureOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
-  const [toast, setToast] = useState("");
-  const showToast = (message: string) => { setToast(message); setTimeout(() => setToast(""), 2600); };
+  const showToast = (message: string) => toast(message);
+  const [firstStepsHidden, setFirstStepsHidden] = useState(() => readFlag("nyvo.first-steps") === "hidden");
   const cloud = useOptionalSupabaseSync();
-  const [accountNudgeHidden, setAccountNudgeHidden] = useState(() => { try { return Number(localStorage.getItem("nyvo.account-nudge") || 0) > Date.now(); } catch { return false; } });
-  const showAccountNudge = !accountNudgeHidden && cloud !== null && !cloud.session && cloud.status === "signed_out" && (data.transactions.length + data.tasks.length + data.notes.length + data.habits.length) > 0;
+  // Depois do primeiro "Agora não" o aviso não volta mais aqui; a conta continua em Configurações.
+  const [accountNudgeHidden, setAccountNudgeHidden] = useState(() => readFlag("nyvo.account-nudge") !== null);
+  const recordCount = data.transactions.length + data.tasks.length + data.notes.length + data.healthLogs.length + Object.values(data.completedByDate).reduce((n, l) => n + l.length, 0);
+  const showAccountNudge = !accountNudgeHidden && cloud !== null && !cloud.session && cloud.status === "signed_out" && recordCount >= 3;
   const today = localDateKey();
   const month = today.slice(0, 7);
-  const personalThisMonth = useMemo(() => data.transactions.filter((item) => item.scope === "personal" && item.date.startsWith(month)), [data.transactions, month]);
+  const personalThisMonth = data.transactions.filter((item) => item.scope === "personal" && item.date.startsWith(month));
   const monthlyBalance = personalThisMonth.reduce((sum, item) => sum + (item.kind === "income" ? item.amount : -item.amount), 0);
   const weekday = new Date(`${today}T12:00:00`).getDay();
   const plannedHabits = data.habits.filter((habit) => !habit.archived && habit.weekdays.includes(weekday));
@@ -37,11 +63,11 @@ export function DashboardScreen() {
     const items: { key: string; title: string; detail: string; days: number; amount: number; onPay?: () => void }[] = [];
     data.recurringBills.filter((b) => b.active).forEach((bill) => {
       const st = billStatus(bill);
-      if (!st.paid && st.days <= 5) items.push({ key: `bill-${bill.id}`, title: bill.name, detail: "Conta fixa", days: st.days, amount: bill.amount, onPay: () => { updateData((c) => payBill(c, bill)); showToast(`${bill.name} paga.`); } });
+      if (!st.paid && st.days <= 5) items.push({ key: `bill-${bill.id}`, title: bill.name, detail: "Conta fixa", days: st.days, amount: bill.amount, onPay: () => { updateData((c) => payBill(c, bill)); toast(`${bill.name} paga.`); } });
     });
     data.transactions.filter((t) => t.kind === "expense" && !t.paid && t.dueDate).forEach((t) => {
       const d = daysUntil(t.dueDate);
-      if (d !== null && d <= 5) items.push({ key: `tx-${t.id}`, title: t.merchant, detail: "Despesa pendente", days: d, amount: t.amount, onPay: () => { updateData((c) => ({ ...c, transactions: c.transactions.map((x) => x.id === t.id ? { ...x, paid: true } : x) })); showToast("Despesa marcada como paga."); } });
+      if (d !== null && d <= 5) items.push({ key: `tx-${t.id}`, title: t.merchant, detail: "Despesa pendente", days: d, amount: t.amount, onPay: () => { updateData((c) => ({ ...c, transactions: c.transactions.map((x) => x.id === t.id ? { ...x, paid: true } : x) })); toast("Despesa marcada como paga."); } });
     });
     const invoice = cardInvoices(data.transactions, data.creditCard).find((i) => i.month === currentInvoiceMonth(data.creditCard));
     if (invoice && invoice.total > 0) { const d = daysUntil(invoice.dueDate); if (d !== null && d >= 0 && d <= 7) items.push({ key: "card", title: "Fatura do cartão", detail: `Vence ${displayDate(invoice.dueDate)}`, days: d, amount: invoice.total }); }
@@ -49,7 +75,24 @@ export function DashboardScreen() {
   }, [data.recurringBills, data.transactions, data.creditCard, updateData]);
   const tasksToday = openTasks.filter((task) => task.dueDate && task.dueDate <= today).slice(0, 5);
   const studySoon = data.studyItems.filter((item) => !item.done && item.dueDate && (daysUntil(item.dueDate) ?? 99) <= 3).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 3);
-  const toggleHabit = (id: string) => updateData((c) => { const list = c.completedByDate[today] ?? []; return { ...c, completedByDate: { ...c.completedByDate, [today]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] } }; });
+  const doneToday = plannedHabits.filter((h) => completed.includes(h.id)).length;
+  const streak = habitStreak(data.completedByDate, today);
+  const toggleHabit = (id: string) => {
+    const wasDone = completed.includes(id);
+    updateData((c) => { const list = c.completedByDate[today] ?? []; return { ...c, completedByDate: { ...c.completedByDate, [today]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] } }; });
+    if (!wasDone) showToast(doneToday + 1 === plannedHabits.length ? "Todos os hábitos de hoje feitos! 🎉" : `Hábito feito · ${doneToday + 1}/${plannedHabits.length} hoje`);
+  };
+  const hasMoneyThisMonth = personalThisMonth.length > 0;
+  const firstSteps = [
+    { key: "money", label: "Registrar o primeiro gasto ou receita", done: data.transactions.length > 0, onPress: () => setQuickOpen(true) },
+    { key: "habit", label: "Marcar um hábito como feito", done: Object.values(data.completedByDate).some((l) => l.length > 0), onPress: () => router.push(plannedHabits.length ? "/habits" : { pathname: "/habits", params: { create: "habit" } }) },
+    { key: "task", label: "Criar uma tarefa", done: data.tasks.length > 0, onPress: () => router.push({ pathname: "/tasks", params: { create: "1" } }) },
+    { key: "reminder", label: "Configurar um lembrete", done: data.reminders.length > 0 || data.recurringBills.length > 0, onPress: () => router.push("/reminders") },
+  ];
+  const firstStepsDone = firstSteps.filter((x) => x.done).length;
+  const showFirstSteps = !firstStepsHidden && firstStepsDone < firstSteps.length && !hasDemoData(data);
+  const tip = tipFor(data.profile);
+  const tipGo = tipAction(tip);
   const completeTask = (id: string) => { updateData((c) => ({ ...c, tasks: c.tasks.map((t) => t.id === id ? { ...t, status: "done", updatedAt: new Date().toISOString() } : t) })); showToast("Tarefa concluída."); };
   const dateLabel = rawDateLabel.charAt(0).toLocaleUpperCase("pt-BR") + rawDateLabel.slice(1);
 
@@ -75,10 +118,23 @@ export function DashboardScreen() {
           <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 17 }}>Crie uma conta grátis e seus registros ficam salvos mesmo se trocar de celular ou limpar o navegador.</Text>
           <View style={{ flexDirection: "row", gap: 14 }}>
             <Pressable onPress={() => router.push("/settings")} accessibilityRole="button"><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 13, fontWeight: "800" }}>Criar conta</Text></Pressable>
-            <Pressable onPress={() => { try { localStorage.setItem("nyvo.account-nudge", String(Date.now() + 7 * 86400000)); } catch { /* ignora */ } setAccountNudgeHidden(true); }} accessibilityRole="button"><Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>Agora não</Text></Pressable>
+            <Pressable onPress={() => { writeFlag("nyvo.account-nudge", "dismissed"); setAccountNudgeHidden(true); showToast("Tudo bem. Dá para criar a conta quando quiser em Configurações."); }} accessibilityRole="button"><Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>Agora não</Text></Pressable>
           </View>
         </View>
       </View> : null}
+      {showFirstSteps ? <Card style={{ gap: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <MaterialCommunityIcons name="flag-checkered" size={20} color={C.green} />
+          <View style={{ flex: 1 }}><Text style={pillarTitle}>Primeiros passos</Text><Text style={pillarDetail}>{firstStepsDone} de {firstSteps.length} feitos · leva 2 minutos</Text></View>
+          <Pressable onPress={() => { writeFlag("nyvo.first-steps", "hidden"); setFirstStepsHidden(true); }} accessibilityRole="button" accessibilityLabel="Esconder primeiros passos" hitSlop={10}><MaterialCommunityIcons name="close" size={18} color={C.muted} /></Pressable>
+        </View>
+        <ProgressBar value={firstStepsDone} max={firstSteps.length} />
+        {firstSteps.map((item) => <Pressable key={item.key} disabled={item.done} onPress={item.onPress} accessibilityRole="button" accessibilityState={{ checked: item.done, disabled: item.done }} style={({ pressed }) => [stepRow, { opacity: pressed ? 0.75 : 1 }]}>
+          <MaterialCommunityIcons name={item.done ? "check-circle" : "circle-outline"} size={21} color={item.done ? C.green : C.muted} />
+          <Text style={[pillarTitle, { flex: 1, fontWeight: "600", color: item.done ? C.muted : C.ink, textDecorationLine: item.done ? "line-through" : "none" }]}>{item.label}</Text>
+          {item.done ? null : <MaterialCommunityIcons name="chevron-right" size={18} color={C.muted} />}
+        </Pressable>)}
+      </Card> : null}
       <PhraseCapture onSaved={showToast} />
       <View style={{ flexDirection: "row", gap: 9 }}>
         <View style={{ flex: 1 }}><PrimaryButton title="Registro rápido" onPress={() => setQuickOpen(true)} icon="cash-plus" disabled={loading} /></View>
@@ -87,8 +143,9 @@ export function DashboardScreen() {
       <Pressable onPress={() => router.push("/finance")} accessibilityRole="button" style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}>
         <Card style={{ backgroundColor: C.greenDark, borderColor: C.greenDark, padding: 17, gap: 6 }}>
           <Text style={heroEyebrow}>SALDO DO MÊS</Text>
-          <Text style={heroValue}>{money(monthlyBalance, data.currency)}</Text>
-          <Text style={heroSub}>{dueItems.length ? `${dueItems.length} ${dueItems.length === 1 ? "conta vence" : "contas vencem"} nos próximos dias · ${money(dueItems.reduce((sum, item) => sum + item.amount, 0), data.currency)}` : "Nenhuma conta vencendo nos próximos dias."}</Text>
+          {hasMoneyThisMonth ? <Text style={heroValue}>{money(monthlyBalance, data.currency)}</Text>
+            : <Text style={[heroValue, { fontSize: 20, lineHeight: 26 }]}>Ainda não há movimentos este mês</Text>}
+          <Text style={heroSub}>{dueItems.length ? `${dueItems.length} ${dueItems.length === 1 ? "conta vence" : "contas vencem"} nos próximos dias · ${money(dueItems.reduce((sum, item) => sum + item.amount, 0), data.currency)}` : hasMoneyThisMonth ? "Nenhuma conta vencendo nos próximos dias." : "Registre um gasto ou o seu salário e o saldo aparece aqui. Toque para abrir Finanças."}</Text>
         </Card>
       </Pressable>
       {dueItems.length ? <View style={{ gap: 9 }}>
@@ -101,11 +158,18 @@ export function DashboardScreen() {
       </View> : null}
       <View style={{ gap: 9 }}>
         <SectionTitle title="Hábitos de hoje" action="Ver todos" onAction={() => router.push("/habits")} />
+        {plannedHabits.length ? <View style={{ gap: 6 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <Text style={[pillarDetail, { fontSize: 12, color: C.ink, fontWeight: "700" }]}>{doneToday}/{plannedHabits.length} feitos hoje{doneToday === plannedHabits.length ? " · dia completo!" : ""}</Text>
+            {streak > 0 ? <View style={streakPill}><MaterialCommunityIcons name="fire" size={14} color="#B5541B" /><Text style={streakText}>{streak} {streak === 1 ? "dia" : "dias"} seguidos</Text></View> : null}
+          </View>
+          <ProgressBar value={doneToday} max={plannedHabits.length} />
+        </View> : null}
         {plannedHabits.length ? plannedHabits.map((habit) => { const done = completed.includes(habit.id); return <Pressable key={habit.id} onPress={() => toggleHabit(habit.id)} accessibilityRole="checkbox" accessibilityState={{ checked: done }} style={todayRow}>
           <MaterialCommunityIcons name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={24} color={done ? C.green : C.muted} />
           <Text style={[pillarTitle, { flex: 1, textDecorationLine: done ? "line-through" : "none", color: done ? C.muted : C.ink }]}>{habit.name}</Text>
           <Text style={pillarDetail}>{habit.reminderTime}</Text>
-        </Pressable>; }) : <Card><Text style={pillarDetail}>Nenhum hábito para hoje. Crie um em Hábitos: água, leitura, academia…</Text></Card>}
+        </Pressable>; }) : <Card style={{ gap: 10, alignItems: "flex-start" }}><Text style={pillarDetail}>Nenhum hábito para hoje. Comece com um simples, como beber água ou ler 10 páginas.</Text><PrimaryButton title="Criar meu primeiro hábito" tone="light" icon="plus" onPress={() => openCapture("habit")} /></Card>}
       </View>
       {tasksToday.length || studySoon.length ? <View style={{ gap: 9 }}>
         <SectionTitle title="Para fazer" action="Tarefas" onAction={() => router.push("/tasks")} />
@@ -120,7 +184,7 @@ export function DashboardScreen() {
       </View> : null}
       <Card style={{ flexDirection: "row", gap: 11, alignItems: "flex-start", backgroundColor: C.blueSoft, borderColor: "transparent" }}>
         <MaterialCommunityIcons name="lightbulb-on-outline" size={20} color={C.blueDark} />
-        <View style={{ flex: 1, gap: 4 }}><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1 }}>DICA PARA VOCÊ</Text><Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>{tipFor(data.profile)}</Text>{!data.profile.occupation && !data.profile.interests.length ? <Pressable onPress={() => router.push("/support")}><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 12, fontWeight: "700" }}>Personalizar dicas</Text></Pressable> : null}</View>
+        <View style={{ flex: 1, gap: 4 }}><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1 }}>DICA PARA VOCÊ</Text><Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>{tip}</Text><View style={{ flexDirection: "row", gap: 14, flexWrap: "wrap" }}>{tipGo ? <Pressable onPress={() => router.push(tipGo.path)} accessibilityRole="button"><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 12, fontWeight: "800" }}>{tipGo.label} →</Text></Pressable> : null}{!data.profile.occupation && !data.profile.interests.length ? <Pressable onPress={() => router.push("/support")} accessibilityRole="button"><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 12, fontWeight: "700" }}>Personalizar dicas</Text></Pressable> : null}</View></View>
       </Card>
       <Pressable onPress={() => router.push("/insights")} accessibilityRole="button" style={({ pressed }) => [todayRow, { opacity: pressed ? 0.8 : 1 }]}>
         <View style={[todayIcon, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name="chart-box-outline" size={19} color={C.green} /></View>
@@ -131,7 +195,7 @@ export function DashboardScreen() {
         <SectionTitle title="Seus pilares" />
         <View style={{ gap: 9 }}>
           <PillarCard icon="note-text-outline" title="Anotações" metric={loading ? "Carregando" : `${data.notes.length} ${data.notes.length === 1 ? "nota" : "notas"}`} detail={loading ? "Preparando seus dados locais" : "Ideias salvas e pesquisáveis"} onPress={() => router.push("/notes")} />
-          <PillarCard icon="wallet-outline" title="Finanças" metric={loading ? "Carregando" : money(monthlyBalance, data.currency)} detail={loading ? "Preparando seus dados locais" : "Saldo deste mês · contas fixas, cartão e metas"} onPress={() => router.push("/finance")} />
+          <PillarCard icon="wallet-outline" title="Finanças" metric={loading ? "Carregando" : hasMoneyThisMonth ? money(monthlyBalance, data.currency) : "Sem movimentos este mês"} detail={loading ? "Preparando seus dados locais" : "Saldo deste mês · contas fixas, cartão e metas"} onPress={() => router.push("/finance")} />
           <PillarCard icon="heart-pulse" title="Hábitos & Saúde" metric={loading ? "Carregando" : plannedHabits.length ? `${completed.filter((id) => plannedHabits.some((habit) => habit.id === id)).length}/${plannedHabits.length} rotinas` : `${data.healthLogs.filter((log) => log.date === today).length} registros de saúde`} detail={loading ? "Preparando seus dados locais" : "Check-ins, água e atividades do dia"} onPress={() => router.push("/habits")} />
           <PillarCard icon="checkbox-marked-circle-outline" title="Tarefas" metric={loading ? "Carregando" : tasksDue ? `${tasksDue} para hoje ou atrasadas` : `${openTasks.length} em aberto`} detail={loading ? "Preparando seus dados locais" : "Prioridades, próximos prazos e backlog"} onPress={() => router.push("/tasks")} />
         </View>
@@ -144,9 +208,13 @@ export function DashboardScreen() {
         <CaptureOption icon="playlist-plus" title="Tarefa" detail="Próximo passo, prioridade ou prazo" onPress={() => openCapture("tasks")} />
       </AppModal>
       <QuickAddModal visible={quickOpen} onClose={() => setQuickOpen(false)} onSaved={showToast} />
-      {toast ? <View accessibilityRole="alert" style={toastStyle}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
     </Page>
   );
+}
+
+function ProgressBar({ value, max }: { value: number; max: number }) {
+  const pct = max ? Math.round((value / max) * 100) : 0;
+  return <View style={barTrack} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max, now: value, text: `${pct}%` }}><View style={[barFill, { width: `${pct}%` }]} /></View>;
 }
 
 function PillarCard({ icon, title, metric, detail, onPress }: { icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"]; title: string; metric: string; detail: string; onPress: () => void }) {
@@ -179,6 +247,10 @@ const todayRow = { flexDirection: "row" as const, alignItems: "center" as const,
 const todayIcon = { width: 36, height: 36, borderRadius: 12, alignItems: "center" as const, justifyContent: "center" as const };
 const smallBtn = { backgroundColor: C.green, borderRadius: 11, paddingHorizontal: 12, paddingVertical: 8 };
 const smallBtnText = { color: "#FFFFFF", fontFamily: SANS, fontSize: 12, fontWeight: "800" as const };
-const toastStyle = { position: "absolute" as const, bottom: 16, left: 20, right: 20, paddingHorizontal: 15, paddingVertical: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };
 const demoBanner = { flexDirection: "row" as const, alignItems: "center" as const, gap: 9, backgroundColor: C.amberSoft, borderRadius: 14, padding: 12 };
 const nudge = { flexDirection: "row" as const, gap: 11, alignItems: "flex-start" as const, backgroundColor: C.blueSoft, borderRadius: 16, padding: 13 };
+const barTrack = { height: 8, borderRadius: 4, backgroundColor: C.line, overflow: "hidden" as const };
+const barFill = { height: 8, borderRadius: 4, backgroundColor: C.green };
+const stepRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, paddingVertical: 7 };
+const streakPill = { flexDirection: "row" as const, alignItems: "center" as const, gap: 4, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999, backgroundColor: "#FCEBDD" };
+const streakText = { color: "#8A3F12", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const };

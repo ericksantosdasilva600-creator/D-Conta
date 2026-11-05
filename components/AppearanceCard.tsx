@@ -40,7 +40,7 @@ export function AppearanceCard() {
         <Field label="Código da cor de apoio" value={secondary} onChangeText={(v) => setSecondary(v.startsWith("#") ? v.slice(0, 7) : `#${v.slice(0, 6)}`)} placeholder="#3478A9" autoCapitalize="characters" error={valid(secondary) ? undefined : "Use o formato #RRGGBB."} />
       </View> : null}
       <View style={[previewBox, { backgroundColor: colors.paper }]}>
-        <View style={[previewHero, { backgroundColor: colors.greenDark }]}><Text style={{ color: "#FFFFFF", fontFamily: SANS, fontWeight: "800", fontSize: 13 }}>Prévia · Saldo R$ 2.450,00</Text></View>
+        <View style={[previewHero, { backgroundColor: colors.greenDark }]}><Text style={{ color: "#FFFFFF", fontFamily: SANS, fontWeight: "800", fontSize: 13 }}>Prévia com valores de exemplo · R$ 2.450,00</Text></View>
         <View style={{ flexDirection: "row", gap: 8 }}>
           <View style={[previewBtn, { backgroundColor: colors.green }]}><Text style={previewBtnText}>Botão</Text></View>
           <View style={[previewChip, { backgroundColor: colors.greenSoft, borderColor: colors.green }]}><Text style={{ color: colors.greenDark, fontFamily: SANS, fontWeight: "700", fontSize: 12 }}>Selecionado</Text></View>

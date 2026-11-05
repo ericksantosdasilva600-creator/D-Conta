@@ -6,6 +6,7 @@ import { AppModal, BrandMark, Card, ChoiceChips, EmptyState, Field, Header, Icon
 import { DatePickerField } from "@/components/DatePickerField";
 import { StudyPanel } from "@/components/StudyPanel";
 import { useAppData, type Priority, type Task, type TaskStatus } from "@/lib/app-data";
+import { toast } from "@/lib/toast";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
 import { createId, displayDate } from "@/lib/format";
 import { refreshLocalNotifications } from "@/lib/local-notifications";
@@ -31,7 +32,6 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState<Task | null>(null);
-  const [toast, setToast] = useState("");
   const previousAutoCreate = useRef(false);
 
   useEffect(() => {
@@ -55,8 +55,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
   }, [data.tasks, filter, priorityFilter, query]);
 
   const notify = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(""), 2400);
+    toast(message);
   };
   const openNew = () => { setEditing(null); setDraft(EMPTY_DRAFT); setError(""); setFormOpen(true); };
   const openEdit = (task: Task) => {
@@ -101,15 +100,16 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
       <StorageBanner />
       <ChoiceChips values={["Tarefas", "Estudos"]} selected={tab} onSelect={setTab} />
       {tab === "Estudos" ? <StudyPanel /> : <>
-      <PrimaryButton title="Nova tarefa" onPress={openNew} icon="plus" />
+      {data.tasks.length ? <PrimaryButton title="Nova tarefa" onPress={openNew} icon="plus" /> : null}
       <View style={{ gap: 12 }}>
         <SectionTitle title="Tarefas" />
+        {data.tasks.length ? <>
         <View style={searchBox}><MaterialCommunityIcons name="magnify" size={19} color={C.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Pesquisar tarefas ou projetos…" placeholderTextColor={C.muted} accessibilityLabel="Pesquisar tarefas" style={searchInput} returnKeyType="search" /><Pressable onPress={() => setQuery("")} accessibilityRole="button" accessibilityLabel="Limpar pesquisa" hitSlop={8}><MaterialCommunityIcons name="close-circle" size={18} color={query ? C.muted : "transparent"} /></Pressable></View>
         <ChoiceChips values={["Todos", ...STATUS_OPTIONS.map((item) => item.label)]} selected={filter === "all" ? "Todos" : statusLabel(filter)} onSelect={(value) => setFilter(value === "Todos" ? "all" : STATUS_OPTIONS.find((item) => item.label === value)?.value ?? "all")} />
         <ChoiceChips values={["Todas prioridades", "Alta", "Média", "Baixa"]} selected={priorityFilter === "all" ? "Todas prioridades" : PRIORITY_LABELS[priorityFilter]} onSelect={(value) => setPriorityFilter(value === "Alta" ? "high" : value === "Média" ? "medium" : value === "Baixa" ? "low" : "all")} />
-        {loading ? <View style={{ padding: 28, alignItems: "center" }}><Text style={mutedText}>Carregando suas tarefas…</Text></View> : filtered.length ? <View style={{ gap: 10 }}>{filtered.map((task) => <TaskCard key={task.id} task={task} budgetLabel={data.budgets.find((budget) => budget.id === task.linkedBudgetId)?.category} onEdit={() => openEdit(task)} onDelete={() => setDeleting(task)} onToggle={() => changeStatus(task, task.status === "done" ? "next" : "done")} />)}</View> : <Card><EmptyState icon="clipboard-text-outline" title={data.tasks.length ? "Nada encontrado" : "Comece a planejar"} description={data.tasks.length ? "Experimente alterar a pesquisa ou os filtros." : "Divida um projeto em passos simples, ordene-os e acompanhe os prazos."} action={!data.tasks.length ? <PrimaryButton title="Criar primeira tarefa" onPress={openNew} icon="plus" /> : undefined} /></Card>}
+        </> : null}
+        {loading ? <View style={{ padding: 28, alignItems: "center" }}><Text style={mutedText}>Carregando suas tarefas…</Text></View> : filtered.length ? <View style={{ gap: 10 }}>{filtered.map((task) => <TaskCard key={task.id} task={task} budgetLabel={data.budgets.find((budget) => budget.id === task.linkedBudgetId)?.category} onEdit={() => openEdit(task)} onDelete={() => setDeleting(task)} onToggle={() => changeStatus(task, task.status === "done" ? "next" : "done")} />)}</View> : <Card><EmptyState icon="clipboard-text-outline" title={data.tasks.length ? "Nada encontrado" : "Comece a planejar"} description={data.tasks.length ? "Experimente alterar a pesquisa ou os filtros." : "Divida um projeto em passos simples e acompanhe os prazos. Pesquisa e filtros aparecem quando houver tarefas."} action={!data.tasks.length ? <PrimaryButton title="Criar primeira tarefa" onPress={openNew} icon="plus" /> : undefined} /></Card>}
       </View>
-      {toast ? <View accessibilityRole="alert" style={toastStyle}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
 
       <AppModal visible={formOpen} title={editing ? "Editar tarefa" : "Nova tarefa"} subtitle="Os detalhes ficam salvos neste aparelho." onClose={() => setFormOpen(false)} footer={<PrimaryButton title={editing ? "Salvar alterações" : "Criar tarefa"} onPress={saveTask} icon="check" />}>
         <Field label="Título" value={draft.title} onChangeText={(value) => { patch("title", value); setError(""); }} placeholder="Ex.: Reservar alojamento" returnKeyType="next" error={error} />
@@ -163,4 +163,3 @@ const titleStyle = { color: C.ink, fontFamily: SANS, fontSize: 15, fontWeight: "
 const descriptionStyle = { color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 };
 const labelStyle = { color: C.ink, fontFamily: SANS, fontWeight: "700" as const, fontSize: 13 };
 const reminderRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, paddingVertical: 5 };
-const toastStyle = { position: "absolute" as const, bottom: 12, left: 22, right: 22, minHeight: 48, flexDirection: "row" as const, alignItems: "center" as const, gap: 9, paddingHorizontal: 14, borderRadius: 15, backgroundColor: C.greenDark };

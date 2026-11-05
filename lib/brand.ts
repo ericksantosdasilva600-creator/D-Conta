@@ -13,7 +13,7 @@ export const BRAND = {
     { title: "Ouvir quem usa", text: "As melhorias nascem do feedback de quem usa o Nyvo todo dia." },
   ],
   supportEmail: "ericksantosdasilva600@gmail.com",
-  version: "2.1",
+  version: "2.2",
 };
 
 export const OCCUPATIONS = ["Estudante", "Estagiário(a)", "CLT", "Autônomo(a)", "Empreendedor(a)", "Servidor(a) público(a)", "Freelancer", "Do lar", "Aposentado(a)", "Outro"];

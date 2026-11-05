@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, Card, ChoiceChips, EmptyState, Field, Header, IconButton, Page, PrimaryButton, SectionTitle, Tag } from "@/components/app-ui";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useAppData } from "@/lib/app-data";
+import { toast } from "@/lib/toast";
 import { C, SANS } from "@/lib/design";
 import { createId, localDateKey } from "@/lib/format";
 import { describeReminder, eventsBetween, isTime, nextOccurrences, REMINDER_TEMPLATES, type NotificationPrefs, type Reminder, type ReminderRepeat } from "@/lib/reminders";
@@ -58,8 +59,7 @@ export function RemindersScreen() {
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [open, setOpen] = useState(false);
   const [permission, setPermission] = useState<"granted" | "denied" | "default" | "unsupported">(() => Platform.OS === "web" ? (notificationsSupported() ? Notification.permission : "unsupported") : "default");
-  const [toast, setToast] = useState("");
-  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2800); };
+  const showToast = (m: string) => { toast(m); };
   const prefs = data.notificationPrefs;
   const setPrefs = (changes: Partial<NotificationPrefs>) => updateData((c) => ({ ...c, notificationPrefs: { ...c.notificationPrefs, ...changes } }));
 
@@ -110,13 +110,20 @@ export function RemindersScreen() {
           <Text style={[strong, { flex: 1, color: active ? C.greenDark : "#80611E" }]}>{active ? "Notificações ativadas neste aparelho" : permission === "unsupported" ? "Este navegador não mostra notificações" : "Notificações desativadas"}</Text>
         </View>
         <Text style={[muted, { color: active ? C.greenDark : "#80611E" }]}>{Platform.OS === "web" ? "No site, os avisos tocam enquanto o Nyvo estiver aberto, mesmo em outra aba ou minimizado. Se estiver fechado, os avisos perdidos aparecem quando você abrir. Instale na tela inicial para usar como app. Na versão da Play Store, os avisos tocam mesmo com o app fechado." : "Os avisos tocam mesmo com o app fechado."}</Text>
-        {!active && permission !== "unsupported" ? <PrimaryButton title="Ativar notificações" icon="bell-ring-outline" onPress={() => void enable()} /> : null}
+        {!active && permission !== "unsupported" ? <>
+          <Text style={[muted, { color: "#80611E" }]}>Ao tocar abaixo, o {Platform.OS === "web" ? "navegador" : "celular"} vai perguntar se o Nyvo pode mostrar notificações. Isso só libera os avisos na tela; o que é avisado e quando você escolhe aqui embaixo, e dá para desligar a qualquer momento.</Text>
+          <PrimaryButton title="Ativar notificações" icon="bell-ring-outline" onPress={() => void enable()} />
+        </> : null}
         {active ? <PrimaryButton title="Testar agora" tone="light" icon="bell-outline" onPress={() => void test()} /> : null}
       </Card>
 
       <View style={{ gap: 10 }}>
         <SectionTitle title="Próximos avisos (7 dias)" />
-        {upcoming.length ? <Card style={{ gap: 2 }}>{upcoming.map((e) => <View key={e.key} style={listRow}>
+        {upcoming.length ? <View style={{ flexDirection: "row", gap: 14, flexWrap: "wrap" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}><MaterialCommunityIcons name="bell-outline" size={14} color={C.green} /><Text style={muted}>Criado por você</Text></View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}><MaterialCommunityIcons name="calendar-clock" size={14} color={C.blue} /><Text style={muted}>Automático (contas, tarefas, provas, hábitos)</Text></View>
+        </View> : null}
+        {upcoming.length ? <Card style={{ gap: 2 }}>{upcoming.map((e) => <View key={e.key} style={listRow} accessibilityLabel={`${e.source === "custom" ? "Lembrete seu" : "Aviso automático"}: ${e.title}, ${fmtWhen(e.at)}`}>
           <MaterialCommunityIcons name={e.source === "custom" ? "bell-outline" : "calendar-clock"} size={18} color={e.source === "custom" ? C.green : C.blue} />
           <View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={strongSmall}>{e.title}</Text><Text numberOfLines={1} style={muted}>{e.body}</Text></View>
           <Text style={[muted, { fontWeight: "700", color: C.ink }]}>{fmtWhen(e.at)}</Text>
@@ -125,6 +132,7 @@ export function RemindersScreen() {
 
       <View style={{ gap: 10 }}>
         <SectionTitle title="Seus lembretes" action="Novo lembrete" onAction={() => { setEditing(null); setOpen(true); }} />
+        <Text style={muted}>Lembretes que você cria do seu jeito. Os avisos de contas, tarefas e hábitos ficam em “Avisos automáticos”, mais abaixo.</Text>
         <Text style={muted}>Modelos prontos · toque para ajustar e salvar</Text>
         <ChoiceChips values={REMINDER_TEMPLATES.map((t) => t.label)} selected="" onSelect={(v) => fromTemplate(REMINDER_TEMPLATES.findIndex((t) => t.label === v))} horizontal={false} />
         {data.reminders.length ? data.reminders.map((r) => { const next = nextOccurrences(r, 1)[0]; return (
@@ -136,11 +144,12 @@ export function RemindersScreen() {
               <Text style={[muted, { color: C.greenDark }]}>{r.enabled ? next ? `Próximo: ${fmtWhen(next)}` : "Sem próximos avisos" : "Pausado"}</Text>
             </View>
             <Switch value={r.enabled} onValueChange={(v) => toggle(r, v)} accessibilityLabel={`Ativar ${r.title}`} trackColor={{ false: "#D8D4C9", true: C.greenSoft }} thumbColor={r.enabled ? C.green : "#F7F5EF"} />
-          </Pressable>); }) : <Card><EmptyState icon="bell-plus-outline" title="Nenhum lembrete personalizado" description="Crie avisos do seu jeito: uma vez numa data, todo dia em vários horários, em dias da semana, todo mês ou a cada X minutos ou horas." action={<PrimaryButton title="Criar lembrete" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
+          </Pressable>); }) : <Card><EmptyState icon="bell-plus-outline" title="Você ainda não criou lembretes" description="Os avisos automáticos continuam funcionando. Se quiser, crie avisos do seu jeito: uma vez numa data, todo dia em vários horários, em dias da semana, todo mês ou a cada X minutos ou horas." action={<PrimaryButton title="Criar lembrete" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
       </View>
 
       <View style={{ gap: 10 }}>
         <SectionTitle title="Avisos automáticos" />
+        <Text style={muted}>O Nyvo gera estes avisos a partir das suas contas fixas, tarefas, provas e hábitos. Ligue ou desligue cada tipo aqui.</Text>
         <Card style={{ gap: 12 }}>
           <ToggleRow title="Contas e despesas a vencer" detail="Contas fixas, despesas pendentes com vencimento." value={data.dueRemindersEnabled} onChange={(v) => updateData((c) => ({ ...c, dueRemindersEnabled: v }))} />
           {data.dueRemindersEnabled ? <>
@@ -169,7 +178,6 @@ export function RemindersScreen() {
       </View>
 
       {open ? <ReminderForm initial={editing} onClose={() => setOpen(false)} onSave={save} onDelete={remove} /> : null}
-      {toast ? <View accessibilityRole="alert" style={toastStyle}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
     </Page>
   );
 }
@@ -258,4 +266,3 @@ const chipOn = { borderColor: C.green, backgroundColor: C.greenSoft };
 const chipText = { color: C.muted, fontFamily: SANS, fontSize: 12, fontWeight: "700" as const };
 const dayBtn = { width: 46, height: 40, borderRadius: 12, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.surface, alignItems: "center" as const, justifyContent: "center" as const };
 const divider = { height: 1, backgroundColor: C.line };
-const toastStyle = { position: "absolute" as const, bottom: 16, left: 20, right: 20, paddingHorizontal: 15, paddingVertical: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };

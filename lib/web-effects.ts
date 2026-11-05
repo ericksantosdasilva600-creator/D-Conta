@@ -11,10 +11,12 @@ export function useWebDarkMode(enabled: boolean) {
     if (!document.getElementById(id)) {
       const style = document.createElement("style");
       style.id = id;
-      style.textContent = "html.nyvo-dark{background:#151917!important}html.nyvo-dark body{filter:invert(0.9) hue-rotate(180deg);background:#F7F5EF!important;min-height:100%}";
+      style.textContent = "html.nyvo-dark{background:#151917!important}html.nyvo-dark body{filter:invert(0.9) hue-rotate(180deg);background:#F7F5EF!important;min-height:100%}html.nyvo-dark img,html.nyvo-dark video{filter:invert(1) hue-rotate(180deg)}";
       document.head.appendChild(style);
     }
     document.documentElement.classList.toggle("nyvo-dark", enabled);
+    document.documentElement.setAttribute("data-theme", enabled ? "dark" : "light");
+    document.documentElement.style.colorScheme = enabled ? "dark" : "light";
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", enabled ? "#121614" : "#187A61");
   }, [enabled]);

@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, Card, EmptyState, Field, PrimaryButton, SectionTitle } from "@/components/app-ui";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useAppData, type HealthLog, type HealthLogKind } from "@/lib/app-data";
+import { toast } from "@/lib/toast";
 import { C, SANS } from "@/lib/design";
 import { createId, localDateKey } from "@/lib/format";
 
@@ -42,10 +43,12 @@ export function HealthTracker({ autoCreate = false, onCreateHandled }: { autoCre
     const log: HealthLog = { id: createId(), kind: "hydration", date: selectedDate, amountMl: Math.round(amount), durationMinutes: 0, notes: "" };
     updateData((current) => ({ ...current, healthLogs: [log, ...current.healthLogs] }));
     setCustomWater("");
+    toast(`+${Math.round(amount).toLocaleString("pt-BR")} ml de água registrados · ${(waterTotal + Math.round(amount)).toLocaleString("pt-BR")} ml no dia`, "cup-water");
   };
   const saveLog = (log: HealthLog) => {
     updateData((current) => ({ ...current, healthLogs: editing ? current.healthLogs.map((item) => item.id === log.id ? log : item) : [log, ...current.healthLogs] }));
     setEditing(null); setFormOpen(false); onCreateHandled?.();
+    toast(editing ? "Registro atualizado." : "Atividade registrada.");
   };
   const removeLog = (log: HealthLog) => {
     const perform = () => updateData((current) => ({ ...current, healthLogs: current.healthLogs.filter((item) => item.id !== log.id) }));
@@ -65,7 +68,7 @@ export function HealthTracker({ autoCreate = false, onCreateHandled }: { autoCre
     </Card>
     <View style={{ gap: 10 }}>
       <SectionTitle title="Água" />
-      <Text style={helper}>Registre a quantidade que você bebeu; sem metas predefinidas.</Text>
+      <Text style={helper}>Cada toque em “+250 ml” ou “+500 ml” registra um copo de água no dia selecionado acima. Dá para apagar o registro na lista abaixo.</Text>
       <View style={{ flexDirection: "row", gap: 9 }}>
         {[250, 500].map((amount) => <Pressable key={amount} onPress={() => addWater(amount)} accessibilityRole="button" accessibilityLabel={`Adicionar ${amount} mililitros de água`} style={quickButton}><MaterialCommunityIcons name="plus" size={17} color={C.greenDark} /><Text style={quickText}>+{amount} ml</Text></Pressable>)}
       </View>

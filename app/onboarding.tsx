@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAppData, type Habit, type UserProfile } from "@/lib/app-data";
@@ -24,7 +24,8 @@ const SUGGESTED: { id: string; name: string; weekdays: number[]; time: string; d
   { id: "study", name: "Estudar 30 minutos", weekdays: [1, 2, 3, 4, 5], time: "20:00", detail: "Seg a sex, 20h" },
   { id: "money", name: "Anotar os gastos do dia", weekdays: [0, 1, 2, 3, 4, 5, 6], time: "22:00", detail: "Todos os dias, 22h" },
 ];
-const TOTAL = 5;
+const TOTAL = 4;
+const TOP_INTERESTS = 6;
 
 export default function OnboardingScreen() {
   const { data, updateData, loading } = useAppData();
@@ -32,7 +33,10 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
   const [p, setP] = useState<UserProfile>({ ...data.profile });
   const [focus, setFocus] = useState<string[]>(["money"]);
-  const [habits, setHabits] = useState<string[]>(["water", "money"]);
+  const [habits, setHabits] = useState<string[]>([]);
+  const [moreAboutMe, setMoreAboutMe] = useState(false);
+  const [allInterests, setAllInterests] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
   const set = (c: Partial<UserProfile>) => setP((x) => ({ ...x, ...c }));
   const toggle = (list: string[], id: string) => list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
@@ -42,16 +46,22 @@ export default function OnboardingScreen() {
     updateData((current) => ({ ...current, onboarded: true, focus, profile: { ...p, name: p.name.trim() }, habits: [...current.habits, ...created], ...(currency ? { currency } : {}) }));
     router.replace(focus.length === 1 && focus[0] === "money" ? "/finance" : "/");
   };
+  const openPrivacy = () => { if (Platform.OS === "web" && typeof window !== "undefined") window.open("privacidade.html", "_blank", "noopener"); };
 
   if (step === 1) return (
-    <View style={page}>
+    <ScrollView style={{ flex: 1, backgroundColor: C.paper }} contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
       <View style={content}>
         <View style={{ alignItems: "flex-start", gap: 22 }}>
           <BrandMark size={54} />
           <View style={{ gap: 10 }}>
             <Text style={eyebrow}>NYVO · UM ESPAÇO PARA O SEU DIA</Text>
             <Text accessibilityRole="header" style={headline}>Seu dia, organizado.{"\n"}Do seu jeito.</Text>
-            <Text style={subhead}>Dinheiro, hábitos, estudos e tarefas em um só lugar. Responda 4 perguntas rápidas e o Nyvo fica com a sua cara.</Text>
+            <Text style={subhead}>Dinheiro, hábitos, estudos e tarefas em um só lugar. Três passos rápidos, sem cadastro obrigatório, e o Nyvo fica com a sua cara.</Text>
+            <View style={badgeRow}>
+              <Badge icon="gift-outline" text="100% grátis" />
+              <Badge icon="cancel" text="Sem anúncios" />
+              <Badge icon="cellphone-lock" text="Funciona sem conta" />
+            </View>
           </View>
         </View>
         <View style={{ gap: 13 }}>
@@ -60,13 +70,21 @@ export default function OnboardingScreen() {
           <Feature icon="format-list-checks" title="Tarefas e Estudos" detail="Prazos, provas, trabalhos e Pomodoro." />
           <Feature icon="note-text-outline" title="Anotações" detail="Ideias rápidas, ligadas às suas tarefas." />
         </View>
+        <View style={howBox}>
+          <Text accessibilityRole="header" style={featureTitle}>Como funciona</Text>
+          <HowStep n="1" text="Diga seu nome e o que quer organizar." />
+          <HowStep n="2" text={'Anote um gasto ("gastei 45 no mercado"), marque um hábito ou crie uma tarefa.'} />
+          <HowStep n="3" text="O Nyvo mostra seu dia, avisa das contas e acompanha seu progresso." />
+        </View>
         <View style={{ gap: 12 }}>
           <StorageBanner />
-          <PrimaryButton title={loading ? "Preparando…" : "Começar"} onPress={() => setStep(2)} disabled={loading} icon="arrow-right" />
+          <PrimaryButton title={loading ? "Preparando…" : "Começar grátis"} onPress={() => setStep(2)} disabled={loading} icon="arrow-right" />
+          <Pressable onPress={() => { setShowAccount(true); setStep(TOTAL); }} accessibilityRole="button" style={secondaryBtn}><Text style={secondaryText}>Já tenho conta · Entrar</Text></Pressable>
           <Text style={footnote}>Leva menos de 1 minuto. Tudo pode ser mudado depois.</Text>
+          {Platform.OS === "web" ? <Pressable onPress={openPrivacy} accessibilityRole="link"><Text style={[footnote, { textDecorationLine: "underline" }]}>Privacidade e termos de uso</Text></Pressable> : null}
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 
   return (
@@ -77,17 +95,23 @@ export default function OnboardingScreen() {
             <Text style={eyebrow}>PASSO {step - 1} DE {TOTAL - 1}</Text>
             {step < TOTAL ? <Pressable onPress={() => setStep(step + 1)} accessibilityRole="button" hitSlop={10}><Text style={skip}>Pular</Text></Pressable> : null}
           </View>
-          <View style={track}><View style={[trackFill, { width: `${((step - 1) / (TOTAL - 1)) * 100}%` }]} /></View>
+          <View style={track} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: TOTAL - 1, now: step - 1 }}><View style={[trackFill, { width: `${((step - 1) / (TOTAL - 1)) * 100}%` }]} /></View>
         </View>
 
         {step === 2 ? <>
-          <Title title="Prazer! Como podemos te chamar?" sub="Usamos para personalizar as telas e as dicas. Nada disso é obrigatório." />
-          <Field label="Seu nome" value={p.name} onChangeText={(v) => set({ name: v.slice(0, 40) })} placeholder="Ex.: Erick" autoCapitalize="words" autoComplete="given-name" />
-          <Group label="Sexo"><Chips values={GENDERS} selected={p.gender} onSelect={(v) => set({ gender: v })} /></Group>
-          <Group label="Faixa de idade"><Chips values={AGE_RANGES} selected={p.ageRange} onSelect={(v) => set({ ageRange: v })} /></Group>
-          <Group label="País"><Chips values={COUNTRIES.map((c) => c.name)} selected={p.country} onSelect={(v) => set({ country: v, state: v === "Brasil" ? p.state : "" })} /></Group>
-          {p.country === "Brasil" ? <Group label="Estado"><Chips values={BR_STATES} selected={p.state} onSelect={(v) => set({ state: v })} small /></Group> : null}
-          <Group label="O que você faz?"><Chips values={OCCUPATIONS} selected={p.occupation} onSelect={(v) => set({ occupation: v })} /></Group>
+          <Title title="Prazer! Como podemos te chamar?" sub="Só o nome já basta. Ele aparece na saudação da tela inicial." />
+          <Field label="Seu nome ou apelido (opcional)" value={p.name} onChangeText={(v) => set({ name: v.slice(0, 40) })} placeholder="Ex.: Erick" autoCapitalize="words" autoComplete="given-name" />
+          <Pressable onPress={() => setMoreAboutMe(!moreAboutMe)} accessibilityRole="button" accessibilityState={{ expanded: moreAboutMe }} style={[habitRow, { borderStyle: "dashed" }]}>
+            <MaterialCommunityIcons name={moreAboutMe ? "chevron-up" : "chevron-down"} size={20} color={C.green} />
+            <View style={{ flex: 1 }}><Text style={featureTitle}>Contar mais sobre mim (opcional)</Text><Text style={featureDetail}>O país define a moeda; ocupação e idade deixam as dicas mais certeiras. Fica guardado só no seu aparelho (ou na sua conta, se criar uma).</Text></View>
+          </Pressable>
+          {moreAboutMe ? <>
+            <Group label="País (define a moeda)"><Chips values={COUNTRIES.map((c) => c.name)} selected={p.country} onSelect={(v) => set({ country: v, state: v === "Brasil" ? p.state : "" })} /></Group>
+            {p.country === "Brasil" ? <Group label="Estado"><Chips values={BR_STATES} selected={p.state} onSelect={(v) => set({ state: v })} small /></Group> : null}
+            <Group label="O que você faz? (dicas de estudo ou trabalho)"><Chips values={OCCUPATIONS} selected={p.occupation} onSelect={(v) => set({ occupation: v })} /></Group>
+            <Group label="Faixa de idade"><Chips values={AGE_RANGES} selected={p.ageRange} onSelect={(v) => set({ ageRange: v })} /></Group>
+            <Group label="Sexo"><Chips values={GENDERS} selected={p.gender} onSelect={(v) => set({ gender: v })} /></Group>
+          </> : null}
         </> : null}
 
         {step === 3 ? <>
@@ -95,30 +119,31 @@ export default function OnboardingScreen() {
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9 }}>
             {FOCUS.map((f) => { const on = focus.includes(f.id); return <Pressable key={f.id} onPress={() => setFocus(toggle(focus, f.id))} accessibilityRole="checkbox" accessibilityState={{ checked: on }} style={[bigChoice, on ? choiceOn : null]}><MaterialCommunityIcons name={f.icon} size={20} color={on ? C.greenDark : C.muted} /><Text style={[featureTitle, { color: on ? C.greenDark : C.ink }]}>{f.label}</Text></Pressable>; })}
           </View>
-          <Group label="Seu principal objetivo agora"><Chips values={GOALS} selected={p.goal} onSelect={(v) => set({ goal: v })} /></Group>
-          <Group label="Assuntos que você curte">
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}>{INTERESTS.map((it) => { const on = p.interests.includes(it); return <Pressable key={it} onPress={() => set({ interests: toggle(p.interests, it) })} accessibilityRole="checkbox" accessibilityState={{ checked: on }} style={[chip, on ? choiceOn : null]}><Text style={[chipText, on ? { color: C.greenDark } : null]}>{it}</Text></Pressable>; })}</View>
-          </Group>
-          <Group label="Hábitos para começar (opcional)">
+          <Group label="Seu principal objetivo agora (opcional)"><Chips values={GOALS} selected={p.goal} onSelect={(v) => set({ goal: v })} /></Group>
+          <Group label="Quer começar com algum hábito? (opcional)">
             {SUGGESTED.map((h) => { const on = habits.includes(h.id); return <Pressable key={h.id} onPress={() => setHabits(toggle(habits, h.id))} accessibilityRole="checkbox" accessibilityState={{ checked: on }} style={habitRow}><MaterialCommunityIcons name={on ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={on ? C.green : C.muted} /><View style={{ flex: 1 }}><Text style={featureTitle}>{h.name}</Text><Text style={featureDetail}>{h.detail}</Text></View></Pressable>; })}
+          </Group>
+          <Group label="Assuntos que você curte (opcional, para as dicas)">
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}>
+              {(allInterests ? INTERESTS : INTERESTS.slice(0, TOP_INTERESTS)).map((it) => { const on = p.interests.includes(it); return <Pressable key={it} onPress={() => set({ interests: toggle(p.interests, it) })} accessibilityRole="checkbox" accessibilityState={{ checked: on }} style={[chip, on ? choiceOn : null]}><Text style={[chipText, on ? { color: C.greenDark } : null]}>{it}</Text></Pressable>; })}
+              {INTERESTS.length > TOP_INTERESTS ? <Pressable onPress={() => setAllInterests(!allInterests)} accessibilityRole="button" style={chip}><Text style={[chipText, { color: C.green }]}>{allInterests ? "Mostrar menos" : `+${INTERESTS.length - TOP_INTERESTS} assuntos`}</Text></Pressable> : null}
+            </View>
           </Group>
         </> : null}
 
         {step === 4 ? <>
-          <Title title="Como você conheceu o Nyvo?" sub="Isso nos ajuda a chegar em mais pessoas como você." />
-          <View style={{ gap: 8 }}>{SOURCES.map((s) => { const on = p.source === s; return <Pressable key={s} onPress={() => set({ source: on ? "" : s })} accessibilityRole="radio" accessibilityState={{ checked: on }} style={[habitRow, on ? choiceOn : null]}><MaterialCommunityIcons name={on ? "radiobox-marked" : "radiobox-blank"} size={22} color={on ? C.green : C.muted} /><Text style={[featureTitle, { flex: 1 }]}>{s}</Text></Pressable>; })}</View>
-        </> : null}
-
-        {step === 5 ? <>
-          <Title title="Salve seus dados" sub="Crie uma conta grátis para não perder nada se trocar de celular, limpar o navegador ou usar no notebook." />
-          {cloud.session ? <View style={[habitRow, choiceOn]}><MaterialCommunityIcons name="check-circle" size={22} color={C.green} /><Text style={[featureTitle, { flex: 1 }]}>Conta conectada: {cloud.email}</Text></View> : null}
-          <AccountCard initialMode="Criar conta" />
-          {!cloud.session ? <View style={warn}><MaterialCommunityIcons name="alert-outline" size={18} color="#80611E" /><Text style={warnText}>Sem conta, seus dados ficam só neste aparelho. Dá para criar a conta depois em Configurações.</Text></View> : null}
+          <Title title="Tudo pronto!" sub="O Nyvo funciona sem conta: seus dados ficam neste aparelho. Para usar no celular e no notebook, ou não perder nada ao trocar de aparelho, crie uma conta grátis — agora ou depois, em Configurações." />
+          {cloud.session ? <View style={[habitRow, choiceOn]}><MaterialCommunityIcons name="check-circle" size={22} color={C.green} /><Text style={[featureTitle, { flex: 1 }]}>Conta conectada: {cloud.email}</Text></View>
+            : showAccount ? <AccountCard initialMode="Criar conta" />
+            : <PrimaryButton title="Criar conta grátis ou entrar" tone="light" icon="account-plus-outline" onPress={() => setShowAccount(true)} />}
+          <Group label="Pergunta rápida: como conheceu o Nyvo? (opcional)">
+            <Chips values={SOURCES} selected={p.source} onSelect={(v) => set({ source: v })} />
+          </Group>
         </> : null}
 
         <View style={{ gap: 9 }}>
           {step < TOTAL ? <PrimaryButton title="Continuar" icon="arrow-right" onPress={() => setStep(step + 1)} />
-            : <PrimaryButton title={cloud.session ? "Começar a usar" : "Continuar sem conta"} tone={cloud.session ? "green" : "light"} icon={cloud.session ? "check" : "arrow-right"} onPress={finish} disabled={loading} />}
+            : <PrimaryButton title={cloud.session ? "Começar a usar" : "Começar a usar sem conta"} icon={cloud.session ? "check" : "arrow-right"} onPress={finish} disabled={loading} />}
           <Pressable onPress={() => setStep(step - 1)} accessibilityRole="button"><Text style={[footnote, { color: C.green, fontWeight: "700" }]}>Voltar</Text></Pressable>
         </View>
       </View>
@@ -138,13 +163,18 @@ function Chips({ values, selected, onSelect, small }: { values: string[]; select
 function Feature({ icon, title, detail }: { icon: Icon; title: string; detail: string }) {
   return <View style={featureRow}><View style={featureIcon}><MaterialCommunityIcons name={icon} size={21} color={C.green} /></View><View style={{ flex: 1, gap: 3 }}><Text style={featureTitle}>{title}</Text><Text style={featureDetail}>{detail}</Text></View></View>;
 }
+function Badge({ icon, text }: { icon: Icon; text: string }) {
+  return <View style={badge}><MaterialCommunityIcons name={icon} size={14} color={C.greenDark} /><Text style={badgeText}>{text}</Text></View>;
+}
+function HowStep({ n, text }: { n: string; text: string }) {
+  return <View style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}><View style={howNum}><Text style={howNumText}>{n}</Text></View><Text style={[featureDetail, { flex: 1, fontSize: 13, lineHeight: 19, color: C.ink }]}>{text}</Text></View>;
+}
 
-const page = { flex: 1, backgroundColor: C.paper, alignItems: "center" as const, justifyContent: "center" as const };
-const content = { width: "100%" as const, maxWidth: 520, paddingHorizontal: 24, paddingVertical: 28, flex: 1, justifyContent: "space-between" as const, gap: 19 };
+const content = { width: "100%" as const, maxWidth: 520, paddingHorizontal: 24, paddingVertical: 28, flex: 1, justifyContent: "space-between" as const, gap: 22 };
 const eyebrow = { color: C.green, fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.4 };
 const skip = { color: C.muted, fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };
 const headline = { color: C.ink, fontFamily: SERIF, fontSize: 37, lineHeight: 43, fontWeight: "700" as const, letterSpacing: -0.6 };
-const subhead = { color: C.muted, fontFamily: SANS, fontSize: 14, lineHeight: 21, maxWidth: 420 };
+const subhead = { color: C.muted, fontFamily: SANS, fontSize: 14, lineHeight: 21, maxWidth: 440 };
 const featureRow = { flexDirection: "row" as const, gap: 12, alignItems: "center" as const };
 const featureIcon = { width: 41, height: 41, borderRadius: 14, backgroundColor: C.greenSoft, alignItems: "center" as const, justifyContent: "center" as const };
 const featureTitle = { color: C.ink, fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };
@@ -157,5 +187,11 @@ const chip = { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, bord
 const chipText = { color: C.ink, fontFamily: SANS, fontSize: 13, fontWeight: "600" as const };
 const choiceOn = { borderColor: C.green, backgroundColor: C.greenSoft };
 const habitRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 11, padding: 12, borderRadius: 14, backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.line };
-const warn = { flexDirection: "row" as const, gap: 9, alignItems: "flex-start" as const, backgroundColor: C.amberSoft, borderRadius: 13, padding: 12 };
-const warnText = { flex: 1, color: "#80611E", fontFamily: SANS, fontSize: 12, lineHeight: 17 };
+const howBox = { gap: 10, padding: 16, borderRadius: 18, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line };
+const howNum = { width: 22, height: 22, borderRadius: 11, backgroundColor: C.green, alignItems: "center" as const, justifyContent: "center" as const };
+const howNumText = { color: "#FFFFFF", fontFamily: SANS, fontSize: 12, fontWeight: "800" as const };
+const badgeRow = { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 7, marginTop: 4 };
+const badge = { flexDirection: "row" as const, alignItems: "center" as const, gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: C.greenSoft };
+const badgeText = { color: C.greenDark, fontFamily: SANS, fontSize: 12, fontWeight: "700" as const };
+const secondaryBtn = { alignItems: "center" as const, paddingVertical: 12, borderRadius: 14, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.surface };
+const secondaryText = { color: C.greenDark, fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };

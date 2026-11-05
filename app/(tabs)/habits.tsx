@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, BrandMark, Card, EmptyState, Field, Header, IconButton, OfflineBanner, Page, PrimaryButton, PriorityPicker, PriorityTag, SectionTitle, StorageBanner, Tag } from "@/components/app-ui";
 import { useAppData, type Habit, type Priority } from "@/lib/app-data";
+import { toast } from "@/lib/toast";
 import { C, SANS, SERIF } from "@/lib/design";
 import { createId, localDateKey } from "@/lib/format";
 import { refreshLocalNotifications } from "@/lib/local-notifications";
@@ -23,7 +24,6 @@ export default function HabitsScreen() {
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Habit | null>(null);
-  const [toast, setToast] = useState("");
   const today = localDateKey();
   const [historyDate, setHistoryDate] = useState(today);
   const checklistDate = mode === "history" ? historyDate : today;
@@ -51,7 +51,7 @@ export default function HabitsScreen() {
       .sort((a, b) => rank[a.priority] - rank[b.priority] || a.name.localeCompare(b.name, "pt-BR"));
   }, [data.habits, activeHabits, focusedHabits, scheduledHabits, mode, priorityFilter, query]);
 
-  const notify = (message: string) => { setToast(message); setTimeout(() => setToast(""), 2500); };
+  const notify = (message: string) => { toast(message); };
   const toggleDone = (habit: Habit, dateKey = checklistDate) => {
     let isCompleted = false;
     updateData((current) => {
@@ -115,7 +115,6 @@ export default function HabitsScreen() {
         </View>
         {visibleHabits.length ? <View style={{ gap: 10 }}>{visibleHabits.map((habit) => <HabitCard key={habit.id} habit={habit} checked={completed.includes(habit.id)} canCheck={!habit.archived && (mode === "today" || mode === "all" || mode === "history")} onCheck={() => toggleDone(habit, checklistDate)} onEdit={() => { setEditing(habit); setFormOpen(true); }} />)}</View> : <Card><EmptyState icon={mode === "archived" ? "archive-outline" : "check-all"} title={mode === "archived" ? "Nada arquivado" : mode === "history" ? focusedHabits.length ? "Nada encontrado" : "Sem hábitos neste dia" : mode === "today" && activeHabits.length ? "Dia mais leve" : "Crie uma rotina sua"} description={mode === "archived" ? "Quando você arquivar um hábito, poderá encontrá-lo aqui." : mode === "history" ? focusedHabits.length ? "Experimente mudar a pesquisa ou os filtros." : "Não há rotinas previstas para esta data. Consulte o dia anterior ou veja todos os hábitos." : mode === "today" && activeHabits.length ? "Você não tem hábitos marcados para hoje. Veja todos ou ajuste os dias de uma rotina." : "Escolha os dias e a hora, recebe um lembrete e marca cada pequeno progresso."} action={mode === "history" && !focusedHabits.length ? <PrimaryButton title="Ver todos os hábitos" onPress={() => setMode("all")} icon="format-list-bulleted" /> : mode !== "archived" && mode !== "history" ? <PrimaryButton title="Criar hábito" onPress={() => setFormOpen(true)} icon="plus" /> : undefined} /></Card>}
       </View>
-      {toast ? <View accessibilityRole="alert" style={toastStyle}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={toastText}>{toast}</Text></View> : null}
       {formOpen || create === "habit" ? <HabitForm visible initial={editing} onClose={() => { setFormOpen(false); setEditing(null); if (create === "habit") { setSection("habits"); router.setParams({ create: undefined }); } }} onSave={saveHabit} onArchive={archiveHabit} /> : null}
       </View>}
     </Page>
@@ -197,5 +196,3 @@ const formLabel = { color: C.ink, fontFamily: SANS, fontSize: 13, fontWeight: "7
 const dayChip = { width: 38, height: 38, borderRadius: 14, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, alignItems: "center" as const, justifyContent: "center" as const };
 const dayTextStyle = { color: C.muted, fontFamily: SANS, fontSize: 12, fontWeight: "700" as const };
 const hint = { color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 };
-const toastStyle = { position: "absolute" as const, bottom: 15, left: 20, right: 20, padding: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };
-const toastText = { flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" as const };

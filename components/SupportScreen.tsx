@@ -32,7 +32,7 @@ export function SupportScreen() {
   const [kind, setKind] = useState("Sugestão");
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const [shareProfile, setShareProfile] = useState(true);
+  const [shareProfile, setShareProfile] = useState(false);
   const [notice, setNotice] = useState("");
   const [copied, setCopied] = useState(false);
   const profile = data.profile;
@@ -91,7 +91,7 @@ export function SupportScreen() {
           <Field label="Comentário" value={feedback} onChangeText={setFeedback} multiline placeholder="O que você mais usa? O que falta? O que podia ser mais fácil?" style={{ minHeight: 90 }} />
           <Pressable onPress={() => setShareProfile((v) => !v)} accessibilityRole="checkbox" accessibilityState={{ checked: shareProfile }} style={{ flexDirection: "row", gap: 9, alignItems: "flex-start" }}>
             <MaterialCommunityIcons name={shareProfile ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={shareProfile ? C.green : C.muted} />
-            <Text style={[muted, { flex: 1 }]}>Incluir meu perfil (sexo, local, como conheceu, ocupação, idade, objetivo e interesses) para ajudar a melhorar o Nyvo. Seu nome não é enviado.</Text>
+            <Text style={[muted, { flex: 1 }]}>Opcional: anexar meu perfil ao e-mail (sexo, país e estado, faixa de idade, ocupação, objetivo, interesses e como conheceu). Serve só para entender quem usa o Nyvo. Seu nome e seus dados de finanças, hábitos e tarefas nunca são enviados. Você vê tudo no e-mail antes de enviar.</Text>
           </Pressable>
           <PrimaryButton title="Enviar feedback" icon="send-outline" onPress={sendFeedback} />
         </Card>

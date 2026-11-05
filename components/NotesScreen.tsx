@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, BrandMark, Card, EmptyState, Field, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner, Tag } from "@/components/app-ui";
 import { useAppData, type Note } from "@/lib/app-data";
+import { toast } from "@/lib/toast";
 import { C, SANS } from "@/lib/design";
 
 type Draft = { title: string; body: string; tags: string; project: string; relatedTaskId: string };
@@ -18,7 +19,6 @@ export function NotesScreen({ autoCreate = false }: { autoCreate?: boolean } = {
   const [errors, setErrors] = useState<{ title?: string; body?: string }>({});
   const [viewing, setViewing] = useState<Note | null>(null);
   const [deleting, setDeleting] = useState<Note | null>(null);
-  const [toast, setToast] = useState("");
   const previousAutoCreate = useRef(false);
 
   useEffect(() => {
@@ -39,8 +39,7 @@ export function NotesScreen({ autoCreate = false }: { autoCreate?: boolean } = {
   }, [data.notes, query]);
 
   const announce = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(""), 2600);
+    toast(message);
   };
 
   const openNew = () => { setEditing(null); setDraft(emptyDraft); setErrors({}); setFormOpen(true); };
@@ -86,13 +85,12 @@ export function NotesScreen({ autoCreate = false }: { autoCreate?: boolean } = {
       <Header eyebrow="NYVO · ANOTAÇÕES" title="Seu espaço de ideias." subtitle="Anotações, referências e projetos — salvos neste aparelho." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
-      <PrimaryButton title="Nova nota" onPress={openNew} icon="plus" />
+      {data.notes.length ? <PrimaryButton title="Nova nota" onPress={openNew} icon="plus" /> : null}
       <View style={{ gap: 12 }}>
         <SectionTitle title="Suas notas" />
-        <View style={searchBox}><MaterialCommunityIcons name="magnify" size={19} color={C.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Pesquisar notas, etiquetas, projeto…" placeholderTextColor={C.muted} accessibilityLabel="Pesquisar por título, conteúdo, etiquetas ou projeto" style={searchInput} returnKeyType="search" /><Pressable onPress={() => setQuery("")} accessibilityRole="button" accessibilityLabel="Limpar pesquisa" hitSlop={8}><MaterialCommunityIcons name="close-circle" size={18} color={query ? C.muted : "transparent"} /></Pressable></View>
-        {loading ? <View style={{ padding: 28, alignItems: "center" }}><Text style={meta}>Carregando suas notas…</Text></View> : filtered.length ? <View style={{ gap: 10 }}>{filtered.map((note) => <NoteCard key={note.id} note={note} taskTitle={data.tasks.find((task) => task.id === note.relatedTaskId)?.title} onOpen={() => setViewing(note)} onEdit={() => openEdit(note)} onDelete={() => setDeleting(note)} dateLabel={formattedDate(note.updatedAt)} />)}</View> : <Card><EmptyState icon="note-multiple-outline" title={data.notes.length ? "Nada encontrado" : "Seu caderno está vazio"} description={data.notes.length ? "Experimente outra pesquisa para encontrar uma nota." : "Salve ideias, pequenas descobertas e anotações que você queira reencontrar."} action={!data.notes.length ? <PrimaryButton title="Criar primeira nota" onPress={openNew} icon="plus" /> : undefined} /></Card>}
+        {data.notes.length ? <View style={searchBox}><MaterialCommunityIcons name="magnify" size={19} color={C.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Pesquisar notas, etiquetas, projeto…" placeholderTextColor={C.muted} accessibilityLabel="Pesquisar por título, conteúdo, etiquetas ou projeto" style={searchInput} returnKeyType="search" /><Pressable onPress={() => setQuery("")} accessibilityRole="button" accessibilityLabel="Limpar pesquisa" hitSlop={8}><MaterialCommunityIcons name="close-circle" size={18} color={query ? C.muted : "transparent"} /></Pressable></View> : null}
+        {loading ? <View style={{ padding: 28, alignItems: "center" }}><Text style={meta}>Carregando suas notas…</Text></View> : filtered.length ? <View style={{ gap: 10 }}>{filtered.map((note) => <NoteCard key={note.id} note={note} taskTitle={data.tasks.find((task) => task.id === note.relatedTaskId)?.title} onOpen={() => setViewing(note)} onEdit={() => openEdit(note)} onDelete={() => setDeleting(note)} dateLabel={formattedDate(note.updatedAt)} />)}</View> : <Card><EmptyState icon="note-multiple-outline" title={data.notes.length ? "Nada encontrado" : "Seu caderno está vazio"} description={data.notes.length ? "Experimente outra pesquisa para encontrar uma nota." : "Salve ideias, pequenas descobertas e anotações que você queira reencontrar. A pesquisa aparece quando houver notas."} action={!data.notes.length ? <PrimaryButton title="Criar primeira nota" onPress={openNew} icon="plus" /> : undefined} /></Card>}
       </View>
-      {toast ? <View accessibilityRole="alert" style={toastBox}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
 
       <AppModal visible={formOpen} title={editing ? "Editar nota" : "Nova nota rápida"} subtitle="Salve uma frase agora; título e etiquetas podem ficar para depois." onClose={() => setFormOpen(false)} footer={<PrimaryButton title="Salvar nota" onPress={save} icon="check" />}>
         <Field label="Título (opcional)" value={draft.title} onChangeText={(value) => { set("title", value); setErrors({}); }} placeholder="Ex.: Ideia para o fim de semana" error={errors.title} returnKeyType="next" maxLength={120} />
@@ -144,7 +142,6 @@ const preview = { color: C.ink, fontFamily: SANS, fontSize: 14, lineHeight: 21 }
 const cardTitle = { color: C.ink, fontFamily: SANS, fontWeight: "800" as const, fontSize: 16, lineHeight: 22 };
 const taskMeta = { color: C.greenDark, fontFamily: SANS, fontSize: 12, fontWeight: "600" as const };
 const actions = { flexDirection: "row" as const, justifyContent: "flex-end" as const, gap: 7, borderTopWidth: 1, borderTopColor: C.line, paddingTop: 9, marginTop: 2 };
-const toastBox = { position: "absolute" as const, left: 22, right: 22, bottom: 26, zIndex: 10, minHeight: 48, borderRadius: 15, paddingHorizontal: 15, flexDirection: "row" as const, alignItems: "center" as const, gap: 9, backgroundColor: C.greenDark };
 const label = { color: C.ink, fontFamily: SANS, fontWeight: "700" as const, fontSize: 13 };
 const taskOption = { minHeight: 42, borderRadius: 12, borderWidth: 1, borderColor: C.line, paddingHorizontal: 12, justifyContent: "center" as const, backgroundColor: C.surface };
 const taskSelected = { borderColor: C.green, backgroundColor: C.greenSoft };

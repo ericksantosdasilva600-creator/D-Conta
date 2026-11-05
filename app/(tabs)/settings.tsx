@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system/legacy";
 import { AppModal, Card, ChoiceChips, Field, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner, Tag } from "@/components/app-ui";
 import { useAppData, makeDefaultData, EXPENSE_CATEGORIES, INCOME_CATEGORIES, STORAGE_KEY, LEGACY_STORAGE_KEY, STORAGE_MIGRATION_BACKUP_KEY, STORAGE_RECOVERY_BACKUP_KEY, type TransactionKind } from "@/lib/app-data";
+import { toast } from "@/lib/toast";
 import { C, SANS } from "@/lib/design";
 import { getNotificationPermission, requestNotificationPermission, refreshLocalNotifications, enableNotificationChannel } from "@/lib/local-notifications";
 import { daysUntil, money } from "@/lib/format";
@@ -30,7 +31,6 @@ export default function SettingsScreen() {
   const [categoryError, setCategoryError] = useState("");
   const [deleteCategory, setDeleteCategory] = useState<CategoryDraft>(null);
   const [resetOpen, setResetOpen] = useState(false);
-  const [toast, setToast] = useState("");
   const [working, setWorking] = useState(false);
   const [restoreOpen, setRestoreOpen] = useState(false);
   const [restoreText, setRestoreText] = useState("");
@@ -44,7 +44,7 @@ export default function SettingsScreen() {
     getNotificationPermission().then(setPermission);
   }, []);
 
-  const showToast = (message: string) => { setToast(message); setTimeout(() => setToast(""), 2600); };
+  const showToast = (message: string) => { toast(message); };
   const updatePreferences = async (changes: Partial<typeof data>) => {
     const updated = { ...data, ...changes };
     updateData(() => updated);
@@ -124,6 +124,12 @@ export default function SettingsScreen() {
     <Page>
       <Header eyebrow="NYVO · PREFERÊNCIAS" title="Configurações." subtitle={LOCAL_ONLY ? "Ajuste lembretes, finanças e o backup dos seus dados." : "Ajuste notificações, conta, sincronização e dados locais."} right={<IconButton name="arrow-left" label="Voltar ao Resumo" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
       <OfflineBanner /><StorageBanner />
+      {Platform.OS === "web" ? <View style={{ gap: 8 }}>
+        <Text style={rowSub}>Ir para</Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }} accessibilityRole="menu">
+          {[["Conta e backup", "cfg-conta"], ["Lembretes", "cfg-lembretes"], ["Finanças", "cfg-financas"], ["Aparência", "cfg-aparencia"], ["Acessibilidade", "cfg-acessibilidade"], ["Ajuda", "cfg-ajuda"], ["Seus dados", "cfg-dados"]].map(([label, id]) => <Pressable key={id} onPress={() => { if (typeof document !== "undefined") document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }} accessibilityRole="link" style={jumpChip}><Text style={jumpText}>{label}</Text></Pressable>)}
+        </View>
+      </View> : null}
       <View style={{ gap: 12 }}>
         <SectionTitle title="Caixa de lembretes" />
         <Card>
@@ -138,11 +144,11 @@ export default function SettingsScreen() {
           {!dueInbox.length && !habitInbox.length && !taskInbox.length ? <Text style={emptyReminder}>Não há lembretes próximos. Você pode definir datas de vencimento, criar uma rotina ou adicionar um prazo a uma tarefa.</Text> : null}
         </Card>
       </View>
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-lembretes" style={{ gap: 12 }}>
         <SectionTitle title="Lembretes" action="Personalizar" onAction={() => router.push("/reminders")} />
         <Card>
           <PrimaryButton title="Lembretes personalizados e horários" icon="bell-cog-outline" onPress={() => router.push("/reminders")} />
-          <View style={row}><View style={iconBox}><MaterialCommunityIcons name="bell-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Notificações neste aparelho</Text><Text style={rowSub}>{Platform.OS === "web" ? "No navegador não há notificações: seus vencimentos, rotinas e prazos aparecem na Caixa de lembretes acima." : permission === null ? "Verificando a autorização…" : permission ? "Autorização concedida pelo dispositivo." : "Autorize para receber lembretes de rotinas, despesas e tarefas."}</Text></View></View>
+          <View style={row}><View style={iconBox}><MaterialCommunityIcons name="bell-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Notificações neste aparelho</Text><Text style={rowSub}>{Platform.OS === "web" ? "No site, ative os avisos em Lembretes personalizados (acima). Vencimentos, rotinas e prazos também aparecem na Caixa de lembretes." : permission === null ? "Verificando a autorização…" : permission ? "Autorização concedida pelo dispositivo." : "Autorize para receber lembretes de rotinas, despesas e tarefas."}</Text></View></View>
           {permission || Platform.OS === "web" ? <View style={{ height: 1, backgroundColor: C.line }} /> : <PrimaryButton title={working ? "Pedindo autorização…" : "Ativar notificações"} icon="bell-check-outline" onPress={() => void turnNotificationsOn()} disabled={working} />}
           {!permission && Platform.OS !== "web" ? <Pressable onPress={() => void Linking.openSettings()} accessibilityRole="button" style={{ paddingVertical: 7 }}><Text style={linkText}>Abrir configurações do aparelho</Text></Pressable> : null}
           {Platform.OS === "web" ? <SettingToggle title="Avisos do navegador" description="Ao abrir o Nyvo, avisa uma vez por dia o que vence hoje ou está atrasado. Instale o Nyvo na tela inicial para funcionar melhor." value={data.browserNotifications} onChange={(value) => { void (async () => {
@@ -159,30 +165,30 @@ export default function SettingsScreen() {
           <Text style={helper}>A autorização do sistema é independente destas preferências. Se estiver desligada, as datas continuam visíveis nas listas.</Text>
         </Card>
       </View>
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-financas" style={{ gap: 12 }}>
         <SectionTitle title="Finanças" />
         <Card>
           <Text style={rowTitle}>Moeda dos montantes</Text>
           <ChoiceChips values={["BRL", "USD", "EUR", "GBP"]} selected={data.currency} onSelect={(currency) => updateData((current) => ({ ...current, currency }))} />
           <Text style={helper}>A moeda só altera a apresentação. Os valores existentes não são convertidos.</Text>
-          <Field label="Viagem atual" value={data.tripName} onChangeText={(tripName) => updateData((current) => ({ ...current, tripName }))} placeholder="Ex.: Rio e São Paulo" maxLength={45} />
+          <Field label="Nome da viagem (separa os gastos de viagem dos pessoais)" value={data.tripName === "Minha viagem" ? "" : data.tripName} onChangeText={(tripName) => updateData((current) => ({ ...current, tripName: tripName || "Minha viagem" }))} placeholder="Ex.: Rio e São Paulo (opcional)" maxLength={45} />
           <View style={{ height: 1, backgroundColor: C.line }} />
-          <View style={row}><View style={iconBox}><MaterialCommunityIcons name="shape-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Categorias personalizadas</Text><Text style={rowSub}>Crie e organiza categorias de despesas e receitas.</Text></View></View>
+          <View style={row}><View style={iconBox}><MaterialCommunityIcons name="shape-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Categorias personalizadas</Text><Text style={rowSub}>Crie e organize categorias de despesas e receitas.</Text></View></View>
           <PrimaryButton title="Gerenciar categorias" tone="light" icon="shape-plus-outline" onPress={() => { setCategoryDraft({ kind: "expense", name: "" }); setCategoryValue(""); setCategoryError(""); setCategoryManagerOpen(true); }} />
         </Card>
       </View>
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-ajuda" style={{ gap: 12 }}>
         <SectionTitle title="Ajuda" />
         <Card>
           <PrimaryButton title="Ajuda, suporte e feedback" icon="lifebuoy" onPress={() => router.push("/support")} />
           <PrimaryButton title={hasDemoData(data) ? "Remover dados de exemplo" : "Carregar dados de exemplo"} tone="light" icon="flask-outline" onPress={() => { updateData((c) => hasDemoData(c) ? removeDemoData(c) : addDemoData(c)); showToast(hasDemoData(data) ? "Dados de exemplo removidos." : "Dados de exemplo carregados. Remova quando quiser."); }} />
         </Card>
       </View>
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-aparencia" style={{ gap: 12 }}>
         <SectionTitle title="Aparência" />
         <AppearanceCard />
       </View>
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-acessibilidade" style={{ gap: 12 }}>
         <SectionTitle title="Acessibilidade" />
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="eye-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Ajustes do aparelho</Text><Text style={rowSub}>O app respeita a escala do texto e os leitores de tela do celular.</Text></View></View>
@@ -191,7 +197,7 @@ export default function SettingsScreen() {
         </Card>
       </View>
       {LOCAL_ONLY ? (
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-conta" style={{ gap: 12 }}>
         <SectionTitle title="Conta e sincronização" />
         <AccountCard />
         <SectionTitle title="Backup dos dados" />
@@ -215,7 +221,7 @@ export default function SettingsScreen() {
         </Card>
       </View>
       )}
-      <View style={{ gap: 12 }}>
+      <View nativeID="cfg-dados" style={{ gap: 12 }}>
         <SectionTitle title="Seus dados" />
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="database-lock-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Dados pessoais</Text><Text style={rowSub}>Notas, finanças, rotinas, saúde, tarefas e referências a recibos ficam associados à sua conta depois que você confirmar a primeira sincronização. Recibos são enviados como imagens comprimidas.</Text></View></View>
@@ -224,7 +230,6 @@ export default function SettingsScreen() {
           <PrimaryButton title={accountId !== null ? "Limpar cache deste aparelho" : "Apagar dados locais"} tone="ink" icon="delete-outline" onPress={() => setResetOpen(true)} />
         </Card>
       </View>
-      {toast ? <View accessibilityRole="alert" style={toastStyle}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
 
       <AppModal visible={restoreOpen} title="Restaurar backup" subtitle="Cole o texto do backup que você copiou antes. Os dados atuais deste navegador serão substituídos." onClose={() => setRestoreOpen(false)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Restaurar dados" icon="backup-restore" onPress={() => { const restored = parseBackup(restoreText); if (!restored) { setRestoreError("Esse texto não é um backup válido do Nyvo."); return; } updateData(() => ({ ...restored, onboarded: true })); setRestoreOpen(false); showToast("Backup restaurado."); }} /><PrimaryButton title="Escolher arquivo .json" tone="light" icon="file-upload-outline" onPress={() => pickBackupFile((text) => setRestoreText(text))} /></View>}>
         <Field label="Texto do backup" value={restoreText} onChangeText={(value) => { setRestoreText(value); setRestoreError(""); }} multiline placeholder='{"transactions": [...]}' style={{ minHeight: 120 }} />
@@ -274,7 +279,6 @@ const privacyBox = { flexDirection: "row" as const, alignItems: "flex-start" as 
 const categoryRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 7 };
 const inboxRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, paddingVertical: 6, borderTopWidth: 1, borderTopColor: C.line };
 const emptyReminder = { color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 };
-const toastStyle = { position: "absolute" as const, bottom: 15, left: 20, right: 20, padding: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };
 
 async function copyBackup(data: unknown) {
   const text = JSON.stringify(data);
@@ -298,3 +302,5 @@ function pickBackupFile(onText: (text: string) => void) {
   input.onchange = () => { const file = input.files?.[0]; if (file) void file.text().then(onText); };
   input.click();
 }
+const jumpChip = { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface };
+const jumpText = { color: C.greenDark, fontFamily: SANS, fontSize: 12, fontWeight: "700" as const };

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 import { Card, ChoiceChips, Header, IconButton, Page } from "@/components/app-ui";
@@ -43,7 +43,12 @@ export function InsightsScreen() {
   }), [data.tasks]);
   const maxWeek = Math.max(1, ...weeks.map((w) => w.n));
   const habitAvg = habitDays.filter((d) => d.rate !== null);
-  const avg = habitAvg.length ? habitAvg.reduce((s, d) => s + (d.rate ?? 0), 0) / habitAvg.length : null;
+  const anyHabitDone = habitDays.some((d) => (d.rate ?? 0) > 0);
+  const avg = habitAvg.length && anyHabitDone ? habitAvg.reduce((s, d) => s + (d.rate ?? 0), 0) / habitAvg.length : null;
+  const hasMoney = months.some((m) => m.income || m.expense);
+  const hasWater = water.some((w) => w.ml > 0);
+  const hasActivity = activity.some((a) => a.min > 0);
+  const hasTasksDone = weeks.some((w) => w.n > 0);
 
   return (
     <Page>
@@ -51,6 +56,7 @@ export function InsightsScreen() {
 
       <ChartCard title="Entradas e saídas por mês" subtitle={`Receitas e despesas · últimos ${monthsBack} meses`}>
         <ChoiceChips values={["3 meses", "6 meses", "12 meses"]} selected={range} onSelect={setRange} />
+        {hasMoney ? <>
         <Legend items={[["Entrou", C.green], ["Saiu", C.blue]]} />
         <View style={barArea}>
           {months.map((m) => <View key={m.key} style={barCol}>
@@ -61,46 +67,47 @@ export function InsightsScreen() {
             <Text style={axis}>{m.label}</Text>
           </View>)}
         </View>
-        <Text style={note}>Maior valor no período: {money(maxMonth === 1 ? 0 : maxMonth, data.currency)}</Text>
+        <Text style={note}>Maior valor no período: {money(maxMonth, data.currency)}</Text>
+        </> : <Empty text="Ainda não há movimentos nesse período. O gráfico aparece depois do primeiro gasto ou receita." action="Registrar movimento" onAction={() => router.push({ pathname: "/finance", params: { create: "1" } })} />}
       </ChartCard>
 
       <ChartCard title="Para onde foi o dinheiro" subtitle={`Despesas de ${monthLabel(monthKey()).toLowerCase()}`}>
         {slices.length ? <View style={{ flexDirection: "row", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <Donut values={slices.map(([, v]) => v)} colors={CAT_COLORS} center={shortMoney(current.expense)} />
           <View style={{ flex: 1, minWidth: 160, gap: 7 }}>{slices.map(([name, v], i) => <View key={name} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><View style={[swatch, { backgroundColor: CAT_COLORS[i % CAT_COLORS.length] }]} /><Text style={[legendText, { flex: 1 }]} numberOfLines={1}>{name}</Text><Text style={value}>{Math.round((v / (current.expense || 1)) * 100)}%</Text></View>)}</View>
-        </View> : <Empty text="Nenhuma despesa neste mês ainda." />}
+        </View> : <Empty text="Ainda não há despesas neste mês." action="Registrar gasto" onAction={() => router.push({ pathname: "/finance", params: { create: "1" } })} />}
       </ChartCard>
 
       <ChartCard title="Hábitos cumpridos" subtitle={`Últimos 14 dias${avg !== null ? ` · média ${Math.round(avg * 100)}%` : ""}`}>
-        {data.habits.length ? <View style={barArea}>{habitDays.map((d) => <View key={d.key} style={barCol}>
+        {data.habits.length && anyHabitDone ? <View style={barArea}>{habitDays.map((d) => <View key={d.key} style={barCol}>
           <View style={{ height: 100, justifyContent: "flex-end" }}><View accessibilityLabel={`${d.key}: ${d.rate === null ? "sem hábitos" : `${Math.round(d.rate * 100)}%`}`} style={[bar, { width: 12, height: d.rate === null ? 2 : Math.max(3, d.rate * 100), backgroundColor: d.rate === null ? C.line : d.rate >= 1 ? C.green : C.greenSoft, borderWidth: d.rate !== null && d.rate < 1 ? 1 : 0, borderColor: C.green }]} /></View>
           <Text style={[axis, { fontSize: 9 }]}>{Number(d.key.slice(8))}</Text>
-        </View>)}</View> : <Empty text="Crie hábitos para acompanhar aqui." />}
-        <Legend items={[["Dia completo", C.green], ["Parcial", C.greenSoft]]} />
+        </View>)}</View> : <Empty text={data.habits.length ? "Marque um hábito como feito para ver esta evolução." : "Crie um hábito para acompanhar aqui."} action={data.habits.length ? "Ir para Hábitos" : "Criar hábito"} onAction={() => router.push(data.habits.length ? "/habits" : { pathname: "/habits", params: { create: "habit" } })} />}
+        {data.habits.length && anyHabitDone ? <Legend items={[["Dia completo", C.green], ["Parcial", C.greenSoft]]} /> : null}
       </ChartCard>
 
       <ChartCard title="Água por dia" subtitle="Últimos 7 dias · meta de referência 2 litros">
-        <View style={barArea}>{water.map((w) => <View key={w.key} style={barCol}>
+        {!hasWater ? <Empty text="Nenhum registro de água nos últimos 7 dias." action="Registrar água" onAction={() => router.push("/habits")} /> : <View style={barArea}>{water.map((w) => <View key={w.key} style={barCol}>
           <Text style={value}>{w.ml ? `${(w.ml / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} L` : ""}</Text>
           <View style={{ height: 100, justifyContent: "flex-end" }}><View style={[bar, { width: 20, height: Math.max(2, (w.ml / maxWater) * 100), backgroundColor: w.ml >= 2000 ? C.blue : C.blueSoft, borderWidth: w.ml && w.ml < 2000 ? 1 : 0, borderColor: C.blue }]} /></View>
           <Text style={axis}>{weekdayShort(w.key)}</Text>
-        </View>)}</View>
+        </View>)}</View>}
       </ChartCard>
 
       <ChartCard title="Atividade, leitura e estudo" subtitle="Minutos por dia · últimos 7 dias">
-        <View style={barArea}>{activity.map((a) => <View key={a.key} style={barCol}>
+        {!hasActivity ? <Empty text="Nenhuma atividade registrada nos últimos 7 dias." action="Registrar atividade" onAction={() => router.push({ pathname: "/habits", params: { create: "health" } })} /> : <View style={barArea}>{activity.map((a) => <View key={a.key} style={barCol}>
           <Text style={value}>{a.min || ""}</Text>
           <View style={{ height: 100, justifyContent: "flex-end" }}><View style={[bar, { width: 20, height: Math.max(2, (a.min / maxAct) * 100), backgroundColor: C.green }]} /></View>
           <Text style={axis}>{weekdayShort(a.key)}</Text>
-        </View>)}</View>
+        </View>)}</View>}
       </ChartCard>
 
       <ChartCard title="Tarefas concluídas" subtitle="Por semana · últimas 6 semanas">
-        <View style={barArea}>{weeks.map((w) => <View key={w.label} style={barCol}>
+        {!hasTasksDone ? <Empty text="Nenhuma tarefa concluída nas últimas 6 semanas." action="Ver tarefas" onAction={() => router.push("/tasks")} /> : <View style={barArea}>{weeks.map((w) => <View key={w.label} style={barCol}>
           <Text style={value}>{w.n || ""}</Text>
           <View style={{ height: 100, justifyContent: "flex-end" }}><View style={[bar, { width: 22, height: Math.max(2, (w.n / maxWeek) * 100), backgroundColor: C.greenDark }]} /></View>
           <Text style={axis}>{w.label}</Text>
-        </View>)}</View>
+        </View>)}</View>}
       </ChartCard>
 
       {data.goals.length ? <ChartCard title="Metas de economia" subtitle="Quanto já foi guardado">
@@ -120,7 +127,12 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle: str
 function Legend({ items }: { items: [string, string][] }) {
   return <View style={{ flexDirection: "row", gap: 14, flexWrap: "wrap" }}>{items.map(([l, c]) => <View key={l} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}><View style={[swatch, { backgroundColor: c, borderWidth: 1, borderColor: C.line }]} /><Text style={legendText}>{l}</Text></View>)}</View>;
 }
-function Empty({ text }: { text: string }) { return <Text style={[note, { paddingVertical: 18, textAlign: "center" }]}>{text}</Text>; }
+function Empty({ text, action, onAction }: { text: string; action?: string; onAction?: () => void }) {
+  return <View style={{ alignItems: "center", gap: 10, paddingVertical: 14 }}>
+    <Text style={[note, { textAlign: "center", lineHeight: 18 }]}>{text}</Text>
+    {action && onAction ? <Pressable onPress={onAction} accessibilityRole="button" style={emptyBtn}><Text style={{ color: C.greenDark, fontFamily: SANS, fontSize: 13, fontWeight: "800" }}>{action}</Text></Pressable> : null}
+  </View>;
+}
 function Donut({ values, colors, center }: { values: number[]; colors: string[]; center: string }) {
   const total = values.reduce((s, v) => s + v, 0) || 1; const r = 54; const circ = 2 * Math.PI * r;
   const lens = values.map((v) => (v / total) * circ);
@@ -146,3 +158,4 @@ const bar = { width: 14, borderTopLeftRadius: 5, borderTopRightRadius: 5 };
 const swatch = { width: 11, height: 11, borderRadius: 3 };
 const track = { height: 9, borderRadius: 5, backgroundColor: C.line, overflow: "hidden" as const };
 const fill = { height: 9, borderRadius: 5, backgroundColor: C.green };
+const emptyBtn = { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, backgroundColor: C.greenSoft };
