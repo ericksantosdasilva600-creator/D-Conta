@@ -161,6 +161,10 @@
     *, *::before, *::after { animation: none !important; transition: none !important; }
     html { scroll-behavior: auto; }
   }
+  .film { display: grid; grid-template-columns: 1fr 340px; gap: 56px; align-items: center; }
+  .film video { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; background: var(--forest); border-radius: 28px; box-shadow: 0 24px 60px rgba(14,74,59,.22); }
+  .film .btn { margin-top: 10px; }
+  @media (max-width: 960px) { .film { grid-template-columns: 1fr; gap: 28px; } .film video { max-width: 340px; margin-inline: auto; } }
 </style>
 <script type="application/ld+json">
 {
@@ -240,6 +244,19 @@
 </header>
 
 <main class="wrap">
+  <section id="video" aria-labelledby="t-video">
+    <div class="film">
+      <div>
+        <h2 id="t-video">Veja o Nyvo em 30 segundos</h2>
+        <p class="intro">Dá o play para ver como registrar um gasto com uma frase e como dinheiro, hábitos e tarefas ficam no mesmo lugar.</p>
+        <a class="btn sun" href="./app/">Começar grátis</a>
+      </div>
+      <video controls playsinline preload="none" poster="apresentacao/nyvo-video-capa.jpg" width="1080" height="1920" aria-label="Vídeo de apresentação do Nyvo">
+        <source src="apresentacao/nyvo-video.mp4" type="video/mp4">
+      </video>
+    </div>
+  </section>
+
   <section aria-labelledby="t-telas">
     <h2 id="t-telas">O que você encontra lá dentro</h2>
     <p class="intro">Telas reais do Nyvo com dados de exemplo. Cada parte funciona sozinha, mas todas aparecem juntas na tela Hoje.</p>
