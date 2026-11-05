@@ -135,7 +135,7 @@ export function RemindersScreen() {
               <Text style={muted}>{describeReminder(r)}</Text>
               <Text style={[muted, { color: C.greenDark }]}>{r.enabled ? next ? `Próximo: ${fmtWhen(next)}` : "Sem próximos avisos" : "Pausado"}</Text>
             </View>
-            <Switch value={r.enabled} onValueChange={(v) => toggle(r, v)} accessibilityLabel={`Ativar ${r.title}`} trackColor={{ false: "#D8D4C9", true: "#B5DACA" }} thumbColor={r.enabled ? C.green : "#F7F5EF"} />
+            <Switch value={r.enabled} onValueChange={(v) => toggle(r, v)} accessibilityLabel={`Ativar ${r.title}`} trackColor={{ false: "#D8D4C9", true: C.greenSoft }} thumbColor={r.enabled ? C.green : "#F7F5EF"} />
           </Pressable>); }) : <Card><EmptyState icon="bell-plus-outline" title="Nenhum lembrete personalizado" description="Crie avisos do seu jeito: uma vez numa data, todo dia em vários horários, em dias da semana, todo mês ou a cada X minutos ou horas." action={<PrimaryButton title="Criar lembrete" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
       </View>
 
@@ -175,7 +175,7 @@ export function RemindersScreen() {
 }
 
 function ToggleRow({ title, detail, value, onChange }: { title: string; detail?: string; value: boolean; onChange: (v: boolean) => void }) {
-  return <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><View style={{ flex: 1, gap: 3 }}><Text style={strong}>{title}</Text>{detail ? <Text style={muted}>{detail}</Text> : null}</View><Switch value={value} onValueChange={onChange} accessibilityLabel={title} trackColor={{ false: "#D8D4C9", true: "#B5DACA" }} thumbColor={value ? C.green : "#F7F5EF"} /></View>;
+  return <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><View style={{ flex: 1, gap: 3 }}><Text style={strong}>{title}</Text>{detail ? <Text style={muted}>{detail}</Text> : null}</View><Switch value={value} onValueChange={onChange} accessibilityLabel={title} trackColor={{ false: "#D8D4C9", true: C.greenSoft }} thumbColor={value ? C.green : "#F7F5EF"} /></View>;
 }
 
 function ReminderForm({ initial, onClose, onSave, onDelete }: { initial: Reminder | null; onClose: () => void; onSave: (r: Reminder) => void; onDelete: (r: Reminder) => void }) {

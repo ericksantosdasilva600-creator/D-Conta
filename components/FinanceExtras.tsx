@@ -91,7 +91,7 @@ export function CreditCardPanel() {
     <View style={{ gap: 12 }}>
       <SectionTitle title="Cartão de crédito" action="Configurar" onAction={() => setConfigOpen(true)} />
       <Card style={{ backgroundColor: C.blueDark, borderColor: C.blueDark, gap: 10 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}><Text style={cardEyebrow}>FATURA DE {monthLabel(invoice.month).toUpperCase()}</Text><MaterialCommunityIcons name="credit-card-outline" size={19} color="#CFE2F1" /></View>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}><Text style={cardEyebrow}>FATURA DE {monthLabel(invoice.month).toUpperCase()}</Text><MaterialCommunityIcons name="credit-card-outline" size={19} color="rgba(255,255,255,0.82)" /></View>
         <Text style={cardValue}>{money(invoice.total, data.currency)}</Text>
         <Text style={cardSub}>Fecha dia {data.creditCard.closingDay} · vence dia {data.creditCard.dueDay}{invoice.dueDate ? ` (${displayDate(invoice.dueDate)})` : ""}</Text>
         {limit > 0 ? <View style={{ gap: 6 }}>
@@ -349,9 +349,9 @@ const row = { flexDirection: "row" as const, alignItems: "center" as const, gap:
 const icon = { width: 36, height: 36, borderRadius: 12, alignItems: "center" as const, justifyContent: "center" as const };
 const payButton = { backgroundColor: C.green, borderRadius: 12, paddingHorizontal: 11, paddingVertical: 8 };
 const payText = { color: "#FFFFFF", fontFamily: SANS, fontSize: 12, fontWeight: "800" as const };
-const cardEyebrow = { color: "#CFE2F1", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.1 };
+const cardEyebrow = { color: "rgba(255,255,255,0.82)", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.1 };
 const cardValue = { color: "#FFFFFF", fontFamily: SANS, fontSize: 30, fontWeight: "700" as const };
-const cardSub = { color: "#CFE2F1", fontFamily: SANS, fontSize: 12 };
+const cardSub = { color: "rgba(255,255,255,0.82)", fontFamily: SANS, fontSize: 12 };
 const bar = { height: 8, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.18)", overflow: "hidden" as const };
 const barLight = { height: 8, borderRadius: 4, backgroundColor: C.line, overflow: "hidden" as const };
 const barFill = { height: 8, borderRadius: 4 };

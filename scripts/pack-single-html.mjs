@@ -17,7 +17,7 @@ js = js.replace(/"((?:\/[\w-]+)?\/assets\/[^"]+)"/g, (m, p) => {
   return `"data:${mime[path.extname(p)]};base64,${fs.readFileSync(file).toString("base64")}"`;
 });
 js = js.replace(/<\/script/gi, "<\\/script");
-const routes = ["/", "/finance", "/notes", "/habits", "/tasks", "/settings", "/onboarding", "/reminders"].map((r) => base + r).concat(base ? [base] : []);
+const routes = ["/", "/finance", "/notes", "/habits", "/tasks", "/settings", "/onboarding", "/reminders", "/support", "/insights"].map((r) => base + r).concat(base ? [base] : []);
 const sw = `<script>if("serviceWorker" in navigator&&location.protocol==="https:"){addEventListener("load",function(){navigator.serviceWorker.register(${JSON.stringify(base + "/sw.js")},{scope:${JSON.stringify(base + "/")}}).catch(function(){})})}</script>`;
 const boot = sw + `<script>try{if(!${JSON.stringify(routes)}.includes(location.pathname))history.replaceState(null,"",${JSON.stringify(base + "/")}+location.search+location.hash)}catch(e){}</script>`;
 const icon = fs.readFileSync(path.join(dist, "favicon.ico")).toString("base64");

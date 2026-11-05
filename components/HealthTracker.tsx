@@ -59,7 +59,7 @@ export function HealthTracker({ autoCreate = false, onCreateHandled }: { autoCre
     <DatePickerField label="Dia selecionado" value={selectedDate} onChange={setSelectedDate} />
     {loading ? <Card><Text style={helper}>Carregando seus registros de saúde…</Text></Card> : <>
     <Card style={{ backgroundColor: C.greenDark, borderColor: C.greenDark, padding: 18 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><MaterialCommunityIcons name="chart-box-outline" size={19} color="#B7D9C7" /><Text style={eyebrow}>RESUMO DO DIA</Text></View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><MaterialCommunityIcons name="chart-box-outline" size={19} color="rgba(255,255,255,0.78)" /><Text style={eyebrow}>RESUMO DO DIA</Text></View>
       <Text style={summary}>{waterTotal.toLocaleString("pt-BR")} ml de água</Text>
       <Text style={summarySub}>{dayLogs.length} {dayLogs.length === 1 ? "registro" : "registros"} · {durationTotal} min de atividades</Text>
     </Card>
@@ -127,9 +127,9 @@ function HealthLogForm({ initial, kind, date, onClose, onSave }: { initial: Heal
   </AppModal>;
 }
 
-const eyebrow = { color: "#B7D9C7", fontFamily: SANS, fontWeight: "800" as const, fontSize: 11, letterSpacing: 1.2 };
+const eyebrow = { color: "rgba(255,255,255,0.78)", fontFamily: SANS, fontWeight: "800" as const, fontSize: 11, letterSpacing: 1.2 };
 const summary = { color: "#FFFFFF", fontFamily: SANS, fontWeight: "800" as const, fontSize: 25, marginTop: 8 };
-const summarySub = { color: "#D7E9DE", fontFamily: SANS, fontSize: 13, marginTop: 3 };
+const summarySub = { color: "rgba(255,255,255,0.86)", fontFamily: SANS, fontSize: 13, marginTop: 3 };
 const helper = { color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 };
 const quickButton = { flex: 1, minHeight: 46, borderRadius: 14, borderWidth: 1, borderColor: C.line, backgroundColor: C.greenSoft, flexDirection: "row" as const, alignItems: "center" as const, justifyContent: "center" as const, gap: 4 };
 const quickText = { color: C.greenDark, fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };

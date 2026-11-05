@@ -107,9 +107,9 @@ function Pomodoro() {
   const ss = String(seconds % 60).padStart(2, "0");
   return (
     <Card style={{ backgroundColor: mode === "focus" ? C.blueDark : C.greenDark, borderColor: "transparent", gap: 10, alignItems: "center" }}>
-      <Text style={{ color: "#D5E6F2", fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1.2 }}>{mode === "focus" ? "FOCO · POMODORO" : "PAUSA"}</Text>
+      <Text style={{ color: "rgba(255,255,255,0.84)", fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1.2 }}>{mode === "focus" ? "FOCO · POMODORO" : "PAUSA"}</Text>
       <Text accessibilityLabel={`${mm} minutos e ${ss} segundos`} style={{ color: "#FFFFFF", fontFamily: SANS, fontSize: 46, fontWeight: "700", fontVariant: ["tabular-nums"] }}>{mm}:{ss}</Text>
-      <Text style={{ color: "#D5E6F2", fontFamily: SANS, fontSize: 12 }}>{cycles} {cycles === 1 ? "ciclo concluído" : "ciclos concluídos"} hoje · 25 min de foco, 5 de pausa</Text>
+      <Text style={{ color: "rgba(255,255,255,0.84)", fontFamily: SANS, fontSize: 12 }}>{cycles} {cycles === 1 ? "ciclo concluído" : "ciclos concluídos"} hoje · 25 min de foco, 5 de pausa</Text>
       <View style={{ flexDirection: "row", gap: 9 }}>
         <Pressable onPress={() => setRunning((r) => !r)} accessibilityRole="button" style={pomBtn}><MaterialCommunityIcons name={running ? "pause" : "play"} size={18} color={C.blueDark} /><Text style={pomText}>{running ? "Pausar" : "Iniciar"}</Text></Pressable>
         <Pressable onPress={() => { setRunning(false); state.current = { mode: "focus", seconds: 25 * 60 }; setMode("focus"); setSeconds(25 * 60); }} accessibilityRole="button" style={[pomBtn, { backgroundColor: "rgba(255,255,255,0.15)" }]}><MaterialCommunityIcons name="restart" size={18} color="#FFFFFF" /><Text style={[pomText, { color: "#FFFFFF" }]}>Reiniciar</Text></Pressable>

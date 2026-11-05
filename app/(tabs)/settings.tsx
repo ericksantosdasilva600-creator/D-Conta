@@ -12,6 +12,8 @@ import { daysUntil, money } from "@/lib/format";
 import { useAuthContext } from "@/hooks/auth-context";
 import { CloudSyncBadge, useCloudSync } from "@/lib/cloud-sync";
 import { LOCAL_ONLY } from "@/lib/local-mode";
+import { AppearanceCard } from "@/components/AppearanceCard";
+import { addDemoData, hasDemoData, removeDemoData } from "@/lib/demo-data";
 import { normalizeStoredData } from "@/lib/app-data";
 
 type CategoryDraft = { kind: TransactionKind; name: string } | null;
@@ -169,6 +171,17 @@ export default function SettingsScreen() {
         </Card>
       </View>
       <View style={{ gap: 12 }}>
+        <SectionTitle title="Ajuda" />
+        <Card>
+          <PrimaryButton title="Ajuda, suporte e feedback" icon="lifebuoy" onPress={() => router.push("/support")} />
+          <PrimaryButton title={hasDemoData(data) ? "Remover dados de exemplo" : "Carregar dados de exemplo"} tone="light" icon="flask-outline" onPress={() => { updateData((c) => hasDemoData(c) ? removeDemoData(c) : addDemoData(c)); showToast(hasDemoData(data) ? "Dados de exemplo removidos." : "Dados de exemplo carregados. Remova quando quiser."); }} />
+        </Card>
+      </View>
+      <View style={{ gap: 12 }}>
+        <SectionTitle title="Aparência" />
+        <AppearanceCard />
+      </View>
+      <View style={{ gap: 12 }}>
         <SectionTitle title="Acessibilidade" />
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="eye-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Ajustes do aparelho</Text><Text style={rowSub}>O app respeita a escala do texto e os leitores de tela do celular.</Text></View></View>
@@ -235,7 +248,7 @@ export default function SettingsScreen() {
 }
 
 function SettingToggle({ title, description, value, onChange }: { title: string; description: string; value: boolean; onChange: (value: boolean) => void }) {
-  return <View style={[row, { alignItems: "flex-start" }]}><View style={textColumn}><Text style={rowTitle}>{title}</Text><Text style={rowSub}>{description}</Text></View><Switch value={value} onValueChange={onChange} accessibilityLabel={title} trackColor={{ false: "#D8D4C9", true: "#B5DACA" }} thumbColor={value ? C.green : "#F7F5EF"} /></View>;
+  return <View style={[row, { alignItems: "flex-start" }]}><View style={textColumn}><Text style={rowTitle}>{title}</Text><Text style={rowSub}>{description}</Text></View><Switch value={value} onValueChange={onChange} accessibilityLabel={title} trackColor={{ false: "#D8D4C9", true: C.greenSoft }} thumbColor={value ? C.green : "#F7F5EF"} /></View>;
 }
 
 function CategoryList({ title, kind, names, onEdit, onDelete }: { title: string; kind: TransactionKind; names: string[]; onEdit: (name: string) => void; onDelete: (name: string) => void }) {

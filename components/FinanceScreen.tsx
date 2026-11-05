@@ -114,12 +114,12 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
       {section === "Movimentos" ? <>
       {hasTrip ? <ChoiceChips values={["Pessoal", "Viagem"]} selected={scope === "personal" ? "Pessoal" : "Viagem"} onSelect={(value) => { setScope(value === "Viagem" ? "trip" : "personal"); setFilterCategory("Todas categorias"); }} /> : null}
       <Card style={{ backgroundColor: C.greenDark, borderColor: C.greenDark, padding: 19, gap: 14 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}><Text style={balanceLabel}>{scope === "personal" ? "SALDO PESSOAL" : "SALDO DA VIAGEM"}</Text><MaterialCommunityIcons name={scope === "personal" ? "wallet-outline" : "map-marker-path"} size={19} color="#B7D9C7" /></View>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}><Text style={balanceLabel}>{scope === "personal" ? "SALDO PESSOAL" : "SALDO DA VIAGEM"}</Text><MaterialCommunityIcons name={scope === "personal" ? "wallet-outline" : "map-marker-path"} size={19} color="rgba(255,255,255,0.78)" /></View>
         <Text accessibilityLabel={`Saldo ${scope === "personal" ? "pessoal" : "da viagem"}: ${money(balance, data.currency)}`} style={balanceValue}>{money(balance, data.currency)}</Text>
         <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.18)" }} />
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <View style={metricBox}><View style={{ flexDirection: "row", gap: 5, alignItems: "center" }}><MaterialCommunityIcons name="arrow-down-left" size={15} color="#B7E2CB" /><Text style={metricLabel}>Receitas</Text></View><Text style={metricValue}>{money(incomeTotal, data.currency)}</Text></View>
-          <View style={metricBox}><View style={{ flexDirection: "row", gap: 5, alignItems: "center" }}><MaterialCommunityIcons name="arrow-up-right" size={15} color="#B7D7EF" /><Text style={metricLabel}>Despesas</Text></View><Text style={metricValue}>{money(expenseTotal, data.currency)}</Text></View>
+          <View style={metricBox}><View style={{ flexDirection: "row", gap: 5, alignItems: "center" }}><MaterialCommunityIcons name="arrow-down-left" size={15} color="rgba(255,255,255,0.8)" /><Text style={metricLabel}>Receitas</Text></View><Text style={metricValue}>{money(incomeTotal, data.currency)}</Text></View>
+          <View style={metricBox}><View style={{ flexDirection: "row", gap: 5, alignItems: "center" }}><MaterialCommunityIcons name="arrow-up-right" size={15} color="rgba(255,255,255,0.8)" /><Text style={metricLabel}>Despesas</Text></View><Text style={metricValue}>{money(expenseTotal, data.currency)}</Text></View>
         </View>
       </Card>
       {dueSoon > 0 ? <Pressable onPress={() => setFilterKind("pending")} accessibilityRole="button" style={dueBanner}><MaterialCommunityIcons name="calendar-alert" size={19} color={C.danger} /><Text style={{ flex: 1, color: C.danger, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{dueSoon} {dueSoon === 1 ? "despesa pendente vence" : "despesas pendentes vencem"} nos próximos 7 dias</Text><MaterialCommunityIcons name="chevron-right" size={18} color={C.danger} /></Pressable> : null}
@@ -174,10 +174,10 @@ function TransactionRow({ transaction, currency, onPress, onDelete, onTogglePaid
   );
 }
 
-const balanceLabel = { color: "#B7D9C7", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.2 };
+const balanceLabel = { color: "rgba(255,255,255,0.78)", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.2 };
 const balanceValue = { color: "#FFFFFF", fontFamily: SANS, fontSize: 33, fontWeight: "700" as const, letterSpacing: -0.8 };
 const metricBox = { flex: 1, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, paddingHorizontal: 11, paddingVertical: 10, gap: 7 };
-const metricLabel = { color: "#C8DDD2", fontFamily: SANS, fontSize: 11, fontWeight: "600" as const };
+const metricLabel = { color: "rgba(255,255,255,0.8)", fontFamily: SANS, fontSize: 11, fontWeight: "600" as const };
 const metricValue = { color: "#FFFFFF", fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };
 const dueBanner = { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, backgroundColor: C.dangerSoft, paddingHorizontal: 14, paddingVertical: 13, borderRadius: 15 };
 const searchBox = { flexDirection: "row" as const, alignItems: "center" as const, gap: 8, minHeight: 47, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: 14, paddingHorizontal: 13 };

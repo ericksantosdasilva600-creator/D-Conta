@@ -33,7 +33,7 @@ export function Header({ eyebrow, title, subtitle, right }: { eyebrow?: string; 
 export function BrandMark({ size = 38 }: { size?: number }) {
   return (
     <View accessibilityLabel="Nyvo" style={[styles.brandMark, { width: size, height: size, borderRadius: size * 0.34 }]}>
-      <Image source={require("../assets/images/icon.png")} style={{ width: size, height: size, borderRadius: size * 0.34 }} resizeMode="contain" accessibilityLabel="Símbolo Nyvo: quatro pilares ligados" />
+      <Image source={require("../assets/images/brand-mark.png")} style={{ width: size, height: size, borderRadius: size * 0.34 }} resizeMode="contain" accessibilityLabel="Símbolo Nyvo: quatro pilares ligados" />
     </View>
   );
 }

@@ -77,7 +77,7 @@ const config: ExpoConfig & { logoUrl: string } = {
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#F6F7F2",
+      backgroundColor: "#187A61",
       foregroundImage: "./assets/images/android-icon-foreground.png",
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",

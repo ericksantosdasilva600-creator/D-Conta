@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { createId } from "@/lib/format";
 import type { Habit } from "@/lib/app-data";
+import { GOALS, OCCUPATIONS } from "@/lib/brand";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAppData } from "@/lib/app-data";
@@ -28,10 +29,12 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
   const [focus, setFocus] = useState<string[]>(["money"]);
   const [habits, setHabits] = useState<string[]>(["water", "money"]);
+  const [occupation, setOccupation] = useState("");
+  const [goal, setGoal] = useState("");
   const toggle = (list: string[], id: string) => list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
   const start = () => {
     const created: Habit[] = SUGGESTED.filter((h) => habits.includes(h.id)).map((h) => ({ id: createId(), name: h.name, weekdays: h.weekdays, reminderTime: h.time, priority: "medium", archived: false, goalLabel: "" }));
-    updateData((current) => ({ ...current, onboarded: true, focus, habits: [...current.habits, ...created] }));
+    updateData((current) => ({ ...current, onboarded: true, focus, habits: [...current.habits, ...created], profile: { ...current.profile, occupation, goal } }));
     router.replace(focus.length === 1 && focus[0] === "money" ? "/finance" : "/");
   };
 
@@ -50,6 +53,12 @@ export default function OnboardingScreen() {
           <Text style={featureTitle}>Hábitos para começar (opcional)</Text>
           {SUGGESTED.map((h) => { const on = habits.includes(h.id); return <Pressable key={h.id} onPress={() => setHabits(toggle(habits, h.id))} accessibilityRole="checkbox" accessibilityState={{ checked: on }} style={habitRow}><MaterialCommunityIcons name={on ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={on ? C.green : C.muted} /><View style={{ flex: 1 }}><Text style={featureTitle}>{h.name}</Text><Text style={featureDetail}>{h.detail}</Text></View></Pressable>; })}
         </View>
+        <View style={{ gap: 9 }}>
+          <Text style={featureTitle}>Sobre você (opcional, para personalizar as dicas)</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}>{OCCUPATIONS.slice(0, 7).map((o) => <Pressable key={o} onPress={() => setOccupation(occupation === o ? "" : o)} accessibilityRole="radio" accessibilityState={{ checked: occupation === o }} style={[smallChoice, occupation === o ? choiceOn : null]}><Text style={[featureDetail, { fontWeight: "700", color: occupation === o ? C.greenDark : C.ink }]}>{o}</Text></Pressable>)}</View>
+          <Text style={featureDetail}>Seu principal objetivo agora</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}>{GOALS.map((g) => <Pressable key={g} onPress={() => setGoal(goal === g ? "" : g)} accessibilityRole="radio" accessibilityState={{ checked: goal === g }} style={[smallChoice, goal === g ? choiceOn : null]}><Text style={[featureDetail, { fontWeight: "700", color: goal === g ? C.greenDark : C.ink }]}>{g}</Text></Pressable>)}</View>
+        </View>
         <PrimaryButton title="Começar a usar" onPress={start} icon="arrow-right" disabled={loading} />
         <Pressable onPress={() => setStep(1)} accessibilityRole="button"><Text style={[footnote, { color: C.green, fontWeight: "700" }]}>Voltar</Text></Pressable>
       </View>
@@ -62,8 +71,8 @@ export default function OnboardingScreen() {
         <View style={{ alignItems: "flex-start", gap: 22 }}>
           <BrandMark size={54} />
           <View style={{ gap: 10 }}>
-            <Text style={eyebrow}>NYVO · UM ESPAÇO PARA O TEU DIA</Text>
-            <Text accessibilityRole="header" style={headline}>Teu dia, organizado.{"\n"}Do teu jeito.</Text>
+            <Text style={eyebrow}>NYVO · UM ESPAÇO PARA O SEU DIA</Text>
+            <Text accessibilityRole="header" style={headline}>Seu dia, organizado.{"\n"}Do seu jeito.</Text>
             <Text style={subhead}>Ideias, dinheiro, saúde e tarefas em um só lugar — com uma experiência simples, feita para acompanhar seu ritmo.</Text>
           </View>
         </View>
@@ -103,3 +112,4 @@ const footnote = { color: C.muted, fontFamily: SANS, fontSize: 11, textAlign: "c
 const choice = { flexDirection: "row" as const, alignItems: "center" as const, gap: 8, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 14, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.surface };
 const choiceOn = { borderColor: C.green, backgroundColor: C.greenSoft };
 const habitRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 11, padding: 12, borderRadius: 14, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line };
+const smallChoice = { paddingHorizontal: 11, paddingVertical: 8, borderRadius: 12, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.surface };

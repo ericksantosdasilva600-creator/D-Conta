@@ -5,6 +5,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, Card, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
 import { PhraseCapture, QuickAddModal } from "@/components/QuickAdd";
+import { tipFor } from "@/lib/brand";
+import { hasDemoData, removeDemoData } from "@/lib/demo-data";
 import { billStatus, cardInvoices, currentInvoiceMonth, payBill } from "@/lib/finance-extra";
 import { C, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
@@ -61,6 +63,7 @@ export function DashboardScreen() {
       <Header eyebrow={`NYVO · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle="O que importa agora, numa tela só." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><IconButton name="bell-outline" label="Lembretes" onPress={() => router.push("/reminders")} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
+      {hasDemoData(data) ? <Pressable onPress={() => { updateData((c) => removeDemoData(c)); showToast("Dados de exemplo removidos."); }} accessibilityRole="button" style={demoBanner}><MaterialCommunityIcons name="flask-outline" size={18} color="#80611E" /><Text style={{ flex: 1, color: "#80611E", fontFamily: SANS, fontSize: 12, fontWeight: "700" }}>Você está vendo dados de exemplo. Toque para remover e começar com os seus.</Text></Pressable> : null}
       <PhraseCapture onSaved={showToast} />
       <View style={{ flexDirection: "row", gap: 9 }}>
         <View style={{ flex: 1 }}><PrimaryButton title="Registro rápido" onPress={() => setQuickOpen(true)} icon="cash-plus" disabled={loading} /></View>
@@ -100,6 +103,15 @@ export function DashboardScreen() {
           <View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={pillarTitle}>{item.title}</Text><Text style={pillarDetail}>{item.kind === "exam" ? "Prova" : item.kind === "reading" ? "Leitura" : "Trabalho"} · {displayDate(item.dueDate)}</Text></View>
         </View>)}
       </View> : null}
+      <Card style={{ flexDirection: "row", gap: 11, alignItems: "flex-start", backgroundColor: C.blueSoft, borderColor: "transparent" }}>
+        <MaterialCommunityIcons name="lightbulb-on-outline" size={20} color={C.blueDark} />
+        <View style={{ flex: 1, gap: 4 }}><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1 }}>DICA PARA VOCÊ</Text><Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>{tipFor(data.profile)}</Text>{!data.profile.occupation && !data.profile.interests.length ? <Pressable onPress={() => router.push("/support")}><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 12, fontWeight: "700" }}>Personalizar dicas</Text></Pressable> : null}</View>
+      </Card>
+      <Pressable onPress={() => router.push("/insights")} accessibilityRole="button" style={({ pressed }) => [todayRow, { opacity: pressed ? 0.8 : 1 }]}>
+        <View style={[todayIcon, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name="chart-box-outline" size={19} color={C.green} /></View>
+        <View style={{ flex: 1 }}><Text style={pillarTitle}>Gráficos</Text><Text style={pillarDetail}>Dinheiro, hábitos, água e tarefas em gráficos</Text></View>
+        <MaterialCommunityIcons name="chevron-right" size={20} color={C.muted} />
+      </Pressable>
       <View style={{ gap: 12 }}>
         <SectionTitle title="Seus pilares" />
         <View style={{ gap: 9 }}>
@@ -140,8 +152,8 @@ function CaptureOption({ icon, title, detail, onPress }: { icon: React.Component
   </Pressable>;
 }
 
-const heroEyebrow = { color: "#B7D9C7", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.2 };
-const heroSub = { color: "#D7E9DE", fontFamily: SANS, fontSize: 13, lineHeight: 19 };
+const heroEyebrow = { color: "rgba(255,255,255,0.78)", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.2 };
+const heroSub = { color: "rgba(255,255,255,0.86)", fontFamily: SANS, fontSize: 13, lineHeight: 19 };
 const pillarIcon = { width: 43, height: 43, borderRadius: 15, backgroundColor: C.greenSoft, alignItems: "center" as const, justifyContent: "center" as const };
 const pillarTitle = { color: C.ink, fontFamily: SANS, fontSize: 14, fontWeight: "800" as const };
 const pillarMetric = { color: C.greenDark, fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };
@@ -153,3 +165,4 @@ const todayIcon = { width: 36, height: 36, borderRadius: 12, alignItems: "center
 const smallBtn = { backgroundColor: C.green, borderRadius: 11, paddingHorizontal: 12, paddingVertical: 8 };
 const smallBtnText = { color: "#FFFFFF", fontFamily: SANS, fontSize: 12, fontWeight: "800" as const };
 const toastStyle = { position: "absolute" as const, bottom: 16, left: 20, right: 20, paddingHorizontal: 15, paddingVertical: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };
+const demoBanner = { flexDirection: "row" as const, alignItems: "center" as const, gap: 9, backgroundColor: C.amberSoft, borderRadius: 14, padding: 12 };

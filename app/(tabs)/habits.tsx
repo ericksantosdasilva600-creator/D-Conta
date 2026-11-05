@@ -96,7 +96,7 @@ export default function HabitsScreen() {
       <View style={modeRow}><ModeButton label="Hábitos" selected={activeSection === "habits"} onPress={() => setSection("habits")} /><ModeButton label="Saúde" selected={activeSection === "health"} onPress={() => setSection("health")} /></View>
       {loading ? <Card><Text style={progressHint}>Carregando suas rotinas e registros locais…</Text></Card> : activeSection === "health" ? <HealthTracker autoCreate={create === "health"} onCreateHandled={create === "health" ? finishHealthCapture : undefined} /> : <View style={{ gap: 20 }}>
       <Card style={{ backgroundColor: C.greenDark, borderColor: C.greenDark, padding: 18, gap: 13 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><MaterialCommunityIcons name="calendar-check-outline" size={19} color="#B7D9C7" /><Text style={progressEyebrow}>{mode === "history" ? "HISTÓRICO DA CHECKLIST" : "CHECKLIST DE HOJE"}</Text></View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><MaterialCommunityIcons name="calendar-check-outline" size={19} color="rgba(255,255,255,0.78)" /><Text style={progressEyebrow}>{mode === "history" ? "HISTÓRICO DA CHECKLIST" : "CHECKLIST DE HOJE"}</Text></View>
         <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}><Text style={progressTitle}>{focusedHabits.length ? `${doneCount} de ${focusedHabits.length} feitos` : mode === "history" ? "Sem rotinas neste dia" : "Sua lista começa aqui"}</Text><Text style={progressPercent}>{focusedHabits.length ? `${Math.round((doneCount / focusedHabits.length) * 100)}%` : "—"}</Text></View>
         <View style={progressTrack}><View style={[progressFill, { width: `${focusedHabits.length ? (doneCount / focusedHabits.length) * 100 : 0}%` }]} /></View>
         <Text style={progressHint}>{mode === "history" ? focusedHabits.length ? doneCount === focusedHabits.length ? "Todas as rotinas previstas ficaram marcadas nesse dia." : "Consulte ou ajusta os check-ins salvos para esta data." : "Não há rotinas previstas para esta data. Use as setas para consultar outro dia." : focusedHabits.length ? doneCount === focusedHabits.length ? "Tudo feito. Aproveite esse momento." : "Cada marca conta. Continue no seu ritmo." : "Escolha dias e hora para criar sua primeira rotina."}</Text>
@@ -133,7 +133,7 @@ function ModeButton({ label, selected, onPress }: { label: string; selected: boo
 function HabitCard({ habit, checked, canCheck, onCheck, onEdit }: { habit: Habit; checked: boolean; canCheck: boolean; onCheck: () => void; onEdit: () => void }) {
   const dayText = habit.weekdays.length === 7 ? "Todos os dias" : habit.weekdays.length === 5 && [1, 2, 3, 4, 5].every((day) => habit.weekdays.includes(day)) ? "Dias úteis" : DAYS.filter((day) => habit.weekdays.includes(day.value)).map((day) => day.label).join(" · ");
   return (
-    <View style={[habitCard, checked ? { borderColor: "#C4DDD1", backgroundColor: "#FBFDFB" } : null]}>
+    <View style={[habitCard, checked ? { borderColor: "rgba(255,255,255,0.8)", backgroundColor: "#FBFDFB" } : null]}>
       <Pressable onPress={onEdit} accessibilityRole="button" accessibilityLabel={`Editar hábito ${habit.name}`} style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
         {canCheck ? <Pressable onPress={(event) => { event.stopPropagation(); onCheck(); }} accessibilityRole="checkbox" accessibilityState={{ checked }} accessibilityLabel={checked ? `Desmarcar ${habit.name}` : `Marcar ${habit.name} como concluído`} style={[checkButton, checked ? { backgroundColor: C.green, borderColor: C.green } : null]}><MaterialCommunityIcons name={checked ? "check" : "check"} size={21} color={checked ? "#FFFFFF" : C.muted} /></Pressable> : <View style={[checkButton, { backgroundColor: "#F0EFEA", borderColor: "#F0EFEA" }]}><MaterialCommunityIcons name={habit.archived ? "archive-outline" : "checkbox-blank-outline"} size={18} color={C.muted} /></View>}
         <View style={{ flex: 1, gap: 4 }}><Text style={[habitTitle, checked ? { textDecorationLine: "line-through", color: C.muted } : null]}>{habit.name}</Text><Text style={habitDetails}>{dayText || "Sem dias selecionados"} · {habit.reminderTime}</Text></View>
@@ -170,13 +170,13 @@ function HabitForm({ visible, initial, onClose, onSave, onArchive }: { visible: 
   </AppModal>;
 }
 
-const progressEyebrow = { color: "#B7D9C7", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.2 };
+const progressEyebrow = { color: "rgba(255,255,255,0.78)", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const, letterSpacing: 1.2 };
 const progressTitle = { color: "#FFFFFF", fontFamily: SERIF, fontSize: 23, fontWeight: "700" as const };
-const progressPercent = { color: "#B7E2CB", fontFamily: SANS, fontSize: 16, fontWeight: "700" as const };
+const progressPercent = { color: "rgba(255,255,255,0.8)", fontFamily: SANS, fontSize: 16, fontWeight: "700" as const };
 const progressTrack = { height: 8, borderRadius: 20, overflow: "hidden" as const, backgroundColor: "rgba(255,255,255,0.18)" };
-const progressFill = { height: "100%" as const, backgroundColor: "#B7E2CB", borderRadius: 20 };
-const progressHint = { color: "#D0E4D9", fontFamily: SANS, fontSize: 12, lineHeight: 18 };
-const streakHint = { color: "#D0E4D9", fontFamily: SANS, fontSize: 11, lineHeight: 16, flex: 1, minWidth: 140 };
+const progressFill = { height: "100%" as const, backgroundColor: "rgba(255,255,255,0.8)", borderRadius: 20 };
+const progressHint = { color: "rgba(255,255,255,0.84)", fontFamily: SANS, fontSize: 12, lineHeight: 18 };
+const streakHint = { color: "rgba(255,255,255,0.84)", fontFamily: SANS, fontSize: 11, lineHeight: 16, flex: 1, minWidth: 140 };
 const searchBox = { flexDirection: "row" as const, alignItems: "center" as const, gap: 8, minHeight: 46, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: 14, paddingHorizontal: 13 };
 const searchInput = { flex: 1, paddingVertical: 10, color: C.ink, fontFamily: SANS, fontSize: 14 };
 const modeRow = { flexDirection: "row" as const, gap: 5 };

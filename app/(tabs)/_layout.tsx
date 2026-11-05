@@ -10,6 +10,7 @@ import { CloudSyncBadge } from "@/lib/cloud-sync";
 import { useAppData } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
 import { QuickAddModal } from "@/components/QuickAdd";
+import { AppTour } from "@/components/AppTour";
 import { useReminderScheduler, useWebDarkMode } from "@/lib/web-effects";
 import { refreshLocalNotifications } from "@/lib/local-notifications";
 
@@ -19,7 +20,9 @@ const NAV_ITEMS = [
   { path: "/notes", label: "Anotações", icon: "note-text-outline" },
   { path: "/habits", label: "Hábitos & Saúde", icon: "heart-pulse" },
   { path: "/tasks", label: "Tarefas", icon: "checkbox-marked-circle-outline" },
+  { path: "/insights", label: "Gráficos", icon: "chart-box-outline" },
   { path: "/reminders", label: "Lembretes", icon: "bell-outline" },
+  { path: "/support", label: "Ajuda e feedback", icon: "lifebuoy" },
   { path: "/settings", label: "Configurações", icon: "cog-outline" },
 ] as const;
 
@@ -58,17 +61,20 @@ export default function TabLayout() {
     <Tabs.Screen name="tasks" options={{ title: "Tarefas", tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="checkbox-marked-circle-outline" size={size} color={color} /> }} />
     <Tabs.Screen name="settings" options={{ href: null }} />
     <Tabs.Screen name="reminders" options={{ href: null }} />
+    <Tabs.Screen name="support" options={{ href: null }} />
+    <Tabs.Screen name="insights" options={{ href: null }} />
   </Tabs>;
 
   const fab = <>
     <Pressable onPress={() => setQuickOpen(true)} accessibilityRole="button" accessibilityLabel="Registro rápido de gasto ou receita" style={({ pressed }) => [fabStyle, { bottom: desktop ? 28 : 57 + bottomPadding + 14, opacity: pressed ? 0.85 : 1 }]}>
       <MaterialCommunityIcons name="plus" size={28} color="#FFFFFF" />
     </Pressable>
+    <AppTour />
     <QuickAddModal visible={quickOpen} onClose={() => setQuickOpen(false)} onSaved={(message) => { setToast(message); setTimeout(() => setToast(""), 2600); }} />
     {toast ? <View accessibilityRole="alert" style={[toastStyle, { bottom: desktop ? 100 : 57 + bottomPadding + 84 }]}><MaterialCommunityIcons name="bell-ring-outline" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
   </>;
 
-  if (!desktop) return <View style={{ flex: 1 }}>{tabs}{pathname === "/settings" ? null : fab}</View>;
+  if (!desktop) return <View style={{ flex: 1 }}>{tabs}{pathname === "/settings" || pathname === "/support" || pathname === "/reminders" ? <AppTour /> : fab}</View>;
   return <View style={{ flex: 1, flexDirection: "row", backgroundColor: C.paper }}>
     <View style={desktopSidebar}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 11, paddingHorizontal: 8, paddingBottom: 26 }}>

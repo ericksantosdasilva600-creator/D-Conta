@@ -39,7 +39,7 @@ export default function LoginScreen() {
         <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 11, lineHeight: 17, textAlign: "center" }}>A autenticação é feita pelo Manus. O Nyvo não salva sua senha.</Text>
       </Card>
 
-      <Card style={{ backgroundColor: C.blueSoft, borderColor: "#D8E7F1", gap: 8 }}>
+      <Card style={{ backgroundColor: C.blueSoft, borderColor: "rgba(255,255,255,0.84)", gap: 8 }}>
         <Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 13, fontWeight: "800" }}>Seus dados continuam seus</Text>
         <Text style={{ color: C.ink, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>Sem internet, você continua usando a cópia local. Se este dispositivo já tiver dados, depois do login você poderá escolher se associa esses dados à conta ou se usas os dados da nuvem.</Text>
         <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 11, lineHeight: 17 }}>Os recibos só são disponibilizados através de pedidos autenticados da sua conta.</Text>
