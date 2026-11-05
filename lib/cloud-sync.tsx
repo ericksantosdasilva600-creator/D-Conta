@@ -8,6 +8,7 @@ import { useAuthContext } from "@/hooks/auth-context";
 import { C, SANS } from "@/lib/design";
 import { cacheReceipt, hasCachedReceipt } from "@/lib/receipt-cache";
 import { LOCAL_ONLY } from "@/lib/local-mode";
+import { useOptionalSupabaseSync } from "@/lib/supabase-sync";
 
 type SyncStatus = "checking" | "synced" | "syncing" | "offline" | "conflict" | "error" | "unlinked" | "signed_out";
 type Prompt = { kind: "initial" | "conflict"; data: AppData | null; revision: number };
@@ -293,10 +294,14 @@ export function CloudSyncBadge() {
 }
 
 function LocalSavedBadge() {
+  const cloud = useOptionalSupabaseSync();
+  const signedIn = Boolean(cloud?.session);
+  const ok = !signedIn || cloud?.status === "synced";
+  const label = signedIn ? cloud?.label ?? "Sincronizando…" : "Salvo neste aparelho";
   return (
-    <View accessibilityLabel="Dados salvos neste navegador" style={{ flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 16, backgroundColor: C.greenSoft, alignSelf: "flex-start", maxWidth: "100%" }}>
-      <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: C.green }} />
-      <Text style={{ color: C.green, fontFamily: SANS, fontSize: 11, fontWeight: "800" }}>Salvo neste navegador</Text>
+    <View accessibilityLabel={label} style={{ flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 16, backgroundColor: ok ? C.greenSoft : C.amberSoft, alignSelf: "flex-start", maxWidth: "100%" }}>
+      <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: ok ? C.green : "#80611E" }} />
+      <Text style={{ color: ok ? C.green : "#80611E", fontFamily: SANS, fontSize: 11, fontWeight: "800" }}>{label}</Text>
     </View>
   );
 }

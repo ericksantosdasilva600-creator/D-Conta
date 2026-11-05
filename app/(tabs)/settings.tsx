@@ -13,6 +13,7 @@ import { useAuthContext } from "@/hooks/auth-context";
 import { CloudSyncBadge, useCloudSync } from "@/lib/cloud-sync";
 import { LOCAL_ONLY } from "@/lib/local-mode";
 import { AppearanceCard } from "@/components/AppearanceCard";
+import { AccountCard } from "@/components/AccountCard";
 import { addDemoData, hasDemoData, removeDemoData } from "@/lib/demo-data";
 import { normalizeStoredData } from "@/lib/app-data";
 
@@ -191,6 +192,8 @@ export default function SettingsScreen() {
       </View>
       {LOCAL_ONLY ? (
       <View style={{ gap: 12 }}>
+        <SectionTitle title="Conta e sincronização" />
+        <AccountCard />
         <SectionTitle title="Backup dos dados" />
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="content-save-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Modo local</Text><Text style={rowSub}>Seus dados ficam salvos só neste navegador. Para não perder nada ou levar para outro aparelho, copie um backup de vez em quando e guarde-o num lugar seguro.</Text></View></View>

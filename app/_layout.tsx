@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { AppDataProvider } from "@/lib/app-data";
 import { AuthProvider, useAuthContext } from "@/hooks/auth-context";
 import { CloudSyncProvider } from "@/lib/cloud-sync";
+import { SupabaseSyncProvider } from "@/lib/supabase-sync";
 import { LoadingState } from "@/components/app-ui";
 import { LOCAL_ONLY } from "@/lib/local-mode";
 import {
@@ -93,6 +94,7 @@ function AccountProviders({ accountId }: { accountId: number | null }) {
       <QueryClientProvider client={queryClient}>
         <AppDataProvider accountId={accountId}>
           <CloudSyncProvider>
+          <SupabaseSyncProvider>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="login" options={{ presentation: "fullScreenModal" }} />
@@ -100,6 +102,7 @@ function AccountProviders({ accountId }: { accountId: number | null }) {
               <Stack.Screen name="oauth/callback" options={{ presentation: "fullScreenModal" }} />
             </Stack>
             <StatusBar style="auto" />
+          </SupabaseSyncProvider>
           </CloudSyncProvider>
         </AppDataProvider>
       </QueryClientProvider>
