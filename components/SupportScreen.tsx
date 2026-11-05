@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Card, ChoiceChips, Field, Header, IconButton, Page, PrimaryButton, SectionTitle } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
 import { AGE_RANGES, BRAND, BR_STATES, COUNTRIES, GENDERS, GOALS, INTERESTS, OCCUPATIONS, SOURCES } from "@/lib/brand";
+import { privacyUrl } from "@/lib/site";
 import { C, SANS, SERIF } from "@/lib/design";
 
 const FAQ: { q: string; a: string }[] = [
@@ -129,7 +130,7 @@ export function SupportScreen() {
           <View style={{ gap: 4 }}><Text style={eyebrow}>VISÃO</Text><Text style={bodyText}>{BRAND.vision}</Text></View>
           <View style={{ gap: 8 }}><Text style={eyebrow}>VALORES</Text>{BRAND.values.map((v) => <View key={v.title} style={{ flexDirection: "row", gap: 9 }}><MaterialCommunityIcons name="check-circle-outline" size={18} color={C.green} /><Text style={[bodyText, { flex: 1 }]}><Text style={{ fontWeight: "700" }}>{v.title}.</Text> {v.text}</Text></View>)}</View>
           <Text style={muted}>Versão {BRAND.version}{Platform.OS === "web" ? " · " : ""}</Text>
-          {Platform.OS === "web" ? <Pressable onPress={() => void Linking.openURL(`${process.env.EXPO_BASE_URL ?? ""}/privacidade.html`)} accessibilityRole="link"><Text style={link}>Política de privacidade e termos de uso</Text></Pressable> : null}
+          {Platform.OS === "web" ? <Pressable onPress={() => void Linking.openURL(privacyUrl())} accessibilityRole="link"><Text style={link}>Política de privacidade e termos de uso</Text></Pressable> : null}
         </Card>
       </View>
     </Page>

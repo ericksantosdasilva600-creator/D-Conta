@@ -9,6 +9,7 @@ import { BrandMark, Field, PrimaryButton, StorageBanner } from "@/components/app
 import { AccountCard } from "@/components/AccountCard";
 import { AGE_RANGES, BR_STATES, COUNTRIES, GENDERS, GOALS, INTERESTS, OCCUPATIONS, SOURCES } from "@/lib/brand";
 import { useSupabaseSync } from "@/lib/supabase-sync";
+import { privacyUrl } from "@/lib/site";
 
 type Icon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 const FOCUS: { id: string; label: string; icon: Icon }[] = [
@@ -46,7 +47,7 @@ export default function OnboardingScreen() {
     updateData((current) => ({ ...current, onboarded: true, focus, profile: { ...p, name: p.name.trim() }, habits: [...current.habits, ...created], ...(currency ? { currency } : {}) }));
     router.replace(focus.length === 1 && focus[0] === "money" ? "/finance" : "/");
   };
-  const openPrivacy = () => { if (Platform.OS === "web" && typeof window !== "undefined") window.open("privacidade.html", "_blank", "noopener"); };
+  const openPrivacy = () => { if (Platform.OS === "web" && typeof window !== "undefined") window.open(privacyUrl(), "_blank", "noopener"); };
 
   if (step === 1) return (
     <ScrollView style={{ flex: 1, backgroundColor: C.paper }} contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>

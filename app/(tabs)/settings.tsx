@@ -7,6 +7,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { AppModal, Card, ChoiceChips, Field, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner, Tag } from "@/components/app-ui";
 import { useAppData, makeDefaultData, EXPENSE_CATEGORIES, INCOME_CATEGORIES, STORAGE_KEY, LEGACY_STORAGE_KEY, STORAGE_MIGRATION_BACKUP_KEY, STORAGE_RECOVERY_BACKUP_KEY, type TransactionKind } from "@/lib/app-data";
 import { toast } from "@/lib/toast";
+import { privacyUrl } from "@/lib/site";
 import { C, SANS } from "@/lib/design";
 import { getNotificationPermission, requestNotificationPermission, refreshLocalNotifications, enableNotificationChannel } from "@/lib/local-notifications";
 import { daysUntil, money } from "@/lib/format";
@@ -226,7 +227,7 @@ export default function SettingsScreen() {
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="database-lock-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Dados pessoais</Text><Text style={rowSub}>Notas, finanças, rotinas, saúde, tarefas e referências a recibos ficam associados à sua conta depois que você confirmar a primeira sincronização. Recibos são enviados como imagens comprimidas.</Text></View></View>
           <View style={privacyBox}><MaterialCommunityIcons name="wifi-off" size={17} color="#80611E" /><Text style={{ flex: 1, color: "#80611E", fontFamily: SANS, fontSize: 12, lineHeight: 17 }}>A aplicação funciona offline. A limpeza local não apaga a cópia na nuvem; os dados podem ser baixados novamente quando você sincronizar de novo.</Text></View>
-          {Platform.OS === "web" ? <Pressable onPress={() => void Linking.openURL(`${process.env.EXPO_BASE_URL ?? ""}/privacidade.html`)} accessibilityRole="link" style={{ paddingVertical: 6 }}><Text style={linkText}>Política de privacidade e termos de uso</Text></Pressable> : null}
+          {Platform.OS === "web" ? <Pressable onPress={() => void Linking.openURL(privacyUrl())} accessibilityRole="link" style={{ paddingVertical: 6 }}><Text style={linkText}>Política de privacidade e termos de uso</Text></Pressable> : null}
           <PrimaryButton title={accountId !== null ? "Limpar cache deste aparelho" : "Apagar dados locais"} tone="ink" icon="delete-outline" onPress={() => setResetOpen(true)} />
         </Card>
       </View>
