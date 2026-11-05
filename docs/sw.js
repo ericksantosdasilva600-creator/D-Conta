@@ -1,5 +1,5 @@
 // Nyvo: funciona offline. Páginas: rede primeiro, cópia salva se estiver sem internet.
-const CACHE = "nyvo-v2";
+const CACHE = "nyvo-v3";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./privacidade.html"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));

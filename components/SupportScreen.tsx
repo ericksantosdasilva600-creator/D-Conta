@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Card, ChoiceChips, Field, Header, IconButton, Page, PrimaryButton, SectionTitle } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
-import { AGE_RANGES, BRAND, GOALS, INTERESTS, OCCUPATIONS } from "@/lib/brand";
+import { AGE_RANGES, BRAND, BR_STATES, COUNTRIES, GENDERS, GOALS, INTERESTS, OCCUPATIONS, SOURCES } from "@/lib/brand";
 import { C, SANS, SERIF } from "@/lib/design";
 
 const FAQ: { q: string; a: string }[] = [
@@ -37,7 +37,7 @@ export function SupportScreen() {
   const [copied, setCopied] = useState(false);
   const profile = data.profile;
   const setProfile = (changes: Partial<typeof profile>) => updateData((c) => ({ ...c, profile: { ...c.profile, ...changes } }));
-  const profileText = () => [`Ocupação: ${profile.occupation || "não informada"}`, `Faixa de idade: ${profile.ageRange || "não informada"}`, `Objetivo: ${profile.goal || "não informado"}`, `Interesses: ${profile.interests.join(", ") || "não informados"}`].join("\n");
+  const profileText = () => [`Sexo: ${profile.gender || "não informado"}`, `Local: ${[profile.state, profile.country].filter(Boolean).join(", ") || "não informado"}`, `Conheceu por: ${profile.source || "não informado"}`, `Ocupação: ${profile.occupation || "não informada"}`, `Faixa de idade: ${profile.ageRange || "não informada"}`, `Objetivo: ${profile.goal || "não informado"}`, `Interesses: ${profile.interests.join(", ") || "não informados"}`].join("\n");
 
   const sendSupport = () => {
     if (!message.trim()) { setNotice("Escreva sua dúvida ou o problema."); return; }
@@ -91,7 +91,7 @@ export function SupportScreen() {
           <Field label="Comentário" value={feedback} onChangeText={setFeedback} multiline placeholder="O que você mais usa? O que falta? O que podia ser mais fácil?" style={{ minHeight: 90 }} />
           <Pressable onPress={() => setShareProfile((v) => !v)} accessibilityRole="checkbox" accessibilityState={{ checked: shareProfile }} style={{ flexDirection: "row", gap: 9, alignItems: "flex-start" }}>
             <MaterialCommunityIcons name={shareProfile ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={shareProfile ? C.green : C.muted} />
-            <Text style={[muted, { flex: 1 }]}>Incluir meu perfil (ocupação, faixa de idade, objetivo e interesses) para ajudar a melhorar o Nyvo. Nada mais é enviado.</Text>
+            <Text style={[muted, { flex: 1 }]}>Incluir meu perfil (sexo, local, como conheceu, ocupação, idade, objetivo e interesses) para ajudar a melhorar o Nyvo. Seu nome não é enviado.</Text>
           </Pressable>
           <PrimaryButton title="Enviar feedback" icon="send-outline" onPress={sendFeedback} />
         </Card>
@@ -101,7 +101,15 @@ export function SupportScreen() {
       <View style={{ gap: 10 }}>
         <SectionTitle title="Seu perfil" />
         <Card style={{ gap: 12 }}>
-          <Text style={muted}>Opcional. Usamos só para escolher as dicas da tela Hoje. Fica salvo neste aparelho.</Text>
+          <Text style={muted}>Opcional. Usamos para personalizar o Nyvo e as dicas. Se você tiver conta, fica salvo junto com seus dados.</Text>
+          <Field label="Seu nome" value={profile.name} onChangeText={(v) => setProfile({ name: v.slice(0, 40) })} placeholder="Como quer ser chamado" />
+          <Text style={label}>Sexo</Text>
+          <ChoiceChips values={GENDERS} selected={profile.gender} onSelect={(v) => setProfile({ gender: profile.gender === v ? "" : v })} />
+          <Text style={label}>País</Text>
+          <ChoiceChips values={COUNTRIES.map((c) => c.name)} selected={profile.country} onSelect={(v) => setProfile({ country: profile.country === v ? "" : v })} />
+          {profile.country === "Brasil" ? <><Text style={label}>Estado</Text><ChoiceChips values={BR_STATES} selected={profile.state} onSelect={(v) => setProfile({ state: profile.state === v ? "" : v })} /></> : null}
+          <Text style={label}>Como conheceu o Nyvo</Text>
+          <ChoiceChips values={SOURCES} selected={profile.source} onSelect={(v) => setProfile({ source: profile.source === v ? "" : v })} horizontal={false} />
           <Text style={label}>O que você faz?</Text>
           <ChoiceChips values={OCCUPATIONS} selected={profile.occupation} onSelect={(v) => setProfile({ occupation: profile.occupation === v ? "" : v })} horizontal={false} />
           <Text style={label}>Faixa de idade</Text>

@@ -5,7 +5,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, Card, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
 import { PhraseCapture, QuickAddModal } from "@/components/QuickAdd";
-import { tipFor } from "@/lib/brand";
+import { greeting, tipFor } from "@/lib/brand";
+import { useOptionalSupabaseSync } from "@/lib/supabase-sync";
 import { hasDemoData, removeDemoData } from "@/lib/demo-data";
 import { billStatus, cardInvoices, currentInvoiceMonth, payBill } from "@/lib/finance-extra";
 import { C, SANS } from "@/lib/design";
@@ -19,6 +20,9 @@ export function DashboardScreen() {
   const [quickOpen, setQuickOpen] = useState(false);
   const [toast, setToast] = useState("");
   const showToast = (message: string) => { setToast(message); setTimeout(() => setToast(""), 2600); };
+  const cloud = useOptionalSupabaseSync();
+  const [accountNudgeHidden, setAccountNudgeHidden] = useState(() => { try { return Number(localStorage.getItem("nyvo.account-nudge") || 0) > Date.now(); } catch { return false; } });
+  const showAccountNudge = !accountNudgeHidden && cloud !== null && !cloud.session && cloud.status === "signed_out" && (data.transactions.length + data.tasks.length + data.notes.length + data.habits.length) > 0;
   const today = localDateKey();
   const month = today.slice(0, 7);
   const personalThisMonth = useMemo(() => data.transactions.filter((item) => item.scope === "personal" && item.date.startsWith(month)), [data.transactions, month]);
@@ -60,10 +64,21 @@ export function DashboardScreen() {
 
   return (
     <Page>
-      <Header eyebrow={`NYVO · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle="O que importa agora, numa tela só." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><IconButton name="bell-outline" label="Lembretes" onPress={() => router.push("/reminders")} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow={`NYVO · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle={data.profile.name ? `${greeting(data.profile.name)} O que importa agora, numa tela só.` : "O que importa agora, numa tela só."} right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><IconButton name="bell-outline" label="Lembretes" onPress={() => router.push("/reminders")} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       {hasDemoData(data) ? <Pressable onPress={() => { updateData((c) => removeDemoData(c)); showToast("Dados de exemplo removidos."); }} accessibilityRole="button" style={demoBanner}><MaterialCommunityIcons name="flask-outline" size={18} color="#80611E" /><Text style={{ flex: 1, color: "#80611E", fontFamily: SANS, fontSize: 12, fontWeight: "700" }}>Você está vendo dados de exemplo. Toque para remover e começar com os seus.</Text></Pressable> : null}
+      {showAccountNudge ? <View style={nudge}>
+        <MaterialCommunityIcons name="cloud-upload-outline" size={20} color={C.blueDark} />
+        <View style={{ flex: 1, gap: 6 }}>
+          <Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>Não perca seus dados</Text>
+          <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 17 }}>Crie uma conta grátis e seus registros ficam salvos mesmo se trocar de celular ou limpar o navegador.</Text>
+          <View style={{ flexDirection: "row", gap: 14 }}>
+            <Pressable onPress={() => router.push("/settings")} accessibilityRole="button"><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 13, fontWeight: "800" }}>Criar conta</Text></Pressable>
+            <Pressable onPress={() => { try { localStorage.setItem("nyvo.account-nudge", String(Date.now() + 7 * 86400000)); } catch { /* ignora */ } setAccountNudgeHidden(true); }} accessibilityRole="button"><Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>Agora não</Text></Pressable>
+          </View>
+        </View>
+      </View> : null}
       <PhraseCapture onSaved={showToast} />
       <View style={{ flexDirection: "row", gap: 9 }}>
         <View style={{ flex: 1 }}><PrimaryButton title="Registro rápido" onPress={() => setQuickOpen(true)} icon="cash-plus" disabled={loading} /></View>
@@ -166,3 +181,4 @@ const smallBtn = { backgroundColor: C.green, borderRadius: 11, paddingHorizontal
 const smallBtnText = { color: "#FFFFFF", fontFamily: SANS, fontSize: 12, fontWeight: "800" as const };
 const toastStyle = { position: "absolute" as const, bottom: 16, left: 20, right: 20, paddingHorizontal: 15, paddingVertical: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };
 const demoBanner = { flexDirection: "row" as const, alignItems: "center" as const, gap: 9, backgroundColor: C.amberSoft, borderRadius: 14, padding: 12 };
+const nudge = { flexDirection: "row" as const, gap: 11, alignItems: "flex-start" as const, backgroundColor: C.blueSoft, borderRadius: 16, padding: 13 };

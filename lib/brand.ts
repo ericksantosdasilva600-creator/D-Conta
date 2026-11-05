@@ -39,3 +39,22 @@ export function tipFor(profile: { occupation: string; interests: string[]; goal:
   const list = pool.length ? pool : TIPS;
   return list[seed % list.length].text;
 }
+
+export const GENDERS = ["Feminino", "Masculino", "Outro", "Prefiro não dizer"];
+export const COUNTRIES: { name: string; currency: string }[] = [
+  { name: "Brasil", currency: "BRL" },
+  { name: "Portugal", currency: "EUR" },
+  { name: "Estados Unidos", currency: "USD" },
+  { name: "Angola", currency: "BRL" },
+  { name: "Moçambique", currency: "BRL" },
+  { name: "Outro país", currency: "BRL" },
+];
+export const BR_STATES = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+export const SOURCES = ["TikTok", "Instagram", "YouTube", "Indicação de amigo", "WhatsApp", "Google", "Play Store", "Faculdade ou trabalho", "Outro"];
+
+export function greeting(name: string, date = new Date()) {
+  const h = date.getHours();
+  const part = h < 5 ? "Boa noite" : h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+  const first = name.trim().split(/\s+/)[0];
+  return first ? `${part}, ${first}.` : `${part}.`;
+}

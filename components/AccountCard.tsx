@@ -5,9 +5,9 @@ import { AppModal, Card, ChoiceChips, Field, PrimaryButton } from "@/components/
 import { C, SANS } from "@/lib/design";
 import { useSupabaseSync } from "@/lib/supabase-sync";
 
-export function AccountCard() {
+export function AccountCard({ initialMode = "Entrar" }: { initialMode?: "Entrar" | "Criar conta" } = {}) {
   const sync = useSupabaseSync();
-  const [mode, setMode] = useState<"Entrar" | "Criar conta">("Entrar");
+  const [mode, setMode] = useState<"Entrar" | "Criar conta">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");

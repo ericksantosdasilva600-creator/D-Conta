@@ -135,7 +135,7 @@ export type AppData = {
   tourDone: boolean;
 };
 
-export type UserProfile = { occupation: string; interests: string[]; goal: string; ageRange: string };
+export type UserProfile = { name: string; gender: string; country: string; state: string; source: string; occupation: string; interests: string[]; goal: string; ageRange: string };
 
 // A chave legada permanece intacta após migração; os novos dados Nyvo usam uma chave independente.
 export const STORAGE_KEY = "nyvo.app-data.v2";
@@ -175,7 +175,7 @@ export function makeDefaultData(): AppData {
     focus: [],
     reminders: [],
     notificationPrefs: { ...DEFAULT_PREFS },
-    profile: { occupation: "", interests: [], goal: "", ageRange: "" },
+    profile: { name: "", gender: "", country: "", state: "", source: "", occupation: "", interests: [], goal: "", ageRange: "" },
     tourDone: false,
   };
 }
@@ -201,7 +201,7 @@ function normalizeExtras(saved: Record<string, unknown>) {
     focus: stringList(saved.focus),
     reminders: Array.isArray(saved.reminders) ? saved.reminders.map(normalizeReminder).filter((r): r is Reminder => r !== null) : [],
     notificationPrefs: normalizePrefs(saved.notificationPrefs),
-    profile: (() => { const r = asRecord(saved.profile); return { occupation: stringValue(r?.occupation), interests: stringList(r?.interests), goal: stringValue(r?.goal), ageRange: stringValue(r?.ageRange) }; })(),
+    profile: (() => { const r = asRecord(saved.profile); return { name: stringValue(r?.name).slice(0, 40), gender: stringValue(r?.gender), country: stringValue(r?.country), state: stringValue(r?.state), source: stringValue(r?.source), occupation: stringValue(r?.occupation), interests: stringList(r?.interests), goal: stringValue(r?.goal), ageRange: stringValue(r?.ageRange) }; })(),
     tourDone: saved.tourDone === true,
   };
 }
