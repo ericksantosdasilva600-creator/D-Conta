@@ -29,12 +29,13 @@ const schemeFromBundleId = `manus${timestamp}`;
 const env = {
   // App branding - update these values directly (do not use env vars)
   appName: "Nyvo",
-  appSlug: "viajadesp",
+  appSlug: "nyvo",
   // Public brand asset used by the project platform; native launch icons are bundled separately.
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663929773641/FFQDkXiMFpWktfUF.png",
-  scheme: schemeFromBundleId,
-  iosBundleId: bundleId,
-  androidPackage: bundleId,
+  scheme: "nyvo",
+  // Identificador definitivo do Nyvo nas lojas (não pode mudar depois da primeira publicação).
+  iosBundleId: "com.ericksantos.nyvo",
+  androidPackage: "com.ericksantos.nyvo",
 };
 
 // Expo serializes this browser-safe subset into native and web bundles. The server-only
@@ -63,7 +64,7 @@ const config: ExpoConfig & { logoUrl: string } = {
   slug: env.appSlug,
   version: "1.0.0",
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663929773641/ZKjiGPeVuNToOSFY.png",
-  extra: publicRuntime,
+  extra: { ...publicRuntime, ...(process.env.EAS_PROJECT_ID ? { eas: { projectId: process.env.EAS_PROJECT_ID } } : {}) },
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
