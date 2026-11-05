@@ -19,7 +19,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "qr": "node scripts/generate_qr.mjs",
-    "build:site": "cross-env EXPO_PUBLIC_NYVO_LOCAL_ONLY=1 NYVO_STATIC_WEB=1 EXPO_PUBLIC_API_BASE_URL= expo export --platform web --output-dir dist-web && node scripts/pack-single-html.mjs dist-web docs/index.html && node -e \"require('fs').copyFileSync('docs/index.html','docs/404.html')\" && node -e \"for (const f of require('fs').readdirSync('site-static')) require('fs').copyFileSync('site-static/'+f,'docs/'+f)\""
+    "build:site": "cross-env EXPO_PUBLIC_NYVO_LOCAL_ONLY=1 NYVO_STATIC_WEB=1 EXPO_PUBLIC_API_BASE_URL= expo export --platform web --output-dir dist-web && node scripts/pack-single-html.mjs dist-web docs/index.html && node -e \"require('fs').copyFileSync('docs/index.html','docs/404.html')\" && node -e \"require('fs').cpSync('site-static','docs',{recursive:true})\""
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",

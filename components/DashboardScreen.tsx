@@ -12,12 +12,14 @@ import { billStatus, cardInvoices, currentInvoiceMonth, payBill } from "@/lib/fi
 import { C, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
 import { toast } from "@/lib/toast";
+import { AnimatedProgress, Pop } from "@/components/motion";
 
 const readFlag = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const writeFlag = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* sem armazenamento */ } };
 function tipAction(tip: string): { label: string; path: "/tasks" | "/finance" | "/habits" | "/notes" } | null {
   const t = tip.toLowerCase();
-  if (/prova|estud|trabalho|leitura/.test(t)) return { label: "Abrir Estudos", path: "/tasks" };
+  if (/hábito|habito|água|agua|treino|academia|sono|leitura|páginas|paginas/.test(t)) return { label: "Abrir Hábitos", path: "/habits" };
+  if (/prova|estud|trabalho/.test(t)) return { label: "Abrir Estudos", path: "/tasks" };
   if (/gasto|dinheiro|conta|dívida|divida|reserva|cartão|cartao|meta|salário|salario/.test(t)) return { label: "Abrir Finanças", path: "/finance" };
   if (/hábito|habito|água|agua|treino|academia|sono|saúde|saude/.test(t)) return { label: "Abrir Hábitos", path: "/habits" };
   if (/ideia|nota|anot/.test(t)) return { label: "Abrir Anotações", path: "/notes" };
@@ -166,7 +168,7 @@ export function DashboardScreen() {
           <ProgressBar value={doneToday} max={plannedHabits.length} />
         </View> : null}
         {plannedHabits.length ? plannedHabits.map((habit) => { const done = completed.includes(habit.id); return <Pressable key={habit.id} onPress={() => toggleHabit(habit.id)} accessibilityRole="checkbox" accessibilityState={{ checked: done }} style={todayRow}>
-          <MaterialCommunityIcons name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={24} color={done ? C.green : C.muted} />
+          <Pop active={done}><MaterialCommunityIcons name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={24} color={done ? C.green : C.muted} /></Pop>
           <Text style={[pillarTitle, { flex: 1, textDecorationLine: done ? "line-through" : "none", color: done ? C.muted : C.ink }]}>{habit.name}</Text>
           <Text style={pillarDetail}>{habit.reminderTime}</Text>
         </Pressable>; }) : <Card style={{ gap: 10, alignItems: "flex-start" }}><Text style={pillarDetail}>Nenhum hábito para hoje. Comece com um simples, como beber água ou ler 10 páginas.</Text><PrimaryButton title="Criar meu primeiro hábito" tone="light" icon="plus" onPress={() => openCapture("habit")} /></Card>}
@@ -213,8 +215,7 @@ export function DashboardScreen() {
 }
 
 function ProgressBar({ value, max }: { value: number; max: number }) {
-  const pct = max ? Math.round((value / max) * 100) : 0;
-  return <View style={barTrack} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max, now: value, text: `${pct}%` }}><View style={[barFill, { width: `${pct}%` }]} /></View>;
+  return <AnimatedProgress value={value} max={max} color={C.green} track={C.line} />;
 }
 
 function PillarCard({ icon, title, metric, detail, onPress }: { icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"]; title: string; metric: string; detail: string; onPress: () => void }) {
@@ -249,8 +250,6 @@ const smallBtn = { backgroundColor: C.green, borderRadius: 11, paddingHorizontal
 const smallBtnText = { color: "#FFFFFF", fontFamily: SANS, fontSize: 12, fontWeight: "800" as const };
 const demoBanner = { flexDirection: "row" as const, alignItems: "center" as const, gap: 9, backgroundColor: C.amberSoft, borderRadius: 14, padding: 12 };
 const nudge = { flexDirection: "row" as const, gap: 11, alignItems: "flex-start" as const, backgroundColor: C.blueSoft, borderRadius: 16, padding: 13 };
-const barTrack = { height: 8, borderRadius: 4, backgroundColor: C.line, overflow: "hidden" as const };
-const barFill = { height: 8, borderRadius: 4, backgroundColor: C.green };
 const stepRow = { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, paddingVertical: 7 };
 const streakPill = { flexDirection: "row" as const, alignItems: "center" as const, gap: 4, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999, backgroundColor: "#FCEBDD" };
 const streakText = { color: "#8A3F12", fontFamily: SANS, fontSize: 11, fontWeight: "800" as const };

@@ -47,11 +47,14 @@ export function SectionTitle({ title, action, onAction }: { title: string; actio
   );
 }
 
+// No site, deixa o "afundar" do botão suave; no celular o toque já é instantâneo.
+const PRESS_TRANSITION = (Platform.OS === "web" ? { transitionProperty: "transform, opacity", transitionDuration: "120ms" } : {}) as object;
+
 export function PrimaryButton({ title, onPress, icon, disabled = false, tone = "green", accessibilityLabel }: { title: string; onPress: () => void; icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"]; disabled?: boolean; tone?: "green" | "ink" | "light"; accessibilityLabel?: string }) {
   const backgroundColor = tone === "green" ? C.green : tone === "ink" ? C.ink : C.greenSoft;
   const color = tone === "light" ? C.greenDark : "#FFFFFF";
   return (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? title} style={({ pressed }) => [styles.primaryButton, { backgroundColor, opacity: disabled ? 0.5 : pressed ? 0.82 : 1 }]}>
+    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? title} style={({ pressed }) => [styles.primaryButton, PRESS_TRANSITION, { backgroundColor, opacity: disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed && !disabled ? 0.97 : 1 }] }]}>
       {icon ? <MaterialCommunityIcons name={icon} size={19} color={color} /> : null}
       <Text style={[styles.primaryButtonText, { color }]}>{title}</Text>
     </Pressable>

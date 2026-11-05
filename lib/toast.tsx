@@ -2,6 +2,7 @@ import React, { useEffect, useSyncExternalStore } from "react";
 import { Platform, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { C, SANS } from "@/lib/design";
+import { SlideIn } from "@/components/motion";
 
 type Icon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 type ToastState = { id: number; message: string; icon: Icon; ms: number } | null;
@@ -31,12 +32,18 @@ export function ToastHost({ bottom }: { bottom: number }) {
   }, [state]);
   if (!state) return null;
   return (
-    <View pointerEvents="none" accessibilityRole="alert" accessibilityLiveRegion="polite" style={[box, { bottom }]}>
-      <MaterialCommunityIcons name={state.icon} size={18} color="#FFFFFF" />
-      <Text style={text}>{state.message}</Text>
+    <View pointerEvents="none" style={[wrap, { bottom }]}>
+      <SlideIn key={state.id} style={box}>
+        <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={row}>
+          <MaterialCommunityIcons name={state.icon} size={18} color="#FFFFFF" />
+          <Text style={text}>{state.message}</Text>
+        </View>
+      </SlideIn>
     </View>
   );
 }
 
-const box = { position: "absolute" as const, left: 20, right: 20, maxWidth: 520, alignSelf: "center" as const, marginHorizontal: "auto" as const, paddingHorizontal: 15, paddingVertical: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9, zIndex: 50, shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8 };
+const wrap = { position: "absolute" as const, left: 20, right: 20, alignItems: "center" as const, zIndex: 50 };
+const row = { flexDirection: "row" as const, alignItems: "center" as const, gap: 9 };
+const box = { width: "100%" as const, maxWidth: 520, paddingHorizontal: 15, paddingVertical: 13, borderRadius: 15, backgroundColor: C.ink, flexDirection: "row" as const, alignItems: "center" as const, gap: 9, zIndex: 50, shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8 };
 const text = { flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" as const };

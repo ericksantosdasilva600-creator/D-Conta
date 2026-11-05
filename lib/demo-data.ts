@@ -34,9 +34,12 @@ export function addDemoData(data: AppData): AppData {
     ],
     goals: [{ id: DEMO + "g1", name: "Reserva de emergência", target: 6000, saved: 1450, deadline: day(240) }, ...data.goals],
     debts: [{ id: DEMO + "d1", name: "Cartão rotativo", total: 1200, paid: 300, monthly: 200, interest: 12 }, ...data.debts],
+    // Não duplica hábitos que a pessoa já criou com o mesmo nome (ex.: escolhidos no onboarding).
     habits: [
-      { id: DEMO + "h1", name: "Beber 2 litros de água", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "09:00", priority: "medium", archived: false, goalLabel: "Mais energia" },
-      { id: DEMO + "h2", name: "Ler 10 páginas", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "21:00", priority: "low", archived: false, goalLabel: "12 livros no ano" },
+      ...([
+        { id: DEMO + "h1", name: "Beber 2 litros de água", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "09:00", priority: "medium", archived: false, goalLabel: "Mais energia" },
+        { id: DEMO + "h2", name: "Ler 10 páginas", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "21:00", priority: "low", archived: false, goalLabel: "12 livros no ano" },
+      ] as AppData["habits"]).filter((h) => !data.habits.some((x) => x.name.trim().toLocaleLowerCase("pt-BR") === h.name.toLocaleLowerCase("pt-BR"))),
       ...data.habits,
     ],
     completedByDate,
