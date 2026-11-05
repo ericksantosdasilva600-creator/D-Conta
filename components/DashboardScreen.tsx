@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { AppModal, BrandMark, Card, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner } from "@/components/app-ui";
+import { AppModal, Card, Header, IconButton, OfflineBanner, Page, PrimaryButton, SectionTitle, StorageBanner } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
 import { PhraseCapture, QuickAddModal } from "@/components/QuickAdd";
 import { billStatus, cardInvoices, currentInvoiceMonth, payBill } from "@/lib/finance-extra";
@@ -58,7 +58,7 @@ export function DashboardScreen() {
 
   return (
     <Page>
-      <Header eyebrow={`NYVO · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle="O que importa agora, numa tela só." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow={`NYVO · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle="O que importa agora, numa tela só." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><IconButton name="bell-outline" label="Lembretes" onPress={() => router.push("/reminders")} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       <PhraseCapture onSaved={showToast} />

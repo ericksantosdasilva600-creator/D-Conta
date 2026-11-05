@@ -1,5 +1,5 @@
 import { Redirect, Tabs, router, usePathname } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ComponentProps } from "react";
 import { Platform, Pressable, Text, View, useWindowDimensions } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -10,7 +10,8 @@ import { CloudSyncBadge } from "@/lib/cloud-sync";
 import { useAppData } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
 import { QuickAddModal } from "@/components/QuickAdd";
-import { useBrowserReminders, useWebDarkMode } from "@/lib/web-effects";
+import { useReminderScheduler, useWebDarkMode } from "@/lib/web-effects";
+import { refreshLocalNotifications } from "@/lib/local-notifications";
 
 const NAV_ITEMS = [
   { path: "/", label: "Hoje", icon: "white-balance-sunny" },
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { path: "/notes", label: "Anotações", icon: "note-text-outline" },
   { path: "/habits", label: "Hábitos & Saúde", icon: "heart-pulse" },
   { path: "/tasks", label: "Tarefas", icon: "checkbox-marked-circle-outline" },
+  { path: "/reminders", label: "Lembretes", icon: "bell-outline" },
   { path: "/settings", label: "Configurações", icon: "cog-outline" },
 ] as const;
 
@@ -31,7 +33,12 @@ export default function TabLayout() {
   const [quickOpen, setQuickOpen] = useState(false);
   const [toast, setToast] = useState("");
   useWebDarkMode(data.darkMode);
-  useBrowserReminders(data);
+  useReminderScheduler(data, (title, body) => { setToast(`${title} · ${body}`); setTimeout(() => setToast(""), 6000); });
+  useEffect(() => {
+    if (Platform.OS === "web" || loading) return;
+    const id = setTimeout(() => { void refreshLocalNotifications(data); }, 1500);
+    return () => clearTimeout(id);
+  }, [data, loading]);
   if (loading) return <LoadingState />;
   if (!storageReady) return <StorageRecoveryScreen message={storageError} onRetry={retryStorage} />;
   if (!data.onboarded) return <Redirect href="/onboarding" />;
@@ -50,6 +57,7 @@ export default function TabLayout() {
     <Tabs.Screen name="habits" options={{ title: "Hábitos", tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="heart-pulse" size={size} color={color} /> }} />
     <Tabs.Screen name="tasks" options={{ title: "Tarefas", tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="checkbox-marked-circle-outline" size={size} color={color} /> }} />
     <Tabs.Screen name="settings" options={{ href: null }} />
+    <Tabs.Screen name="reminders" options={{ href: null }} />
   </Tabs>;
 
   const fab = <>
@@ -57,7 +65,7 @@ export default function TabLayout() {
       <MaterialCommunityIcons name="plus" size={28} color="#FFFFFF" />
     </Pressable>
     <QuickAddModal visible={quickOpen} onClose={() => setQuickOpen(false)} onSaved={(message) => { setToast(message); setTimeout(() => setToast(""), 2600); }} />
-    {toast ? <View accessibilityRole="alert" style={[toastStyle, { bottom: desktop ? 100 : 57 + bottomPadding + 84 }]}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
+    {toast ? <View accessibilityRole="alert" style={[toastStyle, { bottom: desktop ? 100 : 57 + bottomPadding + 84 }]}><MaterialCommunityIcons name="bell-ring-outline" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
   </>;
 
   if (!desktop) return <View style={{ flex: 1 }}>{tabs}{pathname === "/settings" ? null : fab}</View>;

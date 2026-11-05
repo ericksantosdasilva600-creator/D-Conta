@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import type { AppData } from "@/lib/app-data";
-import { billStatus } from "@/lib/finance-extra";
-import { daysUntil, localDateKey } from "@/lib/format";
+import { eventsBetween } from "@/lib/reminders";
 
 /** Modo escuro no site: inverte as cores da interface preservando o verde/azul da marca. */
 export function useWebDarkMode(enabled: boolean) {
@@ -21,29 +20,62 @@ export function useWebDarkMode(enabled: boolean) {
   }, [enabled]);
 }
 
-/** Avisos do navegador: uma vez por dia, ao abrir o Nyvo, lembra contas e tarefas que vencem hoje ou estão atrasadas. */
-export function useBrowserReminders(data: AppData) {
+export function notificationsSupported() {
+  return Platform.OS === "web" && typeof window !== "undefined" && "Notification" in window;
+}
+
+export async function showSystemNotification(title: string, body: string, tag?: string) {
+  if (!notificationsSupported() || Notification.permission !== "granted") return false;
+  try {
+    const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : undefined;
+    if (reg) await reg.showNotification(title, { body, icon: "icon-192.png", badge: "icon-192.png", tag });
+    else new Notification(title, { body, tag });
+    return true;
+  } catch { return false; }
+}
+
+const LAST_KEY = "nyvo.reminders.last-check";
+const FIRED_KEY = "nyvo.reminders.fired";
+
+/**
+ * Relógio dos lembretes no site: a cada 15 s verifica o que deveria ter tocado.
+ * Avisos perdidos enquanto o Nyvo estava fechado (até 6 h) aparecem ao abrir.
+ */
+export function useReminderScheduler(data: AppData, onFire: (title: string, body: string) => void) {
+  const dataRef = useRef(data);
+  const fireRef = useRef(onFire);
+  useEffect(() => { dataRef.current = data; fireRef.current = onFire; });
   useEffect(() => {
-    if (Platform.OS !== "web" || typeof window === "undefined" || !data.browserNotifications) return;
-    if (!("Notification" in window) || Notification.permission !== "granted") return;
-    const today = localDateKey();
-    const key = "nyvo.last-browser-reminder";
-    try { if (localStorage.getItem(key) === today) return; } catch { return; }
-    const lines: string[] = [];
-    data.recurringBills.filter((b) => b.active).forEach((b) => { const s = billStatus(b); if (!s.paid && s.days <= 1) lines.push(`${b.name} ${s.days < 0 ? "atrasada" : s.days === 0 ? "vence hoje" : "vence amanhã"}`); });
-    data.transactions.filter((t) => t.kind === "expense" && !t.paid && t.dueDate).forEach((t) => { const d = daysUntil(t.dueDate); if (d !== null && d <= 1) lines.push(`${t.merchant} ${d < 0 ? "atrasada" : d === 0 ? "vence hoje" : "vence amanhã"}`); });
-    data.tasks.filter((t) => t.status !== "done" && t.dueDate && t.dueDate <= today).forEach((t) => lines.push(`Tarefa: ${t.title}`));
-    data.studyItems.filter((s) => !s.done && s.dueDate && (daysUntil(s.dueDate) ?? 9) <= 1).forEach((s) => lines.push(`Estudo: ${s.title}`));
-    if (!lines.length) return;
-    try { localStorage.setItem(key, today); } catch { /* sem armazenamento, apenas não repete nesta sessão */ }
-    const body = lines.slice(0, 4).join("\n") + (lines.length > 4 ? `\n+${lines.length - 4} itens` : "");
-    const show = async () => {
-      try {
-        const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : undefined;
-        if (reg) await reg.showNotification("Nyvo · para hoje", { body, icon: "icon-192.png", tag: "nyvo-today" });
-        else new Notification("Nyvo · para hoje", { body, tag: "nyvo-today" });
-      } catch { /* o navegador pode bloquear; os itens continuam visíveis na tela Hoje */ }
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    const read = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
+    const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* sem armazenamento */ } };
+    const tick = () => {
+      const now = new Date();
+      const saved = Number(read(LAST_KEY));
+      const from = new Date(Math.max(saved || now.getTime() - 20000, now.getTime() - 6 * 3600000));
+      write(LAST_KEY, String(now.getTime()));
+      if (from >= now) return;
+      let fired: string[] = [];
+      try { fired = JSON.parse(read(FIRED_KEY) || "[]"); } catch { fired = []; }
+      const events = eventsBetween(dataRef.current, from, now, 50).filter((e) => !fired.includes(e.key));
+      if (!events.length) return;
+      write(FIRED_KEY, JSON.stringify([...fired, ...events.map((e) => e.key)].slice(-400)));
+      const system = dataRef.current.browserNotifications;
+      if (events.length > 3) {
+        const body = events.slice(-4).map((e) => `${e.title}: ${e.body}`).join("\n");
+        if (system) void showSystemNotification(`Nyvo · ${events.length} lembretes`, body, "nyvo-batch");
+        fireRef.current(`${events.length} lembretes`, events.slice(-2).map((e) => e.title).join(", "));
+        return;
+      }
+      for (const e of events) {
+        if (system) void showSystemNotification(e.title, e.body, e.key);
+        fireRef.current(e.title, e.body);
+      }
     };
-    void show();
-  }, [data.browserNotifications, data.recurringBills, data.transactions, data.tasks, data.studyItems]);
+    tick();
+    const id = setInterval(tick, 15000);
+    const onVisible = () => { if (document.visibilityState === "visible") tick(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
+  }, []);
 }

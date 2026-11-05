@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { AppData, Transaction, Habit, Task } from "@/lib/app-data";
+import { eventsBetween } from "@/lib/reminders";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -85,22 +86,20 @@ export async function scheduleTaskReminder(task: Task) {
   await scheduleAt("Tarefa para hoje", `A tarefa “${task.title}” tem o prazo hoje.`, due);
 }
 
+/**
+ * Agenda no aparelho os próximos avisos (personalizados e automáticos).
+ * O sistema limita a quantidade de avisos agendados, por isso agendamos os próximos 60
+ * dentro de 14 dias; a lista é refeita sempre que o app abre ou os dados mudam.
+ */
 export async function refreshLocalNotifications(data: AppData) {
   if (Platform.OS === "web") return false;
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
-    if (!data.remindersEnabled && !data.dueRemindersEnabled && !data.taskRemindersEnabled) return true;
     const allowed = await getNotificationPermission();
     if (!allowed) return false;
-    if (data.dueRemindersEnabled) {
-      for (const transaction of data.transactions) await scheduleTransactionReminders(transaction);
-    }
-    if (data.remindersEnabled) {
-      for (const habit of data.habits) await scheduleHabitReminders(habit);
-    }
-    if (data.taskRemindersEnabled) {
-      for (const task of data.tasks) await scheduleTaskReminder(task);
-    }
+    const now = new Date();
+    const events = eventsBetween(data, now, new Date(now.getTime() + 14 * 86400000), 60).slice(0, 60);
+    for (const event of events) await scheduleAt(event.title, event.body, event.at);
     return true;
   } catch {
     return false;

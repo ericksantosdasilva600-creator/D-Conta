@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { Platform } from "react-native";
 import { isValidDateKey, localDateKey } from "@/lib/format";
 import { deleteCachedReceipt } from "@/lib/receipt-cache";
+import { DEFAULT_PREFS, normalizePrefs, normalizeReminder, type NotificationPrefs, type Reminder } from "@/lib/reminders";
 
 export type Priority = "low" | "medium" | "high";
 export type TransactionKind = "expense" | "income";
@@ -128,6 +129,8 @@ export type AppData = {
   darkMode: boolean;
   browserNotifications: boolean;
   focus: string[];
+  reminders: Reminder[];
+  notificationPrefs: NotificationPrefs;
 };
 
 // A chave legada permanece intacta após migração; os novos dados Nyvo usam uma chave independente.
@@ -166,6 +169,8 @@ export function makeDefaultData(): AppData {
     darkMode: false,
     browserNotifications: false,
     focus: [],
+    reminders: [],
+    notificationPrefs: { ...DEFAULT_PREFS },
   };
 }
 
@@ -188,6 +193,8 @@ function normalizeExtras(saved: Record<string, unknown>) {
     darkMode: saved.darkMode === true,
     browserNotifications: saved.browserNotifications === true,
     focus: stringList(saved.focus),
+    reminders: Array.isArray(saved.reminders) ? saved.reminders.map(normalizeReminder).filter((r): r is Reminder => r !== null) : [],
+    notificationPrefs: normalizePrefs(saved.notificationPrefs),
   };
 }
 

@@ -136,8 +136,9 @@ export default function SettingsScreen() {
         </Card>
       </View>
       <View style={{ gap: 12 }}>
-        <SectionTitle title="Lembretes" />
+        <SectionTitle title="Lembretes" action="Personalizar" onAction={() => router.push("/reminders")} />
         <Card>
+          <PrimaryButton title="Lembretes personalizados e horários" icon="bell-cog-outline" onPress={() => router.push("/reminders")} />
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="bell-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Notificações neste aparelho</Text><Text style={rowSub}>{Platform.OS === "web" ? "No navegador não há notificações: seus vencimentos, rotinas e prazos aparecem na Caixa de lembretes acima." : permission === null ? "Verificando a autorização…" : permission ? "Autorização concedida pelo dispositivo." : "Autorize para receber lembretes de rotinas, despesas e tarefas."}</Text></View></View>
           {permission || Platform.OS === "web" ? <View style={{ height: 1, backgroundColor: C.line }} /> : <PrimaryButton title={working ? "Pedindo autorização…" : "Ativar notificações"} icon="bell-check-outline" onPress={() => void turnNotificationsOn()} disabled={working} />}
           {!permission && Platform.OS !== "web" ? <Pressable onPress={() => void Linking.openSettings()} accessibilityRole="button" style={{ paddingVertical: 7 }}><Text style={linkText}>Abrir configurações do aparelho</Text></Pressable> : null}
