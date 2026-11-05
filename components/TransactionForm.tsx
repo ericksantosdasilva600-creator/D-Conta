@@ -7,7 +7,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { AppModal, ChoiceChips, Field, PrimaryButton, PriorityPicker, Tag } from "@/components/app-ui";
 import { ReceiptPreviewImage } from "@/components/ReceiptPreviewImage";
 import { DatePickerField } from "@/components/DatePickerField";
-import { useAppData, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
+import { ACCOUNTS, accountLabel, useAppData, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
 import { createId, isValidDateKey, localDateKey, parseAmount } from "@/lib/format";
 
@@ -20,10 +20,12 @@ async function keepReceipt(uri: string, base64?: string | null) {
   return destination;
 }
 
-export function TransactionForm({ visible, initial, defaultScope = "personal", onClose, onSave }: { visible: boolean; initial?: Transaction | null; defaultScope?: FinanceScope; onClose: () => void; onSave: (transaction: Transaction, categoryToAdd?: { kind: TransactionKind; name: string }) => void }) {
+export function TransactionForm({ visible, initial, defaultScope = "personal", onClose, onSave }: { visible: boolean; initial?: Transaction | null; defaultScope?: FinanceScope; onClose: () => void; onSave: (transaction: Transaction, categoryToAdd?: { kind: TransactionKind; name: string }, installments?: number) => void }) {
   const { data } = useAppData();
   const [kind, setKind] = useState<TransactionKind>(initial?.kind ?? "expense");
-  const [scope, setScope] = useState<FinanceScope>(initial?.scope ?? defaultScope);
+  const [scope] = useState<FinanceScope>(initial?.scope ?? defaultScope);
+  const [account, setAccount] = useState<AccountId>(initial?.account ?? "main");
+  const [installments, setInstallments] = useState("1");
   const [amount, setAmount] = useState(initial ? String(initial.amount).replace(".", ",") : "");
   const [merchant, setMerchant] = useState(initial?.merchant ?? "");
   const [category, setCategory] = useState(initial?.category ?? EXPENSE_CATEGORIES[0]);
@@ -52,8 +54,8 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
 
   const quickOptions = useMemo(() => {
     const options = kind === "income"
-      ? ["Salário", "Bonificação", "Reembolsos", "Adiantamentos"]
-      : ["Restaurante", "Supermercado", "Hotel", "Táxi", "Museu"];
+      ? ["Salário", "Pix recebido", "Freela", "13º salário"]
+      : ["Mercado", "iFood", "Posto de gasolina", "Uber", "Farmácia", "Padaria", "Aluguel", "Conta de luz"];
     const typed = merchant.trim().toLocaleLowerCase("pt-BR");
     return options.filter((option) => !typed || option.toLocaleLowerCase("pt-BR").includes(typed));
   }, [kind, merchant]);
@@ -61,11 +63,14 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
   const chooseQuickOption = (value: string) => {
     setMerchant(value);
     const inferredCategory = kind === "income" ? value : ({
-      Restaurante: "Alimentação",
-      Supermercado: "Alimentação",
-      Hotel: "Hospedagem",
-      Táxi: "Transporte",
-      Museu: "Atividades",
+      Mercado: "Mercado",
+      iFood: "Delivery",
+      "Posto de gasolina": "Combustível",
+      Uber: "Transporte",
+      Farmácia: "Saúde",
+      Padaria: "Alimentação",
+      Aluguel: "Moradia",
+      "Conta de luz": "Contas da casa",
     }[value] ?? "");
     const matchingCategory = categories.find((item) => item.toLocaleLowerCase("pt-BR") === inferredCategory.toLocaleLowerCase("pt-BR"));
     if (matchingCategory) setCategory(matchingCategory);
@@ -128,12 +133,14 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
     const transaction: Transaction = {
       id: initial?.id ?? createId(), kind, amount: numericAmount, merchant: merchant.trim(),
       category: categoryToAdd?.name ?? category, date, dueDate: kind === "expense" ? dueDate : "",
-      paid: kind === "expense" ? paid : true, priority, notes: notes.trim(), receiptUri, scope,
+      paid: kind === "expense" ? paid : true, priority, notes: notes.trim(), receiptUri, scope, account,
+      ...(initial?.installment ? { installment: initial.installment, installmentGroup: initial.installmentGroup } : {}),
       ...(receiptId ? { receiptId } : {}),
       ...(receiptPendingBase64 ? { receiptPendingBase64 } : {}),
       ...(receiptMimeType ? { receiptMimeType } : {}),
     };
-    onSave(transaction, categoryToAdd);
+    const count = Math.max(1, Math.min(48, Number(installments) || 1));
+    onSave(transaction, categoryToAdd, !initial && kind === "expense" && account === "card" ? count : 1);
     onClose();
   };
 
@@ -144,9 +151,11 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
         <ChoiceChips values={["Despesa", "Receita"]} selected={kind === "expense" ? "Despesa" : "Receita"} onSelect={(value) => changeKind(value === "Despesa" ? "expense" : "income")} />
       </View>
       <View style={{ gap: 7 }}>
-        <Text style={labelStyle}>Grupo do movimento</Text>
-        <ChoiceChips values={["Pessoal", "Viagem"]} selected={scope === "personal" ? "Pessoal" : "Viagem"} onSelect={(value) => setScope(value === "Viagem" ? "trip" : "personal")} />
-        {scope === "trip" ? <Text style={helperStyle}>Este movimento fica em “{data.tripName}”, separado das tuas finanças pessoais.</Text> : null}
+        <Text style={labelStyle}>{kind === "expense" ? "Paga com" : "Entrou em"}</Text>
+        <ChoiceChips values={ACCOUNTS.map((a) => a.label)} selected={accountLabel(account)} onSelect={(value) => setAccount(ACCOUNTS.find((a) => a.label === value)?.id ?? "main")} horizontal={false} />
+        {kind === "expense" && account === "card" && !initial ? <Field label="Parcelas" value={installments} onChangeText={(v) => setInstallments(v.replace(/\D/g, "").slice(0, 2))} keyboardType="number-pad" placeholder="1" /> : null}
+        {kind === "expense" && account === "card" && !initial && Number(installments) > 1 ? <Text style={helperStyle}>O valor total será dividido em {installments} parcelas mensais na fatura do cartão.</Text> : null}
+        {scope === "trip" ? <Text style={helperStyle}>Este movimento é de “{data.tripName}”, separado das suas finanças pessoais.</Text> : null}
       </View>
       <View style={{ gap: 9 }}>
         <Text style={labelStyle}>{kind === "expense" ? "Escolha o tipo de despesa" : "Escolha o tipo de receita"}</Text>

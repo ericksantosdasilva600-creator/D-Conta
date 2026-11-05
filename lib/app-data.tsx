@@ -10,6 +10,22 @@ export type TransactionKind = "expense" | "income";
 export type FinanceScope = "personal" | "trip";
 export type TaskStatus = "backlog" | "next" | "in_progress" | "done";
 export type HealthLogKind = "hydration" | "workout" | "reading" | "study";
+export type AccountId = "main" | "card" | "cash" | "savings";
+export const ACCOUNTS: { id: AccountId; label: string; icon: string }[] = [
+  { id: "main", label: "Conta principal", icon: "bank-outline" },
+  { id: "card", label: "Cartão de crédito", icon: "credit-card-outline" },
+  { id: "cash", label: "Dinheiro", icon: "cash" },
+  { id: "savings", label: "Poupança", icon: "piggy-bank-outline" },
+];
+export const accountLabel = (id?: string) => ACCOUNTS.find((item) => item.id === id)?.label ?? "Conta principal";
+
+export type CreditCard = { closingDay: number; dueDay: number; limit: number };
+export type RecurringBill = { id: string; name: string; amount: number; category: string; dueDay: number; account: AccountId; paidMonths: string[]; active: boolean };
+export type SavingsGoal = { id: string; name: string; target: number; saved: number; deadline: string };
+export type Debt = { id: string; name: string; total: number; paid: number; monthly: number; interest: number };
+export type StudySubject = { id: string; name: string };
+export type StudyItemKind = "exam" | "assignment" | "reading";
+export type StudyItem = { id: string; subjectId: string; title: string; kind: StudyItemKind; dueDate: string; done: boolean };
 
 export type Transaction = {
   id: string;
@@ -27,6 +43,10 @@ export type Transaction = {
   receiptPendingBase64?: string;
   receiptMimeType?: string;
   scope: FinanceScope;
+  account?: AccountId;
+  installment?: string;
+  installmentGroup?: string;
+  recurringBillId?: string;
 };
 
 export type Habit = {
@@ -99,6 +119,15 @@ export type AppData = {
   reduceMotion: boolean;
   currency: string;
   tripName: string;
+  creditCard: CreditCard;
+  recurringBills: RecurringBill[];
+  goals: SavingsGoal[];
+  debts: Debt[];
+  studySubjects: StudySubject[];
+  studyItems: StudyItem[];
+  darkMode: boolean;
+  browserNotifications: boolean;
+  focus: string[];
 };
 
 // A chave legada permanece intacta após migração; os novos dados Nyvo usam uma chave independente.
@@ -106,8 +135,8 @@ export const STORAGE_KEY = "nyvo.app-data.v2";
 export const LEGACY_STORAGE_KEY = "viaja.app-data.v1";
 export const STORAGE_MIGRATION_BACKUP_KEY = "nyvo.migration.viaja-app-data-v1";
 export const STORAGE_RECOVERY_BACKUP_KEY = `${STORAGE_KEY}.recovery-backup`;
-export const EXPENSE_CATEGORIES = ["Alimentação", "Transporte", "Hospedagem", "Atividades", "Compras", "Saúde", "Outros"];
-export const INCOME_CATEGORIES = ["Salário", "Bonificação", "Reembolsos", "Adiantamentos", "Outras receitas"];
+export const EXPENSE_CATEGORIES = ["Mercado", "Alimentação", "Delivery", "Moradia", "Contas da casa", "Transporte", "Combustível", "Saúde", "Educação", "Assinaturas", "Lazer", "Compras", "Viagem", "Outros"];
+export const INCOME_CATEGORIES = ["Salário", "13º salário", "Férias", "Bonificação", "Pix recebido", "Freela", "Rendimentos", "Reembolsos", "Outras receitas"];
 
 export function makeDefaultData(): AppData {
   return {
@@ -128,6 +157,37 @@ export function makeDefaultData(): AppData {
     reduceMotion: false,
     currency: "BRL",
     tripName: "Minha viagem",
+    creditCard: { closingDay: 1, dueDay: 10, limit: 0 },
+    recurringBills: [],
+    goals: [],
+    debts: [],
+    studySubjects: [],
+    studyItems: [],
+    darkMode: false,
+    browserNotifications: false,
+    focus: [],
+  };
+}
+
+const ACCOUNT_IDS: AccountId[] = ["main", "card", "cash", "savings"];
+const accountValue = (value: unknown): AccountId => ACCOUNT_IDS.includes(value as AccountId) ? value as AccountId : "main";
+const num = (value: unknown, fallback = 0) => { const n = Number(value); return Number.isFinite(n) ? n : fallback; };
+const dayValue = (value: unknown, fallback: number) => Math.min(31, Math.max(1, Math.round(num(value, fallback))));
+function listOf<T>(value: unknown, map: (item: Record<string, unknown>) => T | null): T[] {
+  return Array.isArray(value) ? value.map((item) => { const r = asRecord(item); return r && typeof r.id === "string" ? map(r) : null; }).filter((item): item is T => item !== null) : [];
+}
+function normalizeExtras(saved: Record<string, unknown>) {
+  const card = asRecord(saved.creditCard);
+  return {
+    creditCard: { closingDay: dayValue(card?.closingDay, 1), dueDay: dayValue(card?.dueDay, 10), limit: Math.max(0, num(card?.limit)) },
+    recurringBills: listOf<RecurringBill>(saved.recurringBills, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, amount: Math.max(0, num(r.amount)), category: stringValue(r.category, "Contas da casa"), dueDay: dayValue(r.dueDay, 10), account: accountValue(r.account), paidMonths: stringList(r.paidMonths), active: r.active !== false } : null),
+    goals: listOf<SavingsGoal>(saved.goals, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, target: Math.max(0, num(r.target)), saved: Math.max(0, num(r.saved)), deadline: stringValue(r.deadline) } : null),
+    debts: listOf<Debt>(saved.debts, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, total: Math.max(0, num(r.total)), paid: Math.max(0, num(r.paid)), monthly: Math.max(0, num(r.monthly)), interest: Math.max(0, num(r.interest)) } : null),
+    studySubjects: listOf<StudySubject>(saved.studySubjects, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name } : null),
+    studyItems: listOf<StudyItem>(saved.studyItems, (r) => typeof r.title === "string" ? { id: r.id as string, subjectId: stringValue(r.subjectId), title: r.title, kind: r.kind === "exam" || r.kind === "reading" ? r.kind : "assignment", dueDate: stringValue(r.dueDate), done: r.done === true } : null),
+    darkMode: saved.darkMode === true,
+    browserNotifications: saved.browserNotifications === true,
+    focus: stringList(saved.focus),
   };
 }
 
@@ -168,6 +228,10 @@ function normalizeTransaction(value: unknown): Transaction | null {
     ...(typeof item.receiptMimeType === "string" ? { receiptMimeType: item.receiptMimeType } : {}),
     // In schema v1 every existing movement belongs to the original travel notebook.
     scope: item.scope === "personal" ? "personal" : "trip",
+    account: accountValue(item.account),
+    ...(typeof item.installment === "string" ? { installment: item.installment } : {}),
+    ...(typeof item.installmentGroup === "string" ? { installmentGroup: item.installmentGroup } : {}),
+    ...(typeof item.recurringBillId === "string" ? { recurringBillId: item.recurringBillId } : {}),
   };
 }
 
@@ -282,6 +346,7 @@ export function normalizeStoredData(value: unknown): AppData {
     reduceMotion: Boolean(saved.reduceMotion),
     currency: stringValue(saved.currency, "BRL"),
     tripName: stringValue(saved.tripName, "Minha viagem").trim() || "Minha viagem",
+    ...normalizeExtras(saved),
   };
 }
 

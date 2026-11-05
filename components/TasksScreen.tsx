@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, BrandMark, Card, ChoiceChips, EmptyState, Field, Header, IconButton, OfflineBanner, Page, PrimaryButton, PriorityTag, SectionTitle, StorageBanner, Tag } from "@/components/app-ui";
 import { DatePickerField } from "@/components/DatePickerField";
+import { StudyPanel } from "@/components/StudyPanel";
 import { useAppData, type Priority, type Task, type TaskStatus } from "@/lib/app-data";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
 import { createId, displayDate } from "@/lib/format";
@@ -21,6 +22,7 @@ const EMPTY_DRAFT: Draft = { title: "", description: "", status: "backlog", prio
 
 export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
   const { data, updateData, loading } = useAppData();
+  const [tab, setTab] = useState("Tarefas");
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
   const [query, setQuery] = useState("");
@@ -94,9 +96,11 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · TAREFAS" title="Priorize o que importa." subtitle="Organize o backlog, os prazos e os próximos passos." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow="NYVO · TAREFAS E ESTUDOS" title="Priorize o que importa." subtitle="Tarefas, prazos, provas e trabalhos." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
+      <ChoiceChips values={["Tarefas", "Estudos"]} selected={tab} onSelect={setTab} />
+      {tab === "Estudos" ? <StudyPanel /> : <>
       <PrimaryButton title="Nova tarefa" onPress={openNew} icon="plus" />
       <View style={{ gap: 12 }}>
         <SectionTitle title="Tarefas" />
@@ -127,6 +131,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
       <AppModal visible={Boolean(deleting)} title="Excluir tarefa?" subtitle="Esta ação não pode ser desfeita." onClose={() => setDeleting(null)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Manter tarefa" tone="light" onPress={() => setDeleting(null)} /><PrimaryButton title="Excluir" tone="ink" onPress={removeTask} icon="delete-outline" /></View>}>
         <Text style={mutedText}>{deleting?.title}</Text>
       </AppModal>
+      </>}
     </Page>
   );
 }

@@ -141,6 +141,14 @@ export default function SettingsScreen() {
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="bell-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Notificações neste aparelho</Text><Text style={rowSub}>{Platform.OS === "web" ? "No navegador não há notificações: seus vencimentos, rotinas e prazos aparecem na Caixa de lembretes acima." : permission === null ? "Verificando a autorização…" : permission ? "Autorização concedida pelo dispositivo." : "Autorize para receber lembretes de rotinas, despesas e tarefas."}</Text></View></View>
           {permission || Platform.OS === "web" ? <View style={{ height: 1, backgroundColor: C.line }} /> : <PrimaryButton title={working ? "Pedindo autorização…" : "Ativar notificações"} icon="bell-check-outline" onPress={() => void turnNotificationsOn()} disabled={working} />}
           {!permission && Platform.OS !== "web" ? <Pressable onPress={() => void Linking.openSettings()} accessibilityRole="button" style={{ paddingVertical: 7 }}><Text style={linkText}>Abrir configurações do aparelho</Text></Pressable> : null}
+          {Platform.OS === "web" ? <SettingToggle title="Avisos do navegador" description="Ao abrir o Nyvo, avisa uma vez por dia o que vence hoje ou está atrasado. Instale o Nyvo na tela inicial para funcionar melhor." value={data.browserNotifications} onChange={(value) => { void (async () => {
+            if (value && typeof window !== "undefined" && "Notification" in window) {
+              const result = await Notification.requestPermission().catch(() => "denied" as NotificationPermission);
+              if (result !== "granted") { showToast("O navegador não permitiu avisos. Libere nas configurações do site."); return; }
+            } else if (value) { showToast("Este navegador não tem avisos."); return; }
+            updateData((current) => ({ ...current, browserNotifications: value }));
+            if (value) showToast("Avisos ativados.");
+          })(); }} /> : null}
           <SettingToggle title="Lembretes dos hábitos" description="Receba um aviso nos dias e hora definidos em cada rotina." value={data.remindersEnabled} onChange={(value) => void updatePreferences({ remindersEnabled: value })} />
           <SettingToggle title="Avisos de vencimento" description="Um dia antes às 09:00 e no próprio dia, se a despesa continuar pendente." value={data.dueRemindersEnabled} onChange={(value) => void updatePreferences({ dueRemindersEnabled: value })} />
           <SettingToggle title="Lembretes das tarefas" description="Receba um aviso às 09:00 na data definida nas tarefas que têm lembrete ativado." value={data.taskRemindersEnabled} onChange={(value) => void updatePreferences({ taskRemindersEnabled: value })} />
@@ -163,6 +171,7 @@ export default function SettingsScreen() {
         <SectionTitle title="Acessibilidade" />
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="eye-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Ajustes do aparelho</Text><Text style={rowSub}>O app respeita a escala do texto e os leitores de tela do celular.</Text></View></View>
+          <SettingToggle title="Modo escuro" description="Cores escuras para usar à noite, depois da aula ou do trabalho." value={data.darkMode} onChange={(value) => updateData((current) => ({ ...current, darkMode: value }))} />
           <SettingToggle title="Reduzir movimento" description="Abra os diálogos sem a animação deslizante." value={data.reduceMotion} onChange={(value) => updateData((current) => ({ ...current, reduceMotion: value }))} />
         </Card>
       </View>
@@ -194,6 +203,7 @@ export default function SettingsScreen() {
         <Card>
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="database-lock-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Dados pessoais</Text><Text style={rowSub}>Notas, finanças, rotinas, saúde, tarefas e referências a recibos ficam associados à sua conta depois que você confirmar a primeira sincronização. Recibos são enviados como imagens comprimidas.</Text></View></View>
           <View style={privacyBox}><MaterialCommunityIcons name="wifi-off" size={17} color="#80611E" /><Text style={{ flex: 1, color: "#80611E", fontFamily: SANS, fontSize: 12, lineHeight: 17 }}>A aplicação funciona offline. A limpeza local não apaga a cópia na nuvem; os dados podem ser baixados novamente quando você sincronizar de novo.</Text></View>
+          {Platform.OS === "web" ? <Pressable onPress={() => void Linking.openURL(`${process.env.EXPO_BASE_URL ?? ""}/privacidade.html`)} accessibilityRole="link" style={{ paddingVertical: 6 }}><Text style={linkText}>Política de privacidade e termos de uso</Text></Pressable> : null}
           <PrimaryButton title={accountId !== null ? "Limpar cache deste aparelho" : "Apagar dados locais"} tone="ink" icon="delete-outline" onPress={() => setResetOpen(true)} />
         </Card>
       </View>

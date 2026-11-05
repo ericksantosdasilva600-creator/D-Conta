@@ -12,7 +12,7 @@ export function Page({ children, scroll = true }: { children: React.ReactNode; s
   const inner = <View style={[styles.content, { maxWidth }]}>{children}</View>;
   return (
     <SafeAreaView style={styles.page} edges={["top", "left", "right"]}>
-      {scroll ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>{inner}</ScrollView> : inner}
+      {scroll ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scrollContent, { paddingBottom: 96 }]}>{inner}</ScrollView> : inner}
     </SafeAreaView>
   );
 }

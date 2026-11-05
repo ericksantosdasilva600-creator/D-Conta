@@ -6,7 +6,9 @@ import { AppModal, BrandMark, Card, ChoiceChips, EmptyState, Header, IconButton,
 import { TransactionForm } from "@/components/TransactionForm";
 import { FinanceCharts } from "@/components/FinanceCharts";
 import { BudgetPanel } from "@/components/BudgetPanel";
-import { useAppData, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
+import { CreditCardPanel, DebtsPanel, GoalsPanel, ImportPanel, MonthSummaryPanel, RecurringBillsPanel } from "@/components/FinanceExtras";
+import { splitInstallments } from "@/lib/finance-extra";
+import { ACCOUNTS, accountLabel, useAppData, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
 import { refreshLocalNotifications } from "@/lib/local-notifications";
@@ -27,6 +29,9 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
   const [sortPriority, setSortPriority] = useState(false);
   const [toast, setToast] = useState("");
   const [scope, setScope] = useState<FinanceScope>("personal");
+  const [section, setSection] = useState("Movimentos");
+  const [accountFilter, setAccountFilter] = useState<AccountId | "all">("all");
+  const hasTrip = useMemo(() => data.transactions.some((item) => item.scope === "trip"), [data.transactions]);
   const previousAutoCreate = useRef(false);
 
   useEffect(() => {
@@ -49,30 +54,33 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
       if (filterKind === "pending" && (item.kind !== "expense" || item.paid)) return false;
       if (filterPriority !== "all" && item.priority !== filterPriority) return false;
       if (filterCategory !== "Todas categorias" && item.category !== filterCategory) return false;
+      if (accountFilter !== "all" && (item.account ?? "main") !== accountFilter) return false;
       if (cutoff && item.date < cutoff) return false;
       if (normalizedQuery && !`${item.merchant} ${item.category} ${item.notes}`.toLocaleLowerCase("pt-BR").includes(normalizedQuery)) return false;
       return true;
     }).sort((a, b) => sortPriority ? priorityRank[a.priority] - priorityRank[b.priority] || b.date.localeCompare(a.date) : b.date.localeCompare(a.date));
-  }, [visibleTransactions, filterKind, filterPriority, filterCategory, dateWindow, query, sortPriority]);
+  }, [visibleTransactions, filterKind, filterPriority, filterCategory, dateWindow, query, sortPriority, accountFilter]);
 
   const showToast = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(""), 2600);
   };
 
-  const saveTransaction = (transaction: Transaction, categoryToAdd?: { kind: TransactionKind; name: string }) => {
+  const saveTransaction = (transaction: Transaction, categoryToAdd?: { kind: TransactionKind; name: string }, installments = 1) => {
+    const isNew = !data.transactions.some((item) => item.id === transaction.id);
+    const created = isNew && installments > 1 ? splitInstallments(transaction, installments) : [transaction];
     const existingCustom = categoryToAdd?.kind === "expense" ? data.customExpenseCategories : data.customIncomeCategories;
     const duplicate = Boolean(categoryToAdd && existingCustom.some((item) => item.toLocaleLowerCase("pt-BR") === categoryToAdd.name.toLocaleLowerCase("pt-BR")));
     const updated = {
       ...data,
-      transactions: [transaction, ...data.transactions.filter((item) => item.id !== transaction.id)],
+      transactions: [...created, ...data.transactions.filter((item) => item.id !== transaction.id)],
       customExpenseCategories: categoryToAdd?.kind === "expense" && !duplicate ? [...data.customExpenseCategories, categoryToAdd.name] : data.customExpenseCategories,
       customIncomeCategories: categoryToAdd?.kind === "income" && !duplicate ? [...data.customIncomeCategories, categoryToAdd.name] : data.customIncomeCategories,
     };
     updateData(() => updated);
     void refreshLocalNotifications(updated);
     setEditing(null);
-    showToast("Movimento salvo.");
+    showToast(created.length > 1 ? `Compra dividida em ${created.length} parcelas.` : "Movimento salvo.");
   };
 
   const removeTransaction = () => {
@@ -96,7 +104,15 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
       <Header eyebrow={scope === "personal" ? "NYVO · FINANÇAS PESSOAIS" : "NYVO · DESPESAS DE VIAGEM"} title={scope === "personal" ? "Seu dinheiro, com clareza." : "Finanças da viagem."} subtitle={scope === "personal" ? "Receitas, despesas e orçamentos do dia a dia." : `${data.tripName} · recibos, movimentos e vencimentos.`} right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
-      <ChoiceChips values={["Pessoal", "Viagem"]} selected={scope === "personal" ? "Pessoal" : "Viagem"} onSelect={(value) => { setScope(value === "Viagem" ? "trip" : "personal"); setFilterCategory("Todas categorias"); }} />
+      <ChoiceChips values={["Movimentos", "Contas fixas", "Cartão", "Metas", "Dívidas", "Resumo do mês", "Importar"]} selected={section} onSelect={setSection} />
+      {section === "Contas fixas" ? <RecurringBillsPanel onToast={showToast} /> : null}
+      {section === "Cartão" ? <CreditCardPanel /> : null}
+      {section === "Metas" ? <GoalsPanel onToast={showToast} /> : null}
+      {section === "Dívidas" ? <DebtsPanel onToast={showToast} /> : null}
+      {section === "Resumo do mês" ? <MonthSummaryPanel /> : null}
+      {section === "Importar" ? <ImportPanel onToast={showToast} /> : null}
+      {section === "Movimentos" ? <>
+      {hasTrip ? <ChoiceChips values={["Pessoal", "Viagem"]} selected={scope === "personal" ? "Pessoal" : "Viagem"} onSelect={(value) => { setScope(value === "Viagem" ? "trip" : "personal"); setFilterCategory("Todas categorias"); }} /> : null}
       <Card style={{ backgroundColor: C.greenDark, borderColor: C.greenDark, padding: 19, gap: 14 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}><Text style={balanceLabel}>{scope === "personal" ? "SALDO PESSOAL" : "SALDO DA VIAGEM"}</Text><MaterialCommunityIcons name={scope === "personal" ? "wallet-outline" : "map-marker-path"} size={19} color="#B7D9C7" /></View>
         <Text accessibilityLabel={`Saldo ${scope === "personal" ? "pessoal" : "da viagem"}: ${money(balance, data.currency)}`} style={balanceValue}>{money(balance, data.currency)}</Text>
@@ -116,11 +132,13 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
         <View style={{ gap: 9 }}>
           <ChoiceChips values={["Tudo", "Despesas", "Receitas", "Pendentes"]} selected={filterKind === "all" ? "Tudo" : filterKind === "expense" ? "Despesas" : filterKind === "income" ? "Receitas" : "Pendentes"} onSelect={(value) => setFilterKind(value === "Despesas" ? "expense" : value === "Receitas" ? "income" : value === "Pendentes" ? "pending" : "all")} />
           <ChoiceChips values={["Todas prioridades", "Alta", "Média", "Baixa"]} selected={filterPriority === "all" ? "Todas prioridades" : PRIORITY_LABELS[filterPriority]} onSelect={(value) => setFilterPriority(value === "Alta" ? "high" : value === "Média" ? "medium" : value === "Baixa" ? "low" : "all")} />
+          <ChoiceChips values={["Todas as contas", ...ACCOUNTS.map((a) => a.label)]} selected={accountFilter === "all" ? "Todas as contas" : accountLabel(accountFilter)} onSelect={(value) => setAccountFilter(ACCOUNTS.find((a) => a.label === value)?.id ?? "all")} />
           <ChoiceChips values={["Qualquer data", "7 dias", "30 dias"]} selected={dateWindow === "all" ? "Qualquer data" : `${dateWindow} dias`} onSelect={(value) => setDateWindow(value === "7 dias" ? "7" : value === "30 dias" ? "30" : "all")} />
           {categoryOptions.length > 1 ? <ChoiceChips values={categoryOptions} selected={filterCategory} onSelect={setFilterCategory} /> : null}
         </View>
         {loading ? <View style={{ padding: 28, alignItems: "center" }}><Text style={mutedText}>Carregando seus movimentos…</Text></View> : filtered.length ? <View style={{ gap: 10 }}>{filtered.map((item) => <TransactionRow key={item.id} transaction={item} currency={data.currency} onPress={() => { setEditing(item); setFormOpen(true); }} onDelete={() => setDeleting(item)} onTogglePaid={() => togglePaid(item)} />)}</View> : <Card><EmptyState icon="receipt-text-outline" title={visibleTransactions.length ? "Nada encontrado" : scope === "trip" ? "Ainda sem movimentos de viagem" : "Comece pelas suas finanças pessoais"} description={visibleTransactions.length ? "Experimente mudar a pesquisa ou os filtros." : "Registre uma despesa ou receita para ver o saldo, os gráficos e os orçamentos ganharem forma."} action={!visibleTransactions.length ? <PrimaryButton title="Adicionar primeiro movimento" onPress={() => { setEditing(null); setFormOpen(true); }} icon="plus" /> : undefined} /></Card>}
       </View>
+      </> : null}
       {toast ? <View accessibilityRole="alert" style={toastStyle}><MaterialCommunityIcons name="check-circle" size={18} color="#FFFFFF" /><Text style={{ flex: 1, color: "#FFFFFF", fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>{toast}</Text></View> : null}
       {formOpen ? <TransactionForm visible initial={editing} defaultScope={scope} onClose={() => setFormOpen(false)} onSave={saveTransaction} /> : null}
       <AppModal visible={Boolean(deleting)} title="Remover movimento?" subtitle="Esta ação não pode ser desfeita." onClose={() => setDeleting(null)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Manter movimento" tone="light" onPress={() => setDeleting(null)} /><PrimaryButton title="Remover" tone="ink" onPress={removeTransaction} icon="delete-outline" /></View>}>
@@ -145,6 +163,8 @@ function TransactionRow({ transaction, currency, onPress, onDelete, onTogglePaid
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1 }}>
           <Tag label={transaction.kind === "expense" ? transaction.paid ? "Pago" : "Pendente" : "Recebido"} tone={transaction.kind === "expense" && !transaction.paid ? "amber" : transaction.kind === "expense" ? "muted" : "green"} />
           {dueLabel ? <Tag label={dueLabel} tone={dueTone} icon="calendar-clock" /> : null}
+          {transaction.account && transaction.account !== "main" ? <Tag label={accountLabel(transaction.account)} tone="blue" icon={ACCOUNTS.find((a) => a.id === transaction.account)?.icon as never} /> : null}
+          {transaction.installment ? <Tag label={`Parcela ${transaction.installment}`} tone="muted" /> : null}
           {transaction.receiptUri ? <Tag label="Recibo" tone="blue" icon="receipt" /> : null}
         </View>
         {transaction.kind === "expense" ? <Pressable onPress={(event) => { event.stopPropagation(); onTogglePaid(); }} accessibilityRole="button" accessibilityLabel={transaction.paid ? "Marcar despesa como pendente" : "Marcar despesa como paga"} style={paidAction}><MaterialCommunityIcons name={transaction.paid ? "checkbox-marked-circle-outline" : "circle-outline"} size={17} color={C.green} /><Text style={{ color: C.greenDark, fontFamily: SANS, fontSize: 11, fontWeight: "700" }}>{transaction.paid ? "Paga" : "Marcar paga"}</Text></Pressable> : <Pressable onPress={(event) => { event.stopPropagation(); onDelete(); }} accessibilityRole="button" accessibilityLabel="Remover movimento" style={{ padding: 4 }}><MaterialCommunityIcons name="delete-outline" size={18} color={C.muted} /></Pressable>}
