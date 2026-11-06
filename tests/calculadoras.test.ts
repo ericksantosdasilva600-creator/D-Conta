@@ -26,4 +26,20 @@ describe("calculadoras 2026", () => {
     expect(C.reserva(2500, 6, 3000, 500)).toEqual({ meta: 15000, falta: 12000, mesesAteMeta: 24 });
     expect(C.reserva(1000, 3, 5000, 0).mesesAteMeta).toBe(0);
   });
+  it("calcula horas extras", () => {
+    expect(C.horasExtras(3000, 220, 10, 50)).toEqual({ hora: 13.64, extra: 20.45, total: 204.55 });
+    expect(C.horasExtras(2200, 220, 1, 100).extra).toBe(20);
+  });
+  it("divide o orçamento 50-30-20", () => {
+    expect(C.orcamento(3000)).toEqual({ essenciais: 1500, desejos: 900, futuro: 600 });
+  });
+  it("acha os juros do parcelamento", () => {
+    expect(C.parcelamento(1000, 100, 12)).toEqual({ total: 1200, juros: 200, taxa: 2.92 });
+    expect(C.parcelamento(1200, 100, 12).taxa).toBe(0);
+  });
+  it("soma o desafio das 52 semanas", () => {
+    const r = C.desafio52(5);
+    expect(r.total).toBe(6890);
+    expect(r.semanas[51]).toBe(260);
+  });
 });

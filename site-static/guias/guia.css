@@ -46,3 +46,15 @@ th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); 
 .tools a { display:block; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:18px 20px; text-decoration:none; color:var(--ink); }
 .tools b { font:700 21px/1.25 var(--display); display:block; }
 .tools span { color:var(--muted); font-size:16px; }
+.weeks { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:12px 0; }
+.weeks label { display:flex; align-items:center; gap:8px; font-size:15px; background:var(--surface); border-radius:10px; padding:8px 10px; min-height:44px; }
+.weeks b { margin-left:auto; }
+.pomo { text-align:center; }
+.pomo .modes, .pomo .ctrl { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+.pomo .modes button { background:transparent; color:var(--ink); border:1.5px solid var(--line); min-height:46px; padding:0 20px; }
+.pomo .modes button:hover { background:var(--mint); }
+.pomo .modes button[aria-pressed="true"] { background:var(--mint); border-color:var(--green); }
+.pomo .ctrl button { min-width:130px; padding:0 20px; }
+.pomo .ctrl #zerar { background:transparent; color:var(--green); border:2px solid var(--green); }
+#tempo { font:800 clamp(72px,22vw,120px)/1 var(--display); font-variant-numeric:tabular-nums; }
+#ciclos { color:var(--muted); margin:0; }
