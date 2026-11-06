@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 // @ts-ignore arquivo estático do site, sem tipos
 import "../site-static/calculadoras/calc.js";
 
-const C = (globalThis as any).NyvoCalc;
+const C = (globalThis as any).DaContaCalc;
 
 describe("calculadoras 2026", () => {
   it("calcula o INSS progressivo e respeita o teto", () => {
