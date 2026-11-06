@@ -92,7 +92,7 @@ export default function HabitsScreen() {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · HÁBITOS & SAÚDE" title={activeSection === "habits" ? "Um passo de cada vez." : "Cuide do seu ritmo."} subtitle="Rotinas e registros pessoais, no seu ritmo." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow="DÁ CONTA · HÁBITOS & SAÚDE" title={activeSection === "habits" ? "Um passo de cada vez." : "Cuide do seu ritmo."} subtitle="Rotinas e registros pessoais, no seu ritmo." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       <View style={modeRow}><ModeButton label="Hábitos" selected={activeSection === "habits"} onPress={() => setSection("habits")} /><ModeButton label="Saúde" selected={activeSection === "health"} onPress={() => setSection("health")} /></View>

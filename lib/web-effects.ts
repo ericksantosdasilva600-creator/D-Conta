@@ -42,7 +42,7 @@ const FIRED_KEY = "nyvo.reminders.fired";
 
 /**
  * Relógio dos lembretes no site: a cada 15 s verifica o que deveria ter tocado.
- * Avisos perdidos enquanto o Nyvo estava fechado (até 6 h) aparecem ao abrir.
+ * Avisos perdidos enquanto o Dá Conta estava fechado (até 6 h) aparecem ao abrir.
  */
 export function useReminderScheduler(data: AppData, onFire: (title: string, body: string) => void) {
   const dataRef = useRef(data);
@@ -66,7 +66,7 @@ export function useReminderScheduler(data: AppData, onFire: (title: string, body
       const system = dataRef.current.browserNotifications;
       if (events.length > 3) {
         const body = events.slice(-4).map((e) => `${e.title}: ${e.body}`).join("\n");
-        if (system) void showSystemNotification(`Nyvo · ${events.length} lembretes`, body, "nyvo-batch");
+        if (system) void showSystemNotification(`Dá Conta · ${events.length} lembretes`, body, "nyvo-batch");
         fireRef.current(`${events.length} lembretes`, events.slice(-2).map((e) => e.title).join(", "));
         return;
       }

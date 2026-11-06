@@ -142,7 +142,7 @@ export type AppData = {
 
 export type UserProfile = { name: string; gender: string; country: string; state: string; source: string; occupation: string; interests: string[]; goal: string; ageRange: string };
 
-// A chave legada permanece intacta após migração; os novos dados Nyvo usam uma chave independente.
+// A chave legada permanece intacta após migração; os novos dados Dá Conta usam uma chave independente.
 export const STORAGE_KEY = "nyvo.app-data.v2";
 export const LEGACY_STORAGE_KEY = "viaja.app-data.v1";
 export const STORAGE_MIGRATION_BACKUP_KEY = "nyvo.migration.viaja-app-data-v1";
@@ -512,7 +512,7 @@ async function loadStoredData(): Promise<StoredLoadResult> {
     try {
       await writeAndVerifyNyvoData(normalized);
     } catch {
-      return { data: normalized, error: "Os dados foram preparados, mas não foi possível salvá-los no formato Nyvo. A versão original continua preservada; tente novamente.", canWrite: false };
+      return { data: normalized, error: "Os dados foram preparados, mas não foi possível salvá-los no formato Dá Conta. A versão original continua preservada; tente novamente.", canWrite: false };
     }
   } else if (version < normalized.schemaVersion) {
     try {

@@ -1,4 +1,6 @@
-# Nyvo — instruções para o Claude
+# Dá Conta (antigo Nyvo) — instruções para o Claude
+
+- Nome do produto: **Dá Conta** (trocado de "Nyvo" em 05/11/2026 porque já existia outro app Nyvo). Slogan: "Você dá conta. A gente organiza." Nos textos para o usuário use sempre "Dá Conta". Identificadores internos (pasta, repositório, URL /nyvo/, chaves `nyvo.*` do localStorage, pacote Android `com.ericksantos.nyvo`, slug Expo) continuam com "nyvo" de propósito: mudar quebraria dados, credenciais e o Search Console.
 
 - Projeto Expo (React Native Web) do Erick. Idioma da interface: português do Brasil; moeda padrão BRL.
 - O site público é o GitHub Pages servido a partir de `docs/` em https://ericksantosdasilva600-creator.github.io/nyvo/.

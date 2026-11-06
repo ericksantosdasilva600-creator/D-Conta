@@ -1,5 +1,5 @@
 /**
- * Planos do Nyvo. Enquanto PRO_SALES_OPEN for false, nada é cobrado: a tela só apresenta o Pro
+ * Planos do Dá Conta. Enquanto PRO_SALES_OPEN for false, nada é cobrado: a tela só apresenta o Pro
  * e recebe interessados. Ligar exige hospedagem comercial, conta de pagamento e, no Android,
  * Google Play Billing. Tudo que já era grátis continua no Free, incluindo conta e backup.
  */

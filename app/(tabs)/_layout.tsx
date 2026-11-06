@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { path: "/tasks", label: "Tarefas", icon: "checkbox-marked-circle-outline" },
   { path: "/insights", label: "Gráficos", icon: "chart-box-outline" },
   { path: "/reminders", label: "Lembretes", icon: "bell-outline" },
-  { path: "/plans", label: "Nyvo Pro", icon: "star-four-points-outline" },
+  { path: "/plans", label: "Dá Conta Pro", icon: "star-four-points-outline" },
   { path: "/support", label: "Ajuda e feedback", icon: "lifebuoy" },
   { path: "/settings", label: "Configurações", icon: "cog-outline" },
 ] as const;
@@ -89,7 +89,7 @@ export default function TabLayout() {
     <View style={desktopSidebar}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 11, paddingHorizontal: 8, paddingBottom: 26 }}>
         <BrandMark size={42} />
-        <View><Text style={brandName}>Nyvo</Text><Text style={brandSub}>Seu espaço pessoal</Text></View>
+        <View><Text style={brandName}>Dá Conta</Text><Text style={brandSub}>Seu espaço pessoal</Text></View>
       </View>
       <View style={{ gap: 5 }}>
         {NAV_ITEMS.map((item) => {
@@ -123,7 +123,7 @@ function StorageRecoveryScreen({ message, onRetry }: { message: string | null; o
   };
   return (
     <Page>
-      <Header eyebrow="NYVO · RECUPERAÇÃO" title="Estamos protegendo seus dados." subtitle="A migração não foi aplicada." />
+      <Header eyebrow="DÁ CONTA · RECUPERAÇÃO" title="Estamos protegendo seus dados." subtitle="A migração não foi aplicada." />
       <Card style={{ gap: 12 }}>
         <Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 20 }}>{message ?? "Não foi possível ler os dados deste aparelho."}</Text>
         <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>A cópia original permanece intacta. A aplicação não vai substituir seus registros por uma estrutura vazia. Tente novamente; se o problema continuar, não apague os dados locais.</Text>

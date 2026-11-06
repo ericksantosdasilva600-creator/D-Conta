@@ -25,7 +25,7 @@ export default function LoginScreen() {
       <View style={{ alignItems: "center", gap: 18, paddingTop: 44, paddingBottom: 12 }}>
         <BrandMark size={76} />
         <View style={{ alignItems: "center", gap: 8 }}>
-          <Text style={{ color: C.green, fontFamily: SANS, fontSize: 11, letterSpacing: 2, fontWeight: "800" }}>NYVO · UM SÓ ESPAÇO</Text>
+          <Text style={{ color: C.green, fontFamily: SANS, fontSize: 11, letterSpacing: 2, fontWeight: "800" }}>DÁ CONTA · UM SÓ ESPAÇO</Text>
           <Text accessibilityRole="header" style={{ color: C.ink, fontFamily: SERIF, fontSize: 38, lineHeight: 44, fontWeight: "700", textAlign: "center" }}>Sua vida, em fluxo.</Text>
           <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 15, lineHeight: 22, textAlign: "center", maxWidth: 370 }}>Notas, finanças, hábitos e tarefas — no celular e no computador, com seus dados sincronizados.</Text>
         </View>
@@ -33,10 +33,10 @@ export default function LoginScreen() {
 
       <Card style={{ gap: 14, marginTop: 14 }}>
         <Text style={{ color: C.ink, fontFamily: SANS, fontSize: 16, lineHeight: 23, fontWeight: "700" }}>Entre na sua conta Manus</Text>
-        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>Use a mesma conta no Nyvo mobile e no site para acessar aos seus dados em qualquer dispositivo.</Text>
+        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>Use a mesma conta no Dá Conta mobile e no site para acessar aos seus dados em qualquer dispositivo.</Text>
         {error ? <Text accessibilityRole="alert" style={{ color: C.danger, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>{error}</Text> : null}
         <PrimaryButton title={busy ? "Abrindo o acesso seguro…" : "Continuar com Manus"} icon="login-variant" onPress={() => void login()} disabled={busy} />
-        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 11, lineHeight: 17, textAlign: "center" }}>A autenticação é feita pelo Manus. O Nyvo não salva sua senha.</Text>
+        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 11, lineHeight: 17, textAlign: "center" }}>A autenticação é feita pelo Manus. O Dá Conta não salva sua senha.</Text>
       </Card>
 
       <Card style={{ backgroundColor: C.blueSoft, borderColor: "rgba(255,255,255,0.84)", gap: 8 }}>

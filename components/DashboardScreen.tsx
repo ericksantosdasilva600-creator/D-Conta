@@ -109,7 +109,7 @@ export function DashboardScreen() {
 
   return (
     <Page>
-      <Header eyebrow={`NYVO · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle={data.profile.name ? `${greeting(data.profile.name)} O que importa agora, numa tela só.` : "O que importa agora, numa tela só."} right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><IconButton name="bell-outline" label="Lembretes" onPress={() => router.push("/reminders")} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow={`DÁ CONTA · ${dateLabel.toUpperCase()}`} title="Hoje." subtitle={data.profile.name ? `${greeting(data.profile.name)} O que importa agora, numa tela só.` : "O que importa agora, numa tela só."} right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><IconButton name="bell-outline" label="Lembretes" onPress={() => router.push("/reminders")} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       {hasDemoData(data) ? <Pressable onPress={() => { updateData((c) => removeDemoData(c)); showToast("Dados de exemplo removidos."); }} accessibilityRole="button" style={demoBanner}><MaterialCommunityIcons name="flask-outline" size={18} color="#80611E" /><Text style={{ flex: 1, color: "#80611E", fontFamily: SANS, fontSize: 12, fontWeight: "700" }}>Você está vendo dados de exemplo. Toque para remover e começar com os seus.</Text></Pressable> : null}

@@ -82,7 +82,7 @@ export function NotesScreen({ autoCreate = false }: { autoCreate?: boolean } = {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · ANOTAÇÕES" title="Seu espaço de ideias." subtitle="Anotações, referências e projetos — salvos neste aparelho." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow="DÁ CONTA · ANOTAÇÕES" title="Seu espaço de ideias." subtitle="Anotações, referências e projetos — salvos neste aparelho." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       {data.notes.length ? <PrimaryButton title="Nova nota" onPress={openNew} icon="plus" /> : null}

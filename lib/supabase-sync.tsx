@@ -196,7 +196,7 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
   return (
     <CloudCtx.Provider value={value}>
       {children}
-      <AppModal visible={status === "choose" || status === "conflict"} title={status === "conflict" ? "Mudanças em dois aparelhos" : "Já existem dados na sua conta"} subtitle={status === "conflict" ? "Você alterou o Nyvo aqui e em outro aparelho ao mesmo tempo." : "Este aparelho também tem dados. Qual versão você quer manter?"} onClose={() => undefined} footer={<View style={{ gap: 9 }}>
+      <AppModal visible={status === "choose" || status === "conflict"} title={status === "conflict" ? "Mudanças em dois aparelhos" : "Já existem dados na sua conta"} subtitle={status === "conflict" ? "Você alterou o Dá Conta aqui e em outro aparelho ao mesmo tempo." : "Este aparelho também tem dados. Qual versão você quer manter?"} onClose={() => undefined} footer={<View style={{ gap: 9 }}>
         <PrimaryButton title="Usar os dados da conta" icon="cloud-download-outline" onPress={() => void resolve("cloud")} />
         <PrimaryButton title="Usar os dados deste aparelho" tone="light" icon="cellphone-arrow-down" onPress={() => void resolve("device")} />
       </View>}>

@@ -32,8 +32,8 @@ export function Header({ eyebrow, title, subtitle, right }: { eyebrow?: string; 
 
 export function BrandMark({ size = 38 }: { size?: number }) {
   return (
-    <View accessibilityLabel="Nyvo" style={[styles.brandMark, { width: size, height: size, borderRadius: size * 0.34 }]}>
-      <Image source={require("../assets/images/brand-mark.png")} style={{ width: size, height: size, borderRadius: size * 0.34 }} resizeMode="contain" accessibilityLabel="Símbolo Nyvo: quatro pilares ligados" />
+    <View accessibilityLabel="Dá Conta" style={[styles.brandMark, { width: size, height: size, borderRadius: size * 0.34 }]}>
+      <Image source={require("../assets/images/brand-mark.png")} style={{ width: size, height: size, borderRadius: size * 0.34 }} resizeMode="contain" accessibilityLabel="Símbolo Dá Conta: quatro pilares ligados" />
     </View>
   );
 }
@@ -148,7 +148,7 @@ export function AppModal({ visible, title, subtitle, onClose, children, footer, 
 export function OfflineBanner() {
   const { isOnline } = useAppData();
   if (isOnline !== false) return null;
-  return <View accessibilityRole="alert" style={styles.offlineBanner}><MaterialCommunityIcons name="wifi-off" size={17} color="#80611E" /><Text style={styles.offlineText}>Sem internet — você continua usando o Nyvo normalmente; tudo fica salvo neste aparelho.</Text></View>;
+  return <View accessibilityRole="alert" style={styles.offlineBanner}><MaterialCommunityIcons name="wifi-off" size={17} color="#80611E" /><Text style={styles.offlineText}>Sem internet — você continua usando o Dá Conta normalmente; tudo fica salvo neste aparelho.</Text></View>;
 }
 
 export function StorageBanner() {

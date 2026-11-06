@@ -116,7 +116,7 @@ export async function enableNotificationChannel() {
   if (Platform.OS !== "android") return;
   try {
     await Notifications.setNotificationChannelAsync("reminders", {
-      name: "Lembretes Nyvo",
+      name: "Lembretes Dá Conta",
       importance: Notifications.AndroidImportance.DEFAULT,
       vibrationPattern: [0, 200, 120, 200],
       lightColor: "#187A61",

@@ -1,10 +1,10 @@
-# Nyvo Organizador
+# Dá Conta
 
 **App grátis para controlar gastos, hábitos, estudos e tarefas, num lugar só.**
 
 👉 **Use agora:** https://ericksantosdasilva600-creator.github.io/nyvo/
 
-O Nyvo Organizador é um organizador pessoal em português do Brasil:
+O Dá Conta é um organizador pessoal em português do Brasil:
 
 - **Finanças:** escreva “gastei 45 no mercado” e o gasto é registrado na categoria certa. Contas fixas com aviso de vencimento, fatura do cartão, parcelas, metas, dívidas e importação de extrato (OFX/CSV).
 - **Hábitos e saúde:** rotinas com lembrete, progresso do dia, sequência de dias seguidos, água e atividades.

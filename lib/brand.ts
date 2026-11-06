@@ -1,6 +1,6 @@
-/** Identidade do Nyvo: usada na tela Sobre, no suporte e nas diretrizes. */
+/** Identidade do Dá Conta: usada na tela Sobre, no suporte e nas diretrizes. */
 export const BRAND = {
-  name: "Nyvo",
+  name: "Dá Conta",
   tagline: "Dinheiro, rotina e estudos num lugar só.",
   mission: "Ajudar pessoas comuns a organizar dinheiro, rotina e estudos num só lugar, de forma simples, gratuita e sem culpa.",
   vision: "Ser o app de organização pessoal preferido de quem trabalha e estuda no Brasil, conhecido por ser fácil, honesto e respeitar a privacidade.",
@@ -10,7 +10,7 @@ export const BRAND = {
     { title: "Sem culpa", text: "Cada um tem seu ritmo. Uma pausa não apaga o progresso." },
     { title: "Clareza", text: "Números e palavras que qualquer pessoa entende, sem juridiquês nem economês." },
     { title: "Acesso para todos", text: "Gratuito, leve e funciona até sem internet." },
-    { title: "Ouvir quem usa", text: "As melhorias nascem do feedback de quem usa o Nyvo todo dia." },
+    { title: "Ouvir quem usa", text: "As melhorias nascem do feedback de quem usa o Dá Conta todo dia." },
   ],
   supportEmail: "ericksantosdasilva600@gmail.com",
   version: "2.2",
@@ -25,7 +25,7 @@ const TIPS: { match: string[]; text: string }[] = [
   { match: ["Sair das dívidas"], text: "Liste todas as dívidas em Finanças › Dívidas. Ver o total e a data em que você fica livre já tira um peso das costas." },
   { match: ["Juntar dinheiro", "Investimentos", "Finanças pessoais"], text: "Antes de investir, monte a reserva de emergência: de 3 a 6 meses dos seus gastos. Crie a meta em Finanças › Metas." },
   { match: ["Controlar gastos", "Finanças pessoais"], text: "Escreva o gasto assim que pagar: “gastei 23 no lanche”. Leva 3 segundos e o mês fica claro." },
-  { match: ["Estudante", "Faculdade", "Organizar estudos", "Estudos e concursos"], text: "Cadastre as datas de provas em Tarefas › Estudos. O Nyvo avisa 3 dias e 1 dia antes." },
+  { match: ["Estudante", "Faculdade", "Organizar estudos", "Estudos e concursos"], text: "Cadastre as datas de provas em Tarefas › Estudos. O Dá Conta avisa 3 dias e 1 dia antes." },
   { match: ["Academia e saúde", "Criar hábitos"], text: "Comece com um hábito só e pequeno. Dois minutos por dia vencem uma hora por semana." },
   { match: ["Leitura"], text: "Meta de leitura que funciona: 10 páginas por dia são cerca de 12 livros por ano." },
   { match: ["Produtividade", "Ser mais produtivo", "Carreira"], text: "Use o Pomodoro: 25 minutos de foco, 5 de pausa. Está em Tarefas › Estudos." },

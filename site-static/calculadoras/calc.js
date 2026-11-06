@@ -1,4 +1,4 @@
-// Cálculos das calculadoras do Nyvo. Tudo roda no navegador; nada é enviado.
+// Cálculos das calculadoras do Dá Conta. Tudo roda no navegador; nada é enviado.
 // Tabelas de 2026: Portaria Interministerial MPS/MF nº 13/2026 (INSS) e Leis 15.191/2025 e 15.270/2025 (IRRF).
 (function (root) {
   var INSS = [[1621.00, 0.075], [2902.84, 0.09], [4354.27, 0.12], [8475.55, 0.14]];

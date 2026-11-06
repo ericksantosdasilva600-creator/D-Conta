@@ -9,7 +9,7 @@ import { addDemoData, hasDemoData } from "@/lib/demo-data";
 type Icon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 const STEPS: { icon: Icon; title: string; text: string; tip?: string }[] = [
   { icon: "white-balance-sunny", title: "Hoje", text: "Sua tela inicial. Mostra o saldo do mês, as contas que vencem, os hábitos e as tarefas do dia.", tip: "Toque em Pagar e a conta já vai para os seus gastos." },
-  { icon: "lightning-bolt-outline", title: "Anote escrevendo", text: "Escreva como fala: “gastei 45 no mercado” ou “recebi 2000 de salário”. O Nyvo entende o valor e a categoria.", tip: "O botão + verde aparece em todas as telas." },
+  { icon: "lightning-bolt-outline", title: "Anote escrevendo", text: "Escreva como fala: “gastei 45 no mercado” ou “recebi 2000 de salário”. O Dá Conta entende o valor e a categoria.", tip: "O botão + verde aparece em todas as telas." },
   { icon: "wallet-outline", title: "Finanças", text: "Movimentos, contas fixas, cartão de crédito com fatura e parcelas, metas, plano de dívidas, resumo do mês e importação do extrato do banco." },
   { icon: "heart-pulse", title: "Hábitos & Saúde", text: "Marque seus hábitos, registre água, treino, leitura e estudo. Uma pausa não apaga sua sequência." },
   { icon: "school-outline", title: "Tarefas e Estudos", text: "Organize tarefas com prazo, cadastre provas e trabalhos e use o cronômetro Pomodoro para focar." },
@@ -41,7 +41,7 @@ export function AppTour() {
           <View style={{ flexDirection: "row", gap: 6, justifyContent: "center" }}>{STEPS.map((_, k) => <View key={k} style={[dot, k === i ? { backgroundColor: C.green, width: 18 } : null]} />)}</View>
           {last && !hasDemoData(data) ? <Pressable onPress={() => setWithDemo((v) => !v)} accessibilityRole="checkbox" accessibilityState={{ checked: withDemo }} style={demoRow}>
             <MaterialCommunityIcons name={withDemo ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={withDemo ? C.green : C.muted} />
-            <View style={{ flex: 1 }}><Text style={demoTitle}>Explorar com dados de exemplo</Text><Text style={demoText}>Preenche o Nyvo com um mês fictício para você ver tudo funcionando. Dá para remover com um toque em Configurações.</Text></View>
+            <View style={{ flex: 1 }}><Text style={demoTitle}>Explorar com dados de exemplo</Text><Text style={demoText}>Preenche o Dá Conta com um mês fictício para você ver tudo funcionando. Dá para remover com um toque em Configurações.</Text></View>
           </Pressable> : null}
           <View style={{ flexDirection: "row", gap: 9 }}>
             {i > 0 ? <View style={{ flex: 1 }}><PrimaryButton title="Voltar" tone="light" onPress={() => setI(i - 1)} /></View> : null}

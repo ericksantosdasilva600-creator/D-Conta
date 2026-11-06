@@ -32,12 +32,12 @@ export function SupportScreen() {
 
   const sendSupport = () => {
     if (!message.trim()) { setNotice("Escreva sua dúvida ou o problema."); return; }
-    openMail(`[Nyvo · Suporte] ${subject.trim() || "Preciso de ajuda"}`, `${message.trim()}\n\n---\nVersão ${BRAND.version} · ${deviceInfo()}`);
+    openMail(`[Dá Conta · Suporte] ${subject.trim() || "Preciso de ajuda"}`, `${message.trim()}\n\n---\nVersão ${BRAND.version} · ${deviceInfo()}`);
     setNotice("Abrimos o seu app de e-mail com a mensagem pronta. É só tocar em Enviar.");
   };
   const sendFeedback = () => {
     if (!rating && !feedback.trim()) { setNotice("Dê uma nota ou escreva um comentário."); return; }
-    openMail(`[Nyvo · Feedback] ${kind}${rating ? ` · ${rating}/5` : ""}`, `Tipo: ${kind}\nNota: ${rating ? `${rating} de 5` : "sem nota"}\n\n${feedback.trim()}${shareProfile ? `\n\n--- Perfil (para entender quem usa o Nyvo)\n${profileText()}` : ""}\n\n---\nVersão ${BRAND.version}`);
+    openMail(`[Dá Conta · Feedback] ${kind}${rating ? ` · ${rating}/5` : ""}`, `Tipo: ${kind}\nNota: ${rating ? `${rating} de 5` : "sem nota"}\n\n${feedback.trim()}${shareProfile ? `\n\n--- Perfil (para entender quem usa o Dá Conta)\n${profileText()}` : ""}\n\n---\nVersão ${BRAND.version}`);
     setNotice("Obrigado! Abrimos o seu e-mail com o feedback pronto. Toque em Enviar.");
   };
   const copyEmail = async () => {
@@ -46,10 +46,10 @@ export function SupportScreen() {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · AJUDA" title="Ajuda e feedback." subtitle="Tire dúvidas, fale com a gente e conte o que achou." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
+      <Header eyebrow="DÁ CONTA · AJUDA" title="Ajuda e feedback." subtitle="Tire dúvidas, fale com a gente e conte o que achou." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
 
       <Card style={{ gap: 10 }}>
-        <View style={row}><View style={iconBox}><MaterialCommunityIcons name="map-marker-path" size={20} color={C.green} /></View><View style={{ flex: 1 }}><Text style={strong}>Tour pelo Nyvo</Text><Text style={muted}>Um passo a passo de 1 minuto pelas principais telas, com opção de dados de exemplo.</Text></View></View>
+        <View style={row}><View style={iconBox}><MaterialCommunityIcons name="map-marker-path" size={20} color={C.green} /></View><View style={{ flex: 1 }}><Text style={strong}>Tour pelo Dá Conta</Text><Text style={muted}>Um passo a passo de 1 minuto pelas principais telas, com opção de dados de exemplo.</Text></View></View>
         <PrimaryButton title="Ver o tour" icon="play-circle-outline" onPress={() => { updateData((c) => ({ ...c, tourDone: false })); router.replace("/"); }} />
       </Card>
 
@@ -76,13 +76,13 @@ export function SupportScreen() {
       <View style={{ gap: 10 }}>
         <SectionTitle title="Feedback" />
         <Card style={{ gap: 12 }}>
-          <Text style={strong}>Que nota você dá para o Nyvo?</Text>
+          <Text style={strong}>Que nota você dá para o Dá Conta?</Text>
           <View style={{ flexDirection: "row", gap: 6 }}>{[1, 2, 3, 4, 5].map((n) => <Pressable key={n} onPress={() => setRating(n)} accessibilityRole="button" accessibilityLabel={`Nota ${n} de 5`} hitSlop={4}><MaterialCommunityIcons name={n <= rating ? "star" : "star-outline"} size={34} color={n <= rating ? C.amber : C.muted} /></Pressable>)}</View>
           <ChoiceChips values={["Sugestão", "Problema", "Elogio", "Outro"]} selected={kind} onSelect={setKind} />
           <Field label="Comentário" value={feedback} onChangeText={setFeedback} multiline placeholder="O que você mais usa? O que falta? O que podia ser mais fácil?" style={{ minHeight: 90 }} />
           <Pressable onPress={() => setShareProfile((v) => !v)} accessibilityRole="checkbox" accessibilityState={{ checked: shareProfile }} style={{ flexDirection: "row", gap: 9, alignItems: "flex-start" }}>
             <MaterialCommunityIcons name={shareProfile ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={shareProfile ? C.green : C.muted} />
-            <Text style={[muted, { flex: 1 }]}>Opcional: anexar meu perfil ao e-mail (sexo, país e estado, faixa de idade, ocupação, objetivo, interesses e como conheceu). Serve só para entender quem usa o Nyvo. Seu nome e seus dados de finanças, hábitos e tarefas nunca são enviados. Você vê tudo no e-mail antes de enviar.</Text>
+            <Text style={[muted, { flex: 1 }]}>Opcional: anexar meu perfil ao e-mail (sexo, país e estado, faixa de idade, ocupação, objetivo, interesses e como conheceu). Serve só para entender quem usa o Dá Conta. Seu nome e seus dados de finanças, hábitos e tarefas nunca são enviados. Você vê tudo no e-mail antes de enviar.</Text>
           </Pressable>
           <PrimaryButton title="Enviar feedback" icon="send-outline" onPress={sendFeedback} />
         </Card>
@@ -92,14 +92,14 @@ export function SupportScreen() {
       <View style={{ gap: 10 }}>
         <SectionTitle title="Seu perfil" />
         <Card style={{ gap: 12 }}>
-          <Text style={muted}>Opcional. Usamos para personalizar o Nyvo e as dicas. Se você tiver conta, fica salvo junto com seus dados.</Text>
+          <Text style={muted}>Opcional. Usamos para personalizar o Dá Conta e as dicas. Se você tiver conta, fica salvo junto com seus dados.</Text>
           <Field label="Seu nome" value={profile.name} onChangeText={(v) => setProfile({ name: v.slice(0, 40) })} placeholder="Como quer ser chamado" />
           <Text style={label}>Sexo</Text>
           <ChoiceChips values={GENDERS} selected={profile.gender} onSelect={(v) => setProfile({ gender: profile.gender === v ? "" : v })} />
           <Text style={label}>País</Text>
           <ChoiceChips values={COUNTRIES.map((c) => c.name)} selected={profile.country} onSelect={(v) => setProfile({ country: profile.country === v ? "" : v })} />
           {profile.country === "Brasil" ? <><Text style={label}>Estado</Text><ChoiceChips values={BR_STATES} selected={profile.state} onSelect={(v) => setProfile({ state: profile.state === v ? "" : v })} /></> : null}
-          <Text style={label}>Como conheceu o Nyvo</Text>
+          <Text style={label}>Como conheceu o Dá Conta</Text>
           <ChoiceChips values={SOURCES} selected={profile.source} onSelect={(v) => setProfile({ source: profile.source === v ? "" : v })} horizontal={false} />
           <Text style={label}>O que você faz?</Text>
           <ChoiceChips values={OCCUPATIONS} selected={profile.occupation} onSelect={(v) => setProfile({ occupation: profile.occupation === v ? "" : v })} horizontal={false} />
@@ -113,7 +113,7 @@ export function SupportScreen() {
       </View>
 
       <View style={{ gap: 10 }}>
-        <SectionTitle title="Sobre o Nyvo" />
+        <SectionTitle title="Sobre o Dá Conta" />
         <Card style={{ gap: 14 }}>
           <Text style={{ color: C.ink, fontFamily: SERIF, fontSize: 22, fontWeight: "700" }}>{BRAND.tagline}</Text>
           <View style={{ gap: 4 }}><Text style={eyebrow}>MISSÃO</Text><Text style={bodyText}>{BRAND.mission}</Text></View>

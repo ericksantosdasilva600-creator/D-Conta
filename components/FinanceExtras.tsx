@@ -43,7 +43,7 @@ export function RecurringBillsPanel({ onToast }: { onToast: (message: string) =>
           <View style={{ flex: 1, minWidth: 0, gap: 3 }}><Text numberOfLines={1} style={strong}>{bill.name}</Text><Text style={muted}>{money(bill.amount, data.currency)} · vence dia {bill.dueDay} · {accountLabel(bill.account)}</Text></View>
           {paid ? <Tag label="Paga" tone="green" /> : <Pressable onPress={(e) => { e.stopPropagation(); pay(bill); }} accessibilityRole="button" accessibilityLabel={`Pagar ${bill.name}`} style={payButton}><Text style={payText}>{overdue ? `Atrasada ${Math.abs(days)} d · Pagar` : days === 0 ? "Hoje · Pagar" : "Pagar"}</Text></Pressable>}
         </Pressable>
-      )) : <Card><EmptyState icon="calendar-sync-outline" title="Nenhuma conta fixa" description={`Cadastre aluguel, luz, internet, faculdade e assinaturas uma vez. Todo mês o Nyvo lembra o que falta pagar. Vencimento de ${displayDate(localDateKey())} em diante aparece no Hoje.`} action={<PrimaryButton title="Adicionar conta fixa" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
+      )) : <Card><EmptyState icon="calendar-sync-outline" title="Nenhuma conta fixa" description={`Cadastre aluguel, luz, internet, faculdade e assinaturas uma vez. Todo mês o Dá Conta lembra o que falta pagar. Vencimento de ${displayDate(localDateKey())} em diante aparece no Hoje.`} action={<PrimaryButton title="Adicionar conta fixa" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
       {open ? <BillForm initial={editing} onClose={() => setOpen(false)} onSave={save} onDelete={remove} /> : null}
     </View>
   );
@@ -237,7 +237,7 @@ export function DebtsPanel({ onToast }: { onToast: (message: string) => void }) 
             {i === 0 ? <Text style={[muted, { color: C.greenDark, fontWeight: "700" }]}>Foque aqui primeiro.</Text> : null}
             <PrimaryButton title={`Registrar pagamento de ${money(Math.min(d.monthly || left, left), data.currency)}`} tone="light" icon="cash-check" onPress={() => pay(d)} />
           </Card>); })}
-      </> : <Card><EmptyState icon="hand-coin-outline" title={data.debts.length ? "Nenhuma dívida em aberto" : "Sem dívidas cadastradas"} description={data.debts.length ? "Todas as dívidas cadastradas foram quitadas." : "Liste cartão rotativo, empréstimos e parcelas atrasadas. O Nyvo mostra qual quitar primeiro e quando você fica livre."} action={<PrimaryButton title="Adicionar dívida" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
+      </> : <Card><EmptyState icon="hand-coin-outline" title={data.debts.length ? "Nenhuma dívida em aberto" : "Sem dívidas cadastradas"} description={data.debts.length ? "Todas as dívidas cadastradas foram quitadas." : "Liste cartão rotativo, empréstimos e parcelas atrasadas. O Dá Conta mostra qual quitar primeiro e quando você fica livre."} action={<PrimaryButton title="Adicionar dívida" icon="plus" onPress={() => { setEditing(null); setOpen(true); }} />} /></Card>}
       {open ? <DebtForm initial={editing} onClose={() => setOpen(false)} onSave={(d) => { updateData((c) => ({ ...c, debts: [d, ...c.debts.filter((x) => x.id !== d.id)] })); setOpen(false); onToast("Dívida salva."); }} onDelete={(d) => { updateData((c) => ({ ...c, debts: c.debts.filter((x) => x.id !== d.id) })); setOpen(false); onToast("Dívida removida."); }} /> : null}
     </View>
   );

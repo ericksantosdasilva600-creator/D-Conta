@@ -55,9 +55,9 @@ export default function OnboardingScreen() {
         <View style={{ alignItems: "flex-start", gap: 22 }}>
           <BrandMark size={54} />
           <View style={{ gap: 10 }}>
-            <Text style={eyebrow}>NYVO · UM ESPAÇO PARA O SEU DIA</Text>
-            <Text accessibilityRole="header" style={headline}>Seu dia, organizado.{"\n"}Do seu jeito.</Text>
-            <Text style={subhead}>Dinheiro, hábitos, estudos e tarefas em um só lugar. Três passos rápidos, sem cadastro obrigatório, e o Nyvo fica com a sua cara.</Text>
+            <Text style={eyebrow}>DÁ CONTA · SEU DIA EM ORDEM</Text>
+            <Text accessibilityRole="header" style={headline}>Você dá conta.{"\n"}A gente organiza.</Text>
+            <Text style={subhead}>Dinheiro, hábitos, estudos e tarefas em um só lugar. Três passos rápidos, sem cadastro obrigatório, e o Dá Conta fica com a sua cara.</Text>
             <View style={badgeRow}>
               <Badge icon="gift-outline" text="100% grátis" />
               <Badge icon="cancel" text="Sem anúncios" />
@@ -75,7 +75,7 @@ export default function OnboardingScreen() {
           <Text accessibilityRole="header" style={featureTitle}>Como funciona</Text>
           <HowStep n="1" text="Diga seu nome e o que quer organizar." />
           <HowStep n="2" text={'Anote um gasto ("gastei 45 no mercado"), marque um hábito ou crie uma tarefa.'} />
-          <HowStep n="3" text="O Nyvo mostra seu dia, avisa das contas e acompanha seu progresso." />
+          <HowStep n="3" text="O Dá Conta mostra seu dia, avisa das contas e acompanha seu progresso." />
         </View>
         <View style={{ gap: 12 }}>
           <StorageBanner />
@@ -133,11 +133,11 @@ export default function OnboardingScreen() {
         </> : null}
 
         {step === 4 ? <>
-          <Title title="Tudo pronto!" sub="O Nyvo funciona sem conta: seus dados ficam neste aparelho. Para usar no celular e no notebook, ou não perder nada ao trocar de aparelho, crie uma conta grátis — agora ou depois, em Configurações." />
+          <Title title="Tudo pronto!" sub="O Dá Conta funciona sem conta: seus dados ficam neste aparelho. Para usar no celular e no notebook, ou não perder nada ao trocar de aparelho, crie uma conta grátis — agora ou depois, em Configurações." />
           {cloud.session ? <View style={[habitRow, choiceOn]}><MaterialCommunityIcons name="check-circle" size={22} color={C.green} /><Text style={[featureTitle, { flex: 1 }]}>Conta conectada: {cloud.email}</Text></View>
             : showAccount ? <AccountCard initialMode="Criar conta" />
             : <PrimaryButton title="Criar conta grátis ou entrar" tone="light" icon="account-plus-outline" onPress={() => setShowAccount(true)} />}
-          <Group label="Pergunta rápida: como conheceu o Nyvo? (opcional)">
+          <Group label="Pergunta rápida: como conheceu o Dá Conta? (opcional)">
             <Chips values={SOURCES} selected={p.source} onSelect={(v) => set({ source: v })} />
           </Group>
         </> : null}

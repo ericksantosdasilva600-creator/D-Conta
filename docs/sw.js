@@ -1,4 +1,4 @@
-// Nyvo: funciona offline. Páginas: rede primeiro; sem internet, usa a última cópia salva daquela página.
+// Dá Conta: funciona offline. Páginas: rede primeiro; sem internet, usa a última cópia salva daquela página.
 const CACHE = "nyvo-v10";
 const SHELL = ["./", "./app/", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./privacidade.html"];
 self.addEventListener("install", (event) => {

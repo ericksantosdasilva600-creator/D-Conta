@@ -1,5 +1,5 @@
 /**
- * Motor de lembretes do Nyvo: calcula quando cada aviso deve tocar.
+ * Motor de lembretes do Dá Conta: calcula quando cada aviso deve tocar.
  * Funções puras (sem React), usadas pelo site e pelo app nativo.
  */
 import type { AppData } from "./app-data";
@@ -199,7 +199,7 @@ export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, 
     if (prefs.dailySummary && isTime(prefs.dailySummaryTime)) {
       const habits = data.habits.filter((h) => !h.archived && h.weekdays.includes(weekday)).length;
       const tasks = data.tasks.filter((t) => t.status !== "done" && t.dueDate && t.dueDate <= day).length;
-      push(`summary:${day}`, "Seu dia no Nyvo", `${habits} ${habits === 1 ? "hábito" : "hábitos"} e ${tasks} ${tasks === 1 ? "tarefa" : "tarefas"} para hoje.`, at(day, minutesOf(prefs.dailySummaryTime)));
+      push(`summary:${day}`, "Seu dia no Dá Conta", `${habits} ${habits === 1 ? "hábito" : "hábitos"} e ${tasks} ${tasks === 1 ? "tarefa" : "tarefas"} para hoje.`, at(day, minutesOf(prefs.dailySummaryTime)));
     }
   }
   return events.filter((e) => !inQuietHours(e.at, prefs));

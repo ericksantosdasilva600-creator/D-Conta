@@ -12,9 +12,9 @@ type Icon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 const SUGGESTIONS = ["Quanto gastei este mês?", "Quais tarefas estão pendentes?", "Como importo o extrato do banco?"];
 const MAX_QUESTION = 500;
 const OFFLINE = "Não consegui responder agora. Tente buscar por outra palavra ou veja Ajuda e feedback.";
-const LIMIT = "Você atingiu o limite de perguntas à IA por hoje. As buscas e os resumos do Nyvo continuam funcionando.";
+const LIMIT = "Você atingiu o limite de perguntas à IA por hoje. As buscas e os resumos do Dá Conta continuam funcionando.";
 
-/** Lupa do Nyvo: busca nos dados do aparelho e conversa com o mini assistente. */
+/** Lupa do Dá Conta: busca nos dados do aparelho e conversa com o mini assistente. */
 export function AssistantSearch({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { data } = useAppData();
   const [query, setQuery] = useState("");
@@ -40,10 +40,10 @@ export function AssistantSearch({ visible, onClose }: { visible: boolean; onClos
   const open = (path: string) => { onClose(); router.push(path as never); };
 
   return (
-    <AppModal visible={visible} onClose={onClose} title="Buscar e perguntar" subtitle="Encontre algo no Nyvo ou tire uma dúvida.">
+    <AppModal visible={visible} onClose={onClose} title="Buscar e perguntar" subtitle="Encontre algo no Dá Conta ou tire uma dúvida.">
       <View style={searchBox}>
         <MaterialCommunityIcons name="magnify" size={21} color={C.green} />
-        <TextInput autoFocus value={query} onChangeText={setQuery} onSubmitEditing={() => void ask(query)} maxLength={MAX_QUESTION} placeholder="Busque ou pergunte" placeholderTextColor={C.muted} accessibilityLabel="Buscar no Nyvo ou perguntar ao assistente" returnKeyType="send" blurOnSubmit={false} style={input} />
+        <TextInput autoFocus value={query} onChangeText={setQuery} onSubmitEditing={() => void ask(query)} maxLength={MAX_QUESTION} placeholder="Busque ou pergunte" placeholderTextColor={C.muted} accessibilityLabel="Buscar no Dá Conta ou perguntar ao assistente" returnKeyType="send" blurOnSubmit={false} style={input} />
         {trimmed ? <Pressable onPress={() => setQuery("")} accessibilityRole="button" accessibilityLabel="Limpar" hitSlop={8}><MaterialCommunityIcons name="close-circle" size={18} color={C.muted} /></Pressable> : null}
       </View>
 
@@ -60,7 +60,7 @@ export function AssistantSearch({ visible, onClose }: { visible: boolean; onClos
         {SUGGESTIONS.map((s) => <Row key={s} icon="creation-outline" title={s} onPress={() => void ask(s)} />)}
       </View> : null}
 
-      <Text style={note}>A busca e os resumos ficam no seu aparelho. Só as dúvidas que o Nyvo não resolve sozinho vão para a IA, sem seus dados. Não escreva informações pessoais nas perguntas. A IA pode errar.</Text>
+      <Text style={note}>A busca e os resumos ficam no seu aparelho. Só as dúvidas que o Dá Conta não resolve sozinho vão para a IA, sem seus dados. Não escreva informações pessoais nas perguntas. A IA pode errar.</Text>
     </AppModal>
   );
 }

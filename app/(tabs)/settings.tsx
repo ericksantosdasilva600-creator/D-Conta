@@ -123,7 +123,7 @@ export default function SettingsScreen() {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · PREFERÊNCIAS" title="Configurações." subtitle={LOCAL_ONLY ? "Ajuste lembretes, finanças e o backup dos seus dados." : "Ajuste notificações, conta, sincronização e dados locais."} right={<IconButton name="arrow-left" label="Voltar ao Resumo" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
+      <Header eyebrow="DÁ CONTA · PREFERÊNCIAS" title="Configurações." subtitle={LOCAL_ONLY ? "Ajuste lembretes, finanças e o backup dos seus dados." : "Ajuste notificações, conta, sincronização e dados locais."} right={<IconButton name="arrow-left" label="Voltar ao Resumo" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
       <OfflineBanner /><StorageBanner />
       {Platform.OS === "web" ? <View style={{ gap: 8 }}>
         <Text style={rowSub}>Ir para</Text>
@@ -152,7 +152,7 @@ export default function SettingsScreen() {
           <View style={row}><View style={iconBox}><MaterialCommunityIcons name="bell-outline" size={20} color={C.green} /></View><View style={textColumn}><Text style={rowTitle}>Notificações neste aparelho</Text><Text style={rowSub}>{Platform.OS === "web" ? "No site, ative os avisos em Lembretes personalizados (acima). Vencimentos, rotinas e prazos também aparecem na Caixa de lembretes." : permission === null ? "Verificando a autorização…" : permission ? "Autorização concedida pelo dispositivo." : "Autorize para receber lembretes de rotinas, despesas e tarefas."}</Text></View></View>
           {permission || Platform.OS === "web" ? <View style={{ height: 1, backgroundColor: C.line }} /> : <PrimaryButton title={working ? "Pedindo autorização…" : "Ativar notificações"} icon="bell-check-outline" onPress={() => void turnNotificationsOn()} disabled={working} />}
           {!permission && Platform.OS !== "web" ? <Pressable onPress={() => void Linking.openSettings()} accessibilityRole="button" style={{ paddingVertical: 7 }}><Text style={linkText}>Abrir configurações do aparelho</Text></Pressable> : null}
-          {Platform.OS === "web" ? <SettingToggle title="Avisos do navegador" description="Ao abrir o Nyvo, avisa uma vez por dia o que vence hoje ou está atrasado. Instale o Nyvo na tela inicial para funcionar melhor." value={data.browserNotifications} onChange={(value) => { void (async () => {
+          {Platform.OS === "web" ? <SettingToggle title="Avisos do navegador" description="Ao abrir o Dá Conta, avisa uma vez por dia o que vence hoje ou está atrasado. Instale o Dá Conta na tela inicial para funcionar melhor." value={data.browserNotifications} onChange={(value) => { void (async () => {
             if (value && typeof window !== "undefined" && "Notification" in window) {
               const result = await Notification.requestPermission().catch(() => "denied" as NotificationPermission);
               if (result !== "granted") { showToast("O navegador não permitiu avisos. Libere nas configurações do site."); return; }
@@ -181,7 +181,7 @@ export default function SettingsScreen() {
       <View nativeID="cfg-ajuda" style={{ gap: 12 }}>
         <SectionTitle title="Ajuda" />
         <Card>
-          <PrimaryButton title="Conheça o Nyvo Pro" tone="light" icon="star-four-points-outline" onPress={() => router.push("/plans")} />
+          <PrimaryButton title="Conheça o Dá Conta Pro" tone="light" icon="star-four-points-outline" onPress={() => router.push("/plans")} />
           <PrimaryButton title="Ajuda, suporte e feedback" icon="lifebuoy" onPress={() => router.push("/support")} />
           <PrimaryButton title={hasDemoData(data) ? "Remover dados de exemplo" : "Carregar dados de exemplo"} tone="light" icon="flask-outline" onPress={() => { updateData((c) => hasDemoData(c) ? removeDemoData(c) : addDemoData(c)); showToast(hasDemoData(data) ? "Dados de exemplo removidos." : "Dados de exemplo carregados. Remova quando quiser."); }} />
         </Card>
@@ -233,7 +233,7 @@ export default function SettingsScreen() {
         </Card>
       </View>
 
-      <AppModal visible={restoreOpen} title="Restaurar backup" subtitle="Cole o texto do backup que você copiou antes. Os dados atuais deste navegador serão substituídos." onClose={() => setRestoreOpen(false)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Restaurar dados" icon="backup-restore" onPress={() => { const restored = parseBackup(restoreText); if (!restored) { setRestoreError("Esse texto não é um backup válido do Nyvo."); return; } updateData(() => ({ ...restored, onboarded: true })); setRestoreOpen(false); showToast("Backup restaurado."); }} /><PrimaryButton title="Escolher arquivo .json" tone="light" icon="file-upload-outline" onPress={() => pickBackupFile((text) => setRestoreText(text))} /></View>}>
+      <AppModal visible={restoreOpen} title="Restaurar backup" subtitle="Cole o texto do backup que você copiou antes. Os dados atuais deste navegador serão substituídos." onClose={() => setRestoreOpen(false)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Restaurar dados" icon="backup-restore" onPress={() => { const restored = parseBackup(restoreText); if (!restored) { setRestoreError("Esse texto não é um backup válido do Dá Conta."); return; } updateData(() => ({ ...restored, onboarded: true })); setRestoreOpen(false); showToast("Backup restaurado."); }} /><PrimaryButton title="Escolher arquivo .json" tone="light" icon="file-upload-outline" onPress={() => pickBackupFile((text) => setRestoreText(text))} /></View>}>
         <Field label="Texto do backup" value={restoreText} onChangeText={(value) => { setRestoreText(value); setRestoreError(""); }} multiline placeholder='{"transactions": [...]}' style={{ minHeight: 120 }} />
         {restoreError ? <Text accessibilityRole="alert" style={{ color: C.danger, fontFamily: SANS, fontSize: 12 }}>{restoreError}</Text> : null}
       </AppModal>

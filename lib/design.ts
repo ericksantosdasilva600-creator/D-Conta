@@ -24,7 +24,7 @@ export type Palette = { id: string; name: string; primary: string; secondary: st
 
 /** Paletas prontas: o usuário escolhe em Configurações › Aparência. */
 export const PALETTES: Palette[] = [
-  { id: "nyvo", name: "Verde Nyvo", primary: "#187A61", secondary: "#3478A9", paper: "#F7F5EF" },
+  { id: "nyvo", name: "Verde Dá Conta", primary: "#187A61", secondary: "#3478A9", paper: "#F7F5EF" },
   { id: "ocean", name: "Oceano", primary: "#1F6FB2", secondary: "#14918B", paper: "#F3F6F9" },
   { id: "violet", name: "Violeta", primary: "#6A4BC4", secondary: "#B4497F", paper: "#F6F4FA" },
   { id: "rose", name: "Rosa", primary: "#C2416F", secondary: "#7A55B8", paper: "#FBF4F6" },

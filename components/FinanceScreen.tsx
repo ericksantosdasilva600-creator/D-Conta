@@ -109,7 +109,7 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
 
   return (
     <Page>
-      <Header eyebrow={scope === "personal" ? "NYVO · FINANÇAS PESSOAIS" : "NYVO · DESPESAS DE VIAGEM"} title={scope === "personal" ? "Seu dinheiro, com clareza." : "Finanças da viagem."} subtitle={scope === "personal" ? "Receitas, despesas e orçamentos do dia a dia." : `${data.tripName} · recibos, movimentos e vencimentos.`} right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow={scope === "personal" ? "DÁ CONTA · FINANÇAS PESSOAIS" : "DÁ CONTA · DESPESAS DE VIAGEM"} title={scope === "personal" ? "Seu dinheiro, com clareza." : "Finanças da viagem."} subtitle={scope === "personal" ? "Receitas, despesas e orçamentos do dia a dia." : `${data.tripName} · recibos, movimentos e vencimentos.`} right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       <ChoiceChips values={["Movimentos", "Contas fixas", "Cartão", "Metas", "Dívidas", "Resumo do mês", "Importar"]} selected={section} onSelect={setSection} />

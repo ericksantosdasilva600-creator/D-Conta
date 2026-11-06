@@ -97,7 +97,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · TAREFAS E ESTUDOS" title="Priorize o que importa." subtitle="Tarefas, prazos, provas e trabalhos." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
+      <Header eyebrow="DÁ CONTA · TAREFAS E ESTUDOS" title="Priorize o que importa." subtitle="Tarefas, prazos, provas e trabalhos." right={<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><BrandMark size={42} /><IconButton name="cog-outline" label="Abrir configurações" onPress={() => router.push("/settings")} /></View>} />
       <OfflineBanner />
       <StorageBanner />
       <ChoiceChips values={["Tarefas", "Estudos"]} selected={tab} onSelect={setTab} />

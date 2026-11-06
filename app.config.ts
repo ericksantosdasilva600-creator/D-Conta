@@ -28,12 +28,12 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "Nyvo",
+  appName: "Dá Conta",
   appSlug: "nyvo",
   // Public brand asset used by the project platform; native launch icons are bundled separately.
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663929773641/FFQDkXiMFpWktfUF.png",
   scheme: "nyvo",
-  // Identificador definitivo do Nyvo nas lojas (não pode mudar depois da primeira publicação).
+  // Identificador definitivo do Dá Conta nas lojas (não pode mudar depois da primeira publicação).
   iosBundleId: "com.ericksantos.nyvo",
   androidPackage: "com.ericksantos.nyvo",
 };

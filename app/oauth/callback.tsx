@@ -89,11 +89,11 @@ export default function OAuthCallback() {
     <SafeAreaView style={{ flex: 1, backgroundColor: C.paper }}>
       <Page>
         <View style={{ paddingTop: 50 }}>
-          <Text style={{ color: C.green, fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1.5 }}>NYVO · ACESSO SEGURO</Text>
+          <Text style={{ color: C.green, fontFamily: SANS, fontSize: 11, fontWeight: "800", letterSpacing: 1.5 }}>DÁ CONTA · ACESSO SEGURO</Text>
         </View>
         <Card style={{ alignItems: "center", paddingVertical: 30, gap: 16 }}>
           {status === "processing" ? <><ActivityIndicator size="large" color={C.green} /><Text style={{ color: C.ink, fontFamily: SERIF, fontSize: 22, fontWeight: "700" }}>Validando sua sessão…</Text></> : null}
-          {status === "success" ? <Text style={{ color: C.greenDark, fontFamily: SERIF, fontSize: 22, fontWeight: "700", textAlign: "center" }}>Sessão iniciada. Abrindo o Nyvo…</Text> : null}
+          {status === "success" ? <Text style={{ color: C.greenDark, fontFamily: SERIF, fontSize: 22, fontWeight: "700", textAlign: "center" }}>Sessão iniciada. Abrindo o Dá Conta…</Text> : null}
           {status === "error" ? <>
             <Text style={{ color: C.danger, fontFamily: SERIF, fontSize: 22, fontWeight: "700", textAlign: "center" }}>Não foi possível iniciar sessão</Text>
             <Text accessibilityRole="alert" style={{ color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19, textAlign: "center" }}>{errorMessage}</Text>

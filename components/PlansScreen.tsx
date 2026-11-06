@@ -25,7 +25,7 @@ export function PlansScreen() {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · PLANOS" title="Nyvo Pro." subtitle="Mais análise e personalização para quem quer ir além. O Pro ainda não está à venda." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
+      <Header eyebrow="DÁ CONTA · PLANOS" title="Dá Conta Pro." subtitle="Mais análise e personalização para quem quer ir além. O Pro ainda não está à venda." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
 
       <Card style={{ gap: 10 }}>
         <View style={planHead}><Text style={planName}>Free</Text><Tag label="Seu plano" /></View>
@@ -45,7 +45,7 @@ export function PlansScreen() {
 
       <SectionTitle title="Avise-me do lançamento" />
       <Card style={{ gap: 12 }}>
-        {joined ? <View style={row}><MaterialCommunityIcons name="check-circle-outline" size={22} color={C.green} /><Text style={[body, { flex: 1 }]}>Pronto! Avisaremos você quando o Nyvo Pro abrir.</Text></View> : <>
+        {joined ? <View style={row}><MaterialCommunityIcons name="check-circle-outline" size={22} color={C.green} /><Text style={[body, { flex: 1 }]}>Pronto! Avisaremos você quando o Dá Conta Pro abrir.</Text></View> : <>
           <Text style={body}>O que faria você assinar? Marque o que mais interessa.</Text>
           {PRO_FEATURES.map((item) => {
             const on = picked.includes(item.id);
@@ -56,7 +56,7 @@ export function PlansScreen() {
           })}
           <Field label="Seu e-mail" value={email} onChangeText={setEmail} error={error} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" placeholder="voce@email.com" />
           <PrimaryButton title={saving ? "Salvando…" : "Quero ser avisado"} icon="bell-ring-outline" onPress={join} disabled={saving} />
-          <Text style={muted}>Sem cobrança. Usamos seu e-mail só para avisar sobre o Nyvo Pro.</Text>
+          <Text style={muted}>Sem cobrança. Usamos seu e-mail só para avisar sobre o Dá Conta Pro.</Text>
         </>}
       </Card>
     </Page>

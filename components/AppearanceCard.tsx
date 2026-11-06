@@ -20,7 +20,7 @@ export function AppearanceCard() {
   return (
     <Card style={{ gap: 12 }}>
       <Text style={strong}>Paleta de cores</Text>
-      <Text style={muted}>Escolha as cores do Nyvo. Vale para este aparelho.</Text>
+      <Text style={muted}>Escolha as cores do Dá Conta. Vale para este aparelho.</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9 }}>
         {[...PALETTES, { id: "custom", name: "Personalizada", primary: valid(primary) ? primary : "#187A61", secondary: valid(secondary) ? secondary : "#3478A9", paper: "#FFFFFF" }].map((p) => {
           const on = selected === p.id;
@@ -48,7 +48,7 @@ export function AppearanceCard() {
         </View>
       </View>
       <PrimaryButton title={changed ? "Aplicar cores" : "Cores em uso"} icon="palette-outline" disabled={!changed || (selected === "custom" && (!valid(primary) || !valid(secondary)))} onPress={() => saveThemeChoice(selected === "custom" ? { palette: "custom", primary, secondary } : { palette: selected })} />
-      <Text style={muted}>O Nyvo recarrega para aplicar. Seus dados não são alterados.</Text>
+      <Text style={muted}>O Dá Conta recarrega para aplicar. Seus dados não são alterados.</Text>
     </Card>
   );
 }

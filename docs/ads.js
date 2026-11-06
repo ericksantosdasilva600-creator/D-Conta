@@ -1,4 +1,4 @@
-// Anúncios do Nyvo, só nas páginas públicas (nunca dentro do app).
+// Anúncios do Dá Conta, só nas páginas públicas (nunca dentro do app).
 // Desligado enquanto ADSENSE_CLIENT estiver vazio: nenhum script externo é carregado.
 // Antes de preencher: domínio próprio, conta AdSense aprovada, política de privacidade
 // e textos "sem anúncios" atualizados, e aviso de cookies.

@@ -52,7 +52,7 @@ export function InsightsScreen() {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · GRÁFICOS" title="Seus números." subtitle="Dinheiro, hábitos, saúde e tarefas em gráficos." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
+      <Header eyebrow="DÁ CONTA · GRÁFICOS" title="Seus números." subtitle="Dinheiro, hábitos, saúde e tarefas em gráficos." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
 
       <ChartCard title="Entradas e saídas por mês" subtitle={`Receitas e despesas · últimos ${monthsBack} meses`}>
         <ChoiceChips values={["3 meses", "6 meses", "12 meses"]} selected={range} onSelect={setRange} />

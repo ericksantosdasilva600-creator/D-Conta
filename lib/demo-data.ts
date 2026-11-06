@@ -6,7 +6,7 @@ const day = (offset: number) => { const d = new Date(); d.setDate(d.getDate() + 
 
 export const hasDemoData = (data: AppData) => data.transactions.some((t) => t.id.startsWith(DEMO)) || data.habits.some((h) => h.id.startsWith(DEMO));
 
-/** Dados de exemplo para explorar o Nyvo. Todos os IDs começam com "demo-" e podem ser removidos de uma vez. */
+/** Dados de exemplo para explorar o Dá Conta. Todos os IDs começam com "demo-" e podem ser removidos de uma vez. */
 export function addDemoData(data: AppData): AppData {
   if (hasDemoData(data)) return data;
   const tx = (id: string, kind: "expense" | "income", amount: number, merchant: string, category: string, offset: number, extra: Partial<Transaction> = {}): Transaction => ({ id: DEMO + id, kind, amount, merchant, category, date: day(offset), dueDate: "", paid: true, priority: "medium", notes: "Exemplo", receiptUri: "", scope: "personal", account: "main", ...extra });

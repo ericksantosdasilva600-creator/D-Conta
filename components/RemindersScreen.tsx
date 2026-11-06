@@ -79,7 +79,7 @@ export function RemindersScreen() {
       if (ok) { updateData((c) => ({ ...c, remindersEnabled: true, dueRemindersEnabled: true })); await refreshLocalNotifications(data); showToast("Notificações ativadas."); }
       return;
     }
-    if (!notificationsSupported()) { showToast("Este navegador não mostra notificações. Os avisos aparecem dentro do Nyvo."); return; }
+    if (!notificationsSupported()) { showToast("Este navegador não mostra notificações. Os avisos aparecem dentro do Dá Conta."); return; }
     const result = await Notification.requestPermission().catch(() => "denied" as NotificationPermission);
     setPermission(result);
     if (result === "granted") { updateData((c) => ({ ...c, browserNotifications: true })); showToast("Notificações ativadas neste aparelho."); }
@@ -87,7 +87,7 @@ export function RemindersScreen() {
   };
 
   const test = async () => {
-    const ok = Platform.OS === "web" ? await showSystemNotification("Nyvo · teste", "As notificações estão funcionando.", "nyvo-test") : false;
+    const ok = Platform.OS === "web" ? await showSystemNotification("Dá Conta · teste", "As notificações estão funcionando.", "nyvo-test") : false;
     showToast(ok ? "Notificação de teste enviada." : "Aviso de teste: se as notificações do sistema estiverem bloqueadas, você vê só esta mensagem.");
   };
 
@@ -104,16 +104,16 @@ export function RemindersScreen() {
 
   return (
     <Page>
-      <Header eyebrow="NYVO · LEMBRETES" title="Lembretes." subtitle="Escolha quando e com que frequência o Nyvo avisa você." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
+      <Header eyebrow="DÁ CONTA · LEMBRETES" title="Lembretes." subtitle="Escolha quando e com que frequência o Dá Conta avisa você." right={<IconButton name="arrow-left" label="Voltar" onPress={() => router.canGoBack() ? router.back() : router.replace("/")} />} />
 
       <Card style={{ gap: 10, backgroundColor: active ? C.greenSoft : C.amberSoft, borderColor: "transparent" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <MaterialCommunityIcons name={active ? "bell-check-outline" : "bell-off-outline"} size={22} color={active ? C.greenDark : "#80611E"} />
           <Text style={[strong, { flex: 1, color: active ? C.greenDark : "#80611E" }]}>{active ? "Notificações ativadas neste aparelho" : permission === "unsupported" ? "Este navegador não mostra notificações" : "Notificações desativadas"}</Text>
         </View>
-        <Text style={[muted, { color: active ? C.greenDark : "#80611E" }]}>{Platform.OS === "web" ? "No site, os avisos tocam enquanto o Nyvo estiver aberto, mesmo em outra aba ou minimizado. Se estiver fechado, os avisos perdidos aparecem quando você abrir. Instale na tela inicial para usar como app. Na versão da Play Store, os avisos tocam mesmo com o app fechado." : "Os avisos tocam mesmo com o app fechado."}</Text>
+        <Text style={[muted, { color: active ? C.greenDark : "#80611E" }]}>{Platform.OS === "web" ? "No site, os avisos tocam enquanto o Dá Conta estiver aberto, mesmo em outra aba ou minimizado. Se estiver fechado, os avisos perdidos aparecem quando você abrir. Instale na tela inicial para usar como app. Na versão da Play Store, os avisos tocam mesmo com o app fechado." : "Os avisos tocam mesmo com o app fechado."}</Text>
         {!active && permission !== "unsupported" ? <>
-          <Text style={[muted, { color: "#80611E" }]}>Ao tocar abaixo, o {Platform.OS === "web" ? "navegador" : "celular"} vai perguntar se o Nyvo pode mostrar notificações. Isso só libera os avisos na tela; o que é avisado e quando você escolhe aqui embaixo, e dá para desligar a qualquer momento.</Text>
+          <Text style={[muted, { color: "#80611E" }]}>Ao tocar abaixo, o {Platform.OS === "web" ? "navegador" : "celular"} vai perguntar se o Dá Conta pode mostrar notificações. Isso só libera os avisos na tela; o que é avisado e quando você escolhe aqui embaixo, e dá para desligar a qualquer momento.</Text>
           <PrimaryButton title="Ativar notificações" icon="bell-ring-outline" onPress={() => void enable()} />
         </> : null}
         {active ? <PrimaryButton title="Testar agora" tone="light" icon="bell-outline" onPress={() => void test()} /> : null}
@@ -151,7 +151,7 @@ export function RemindersScreen() {
 
       <View style={{ gap: 10 }}>
         <SectionTitle title="Avisos automáticos" />
-        <Text style={muted}>O Nyvo gera estes avisos a partir das suas contas fixas, tarefas, provas e hábitos. Ligue ou desligue cada tipo aqui.</Text>
+        <Text style={muted}>O Dá Conta gera estes avisos a partir das suas contas fixas, tarefas, provas e hábitos. Ligue ou desligue cada tipo aqui.</Text>
         <Card style={{ gap: 12 }}>
           <ToggleRow title="Contas e despesas a vencer" detail="Contas fixas, despesas pendentes com vencimento." value={data.dueRemindersEnabled} onChange={(v) => updateData((c) => ({ ...c, dueRemindersEnabled: v }))} />
           {data.dueRemindersEnabled ? <>
