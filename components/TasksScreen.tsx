@@ -9,10 +9,12 @@ import { useAppData, type Priority, type Task, type TaskStatus } from "@/lib/app
 import { toast } from "@/lib/toast";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
 import { createId, displayDate } from "@/lib/format";
+import { IconPicker, SoundPicker } from "@/components/ThemePickers";
+import { iconFor } from "@/lib/themes";
 import { refreshLocalNotifications } from "@/lib/local-notifications";
 
 type StatusFilter = "all" | TaskStatus;
-type Draft = Pick<Task, "title" | "description" | "status" | "priority" | "dueDate" | "project" | "linkedBudgetId" | "remindAtDue">;
+type Draft = Pick<Task, "title" | "description" | "status" | "priority" | "dueDate" | "project" | "linkedBudgetId" | "remindAtDue" | "icon" | "sound">;
 const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: "backlog", label: "Backlog" },
   { value: "next", label: "Próxima" },
@@ -60,7 +62,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
   const openNew = () => { setEditing(null); setDraft(EMPTY_DRAFT); setError(""); setFormOpen(true); };
   const openEdit = (task: Task) => {
     setEditing(task);
-    setDraft({ title: task.title, description: task.description, status: task.status, priority: task.priority, dueDate: task.dueDate, project: task.project, linkedBudgetId: task.linkedBudgetId, remindAtDue: task.remindAtDue });
+    setDraft({ title: task.title, description: task.description, status: task.status, priority: task.priority, dueDate: task.dueDate, project: task.project, linkedBudgetId: task.linkedBudgetId, remindAtDue: task.remindAtDue, icon: task.icon, sound: task.sound });
     setError("");
     setFormOpen(true);
   };
@@ -113,6 +115,8 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
 
       <AppModal visible={formOpen} title={editing ? "Editar tarefa" : "Nova tarefa"} subtitle="Os detalhes ficam salvos neste aparelho." onClose={() => setFormOpen(false)} footer={<PrimaryButton title={editing ? "Salvar alterações" : "Criar tarefa"} onPress={saveTask} icon="check" />}>
         <Field label="Título" value={draft.title} onChangeText={(value) => { patch("title", value); setError(""); }} placeholder="Ex.: Reservar alojamento" returnKeyType="next" error={error} />
+        <IconPicker text={draft.title} value={draft.icon ?? ""} onChange={(value) => patch("icon", value)} />
+        <SoundPicker text={draft.title} value={draft.sound ?? ""} onChange={(value) => patch("sound", value)} />
         <Field label="Descrição (opcional)" value={draft.description} onChangeText={(value) => patch("description", value)} placeholder="Notas ou próximos passos" multiline />
         <View style={{ gap: 8 }}><Text style={labelStyle}>Estado</Text><ChoiceChips values={STATUS_OPTIONS.map((item) => item.label)} selected={statusLabel(draft.status)} onSelect={(value) => patch("status", STATUS_OPTIONS.find((item) => item.label === value)?.value ?? "backlog")} /></View>
         <View style={{ gap: 8 }}><Text style={labelStyle}>Prioridade</Text><ChoiceChips values={["Baixa", "Média", "Alta"]} selected={PRIORITY_LABELS[draft.priority]} onSelect={(value) => patch("priority", value === "Alta" ? "high" : value === "Baixa" ? "low" : "medium")} /></View>
@@ -141,6 +145,7 @@ function TaskCard({ task, budgetLabel, onEdit, onDelete, onToggle }: { task: Tas
     <Card style={{ padding: 15, gap: 11 }}>
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
         <Pressable onPress={onToggle} accessibilityRole="checkbox" accessibilityLabel={task.status === "done" ? `Reabrir tarefa ${task.title}` : `Concluir tarefa ${task.title}`} accessibilityState={{ checked: task.status === "done" }} hitSlop={7} style={{ paddingTop: 1 }}><MaterialCommunityIcons name={task.status === "done" ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={23} color={task.status === "done" ? C.green : C.muted} /></Pressable>
+        <MaterialCommunityIcons name={iconFor(task.icon, task.title, "clipboard-text-outline") as "clipboard-text-outline"} size={21} color={C.green} style={{ paddingTop: 1 }} />
         <Pressable onPress={onEdit} accessibilityRole="button" accessibilityLabel={`Editar tarefa ${task.title}`} style={{ flex: 1, gap: 5 }}><Text style={[titleStyle, task.status === "done" ? { textDecorationLine: "line-through", color: C.muted } : null]}>{task.title}</Text>{task.description ? <Text style={descriptionStyle} numberOfLines={3}>{task.description}</Text> : null}</Pressable>
         <Pressable onPress={onDelete} accessibilityRole="button" accessibilityLabel={`Excluir tarefa ${task.title}`} hitSlop={8} style={{ padding: 4 }}><MaterialCommunityIcons name="delete-outline" size={19} color={C.muted} /></Pressable>
       </View>

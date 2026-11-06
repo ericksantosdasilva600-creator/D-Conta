@@ -1,3 +1,4 @@
+import { iconFor } from "@/lib/themes";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { router } from "expo-router";
 import { Pressable, Text, TextInput, View } from "react-native";
@@ -186,7 +187,7 @@ function TransactionRow({ transaction, currency, onPress, onDelete, onTogglePaid
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${transaction.kind === "expense" ? "Despesa" : "Receita"} ${transaction.merchant}, ${money(transaction.amount, currency)}, categoria ${transaction.category}. Toque para editar.`} style={({ pressed }) => [rowCard, { opacity: pressed ? 0.82 : 1 }]}>
       <View style={rowTop}>
-        <View style={[rowIcon, { backgroundColor: transaction.kind === "expense" ? C.blueSoft : C.greenSoft }]}><MaterialCommunityIcons name={transaction.kind === "expense" ? "arrow-top-right" : "arrow-bottom-left"} size={19} color={transaction.kind === "expense" ? C.blue : C.green} /></View>
+        <View style={[rowIcon, { backgroundColor: transaction.kind === "expense" ? C.blueSoft : C.greenSoft }]}><MaterialCommunityIcons name={iconFor(transaction.icon, `${transaction.merchant} ${transaction.category}`, transaction.kind === "expense" ? "arrow-top-right" : "arrow-bottom-left") as "arrow-top-right"} size={19} color={transaction.kind === "expense" ? C.blue : C.green} /></View>
         <View style={{ flex: 1, gap: 3, minWidth: 0 }}><Text numberOfLines={1} style={merchantStyle}>{transaction.merchant}</Text><Text numberOfLines={1} style={rowMeta}>{transaction.category} · {displayDate(transaction.date)}</Text></View>
         <View style={{ alignItems: "flex-end", gap: 5 }}><Text style={[amountNumber, { color: transaction.kind === "expense" ? C.blueDark : C.greenDark }]}>{transaction.kind === "expense" ? "−" : "+"}{money(transaction.amount, currency)}</Text><PriorityTag priority={transaction.priority} /></View>
       </View>

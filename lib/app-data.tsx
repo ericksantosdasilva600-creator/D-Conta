@@ -21,8 +21,8 @@ export const ACCOUNTS: { id: AccountId; label: string; icon: string }[] = [
 export const accountLabel = (id?: string) => ACCOUNTS.find((item) => item.id === id)?.label ?? "Conta principal";
 
 export type CreditCard = { closingDay: number; dueDay: number; limit: number };
-export type RecurringBill = { id: string; name: string; amount: number; category: string; dueDay: number; account: AccountId; paidMonths: string[]; active: boolean };
-export type SavingsGoal = { id: string; name: string; target: number; saved: number; deadline: string };
+export type RecurringBill = { id: string; icon?: string; name: string; amount: number; category: string; dueDay: number; account: AccountId; paidMonths: string[]; active: boolean };
+export type SavingsGoal = { id: string; icon?: string; name: string; target: number; saved: number; deadline: string };
 export type Debt = { id: string; name: string; total: number; paid: number; monthly: number; interest: number };
 export type StudySubject = { id: string; name: string };
 export type StudyItemKind = "exam" | "assignment" | "reading";
@@ -48,6 +48,7 @@ export type Transaction = {
   installment?: string;
   installmentGroup?: string;
   recurringBillId?: string;
+  icon?: string;
 };
 
 export type Habit = {
@@ -58,6 +59,8 @@ export type Habit = {
   priority: Priority;
   archived: boolean;
   goalLabel: string;
+  icon?: string;
+  sound?: string;
 };
 
 export type Note = {
@@ -83,6 +86,8 @@ export type Task = {
   remindAtDue: boolean;
   createdAt: string;
   updatedAt: string;
+  icon?: string;
+  sound?: string;
 };
 
 export type HealthLog = {
@@ -187,12 +192,14 @@ const dayValue = (value: unknown, fallback: number) => Math.min(31, Math.max(1, 
 function listOf<T>(value: unknown, map: (item: Record<string, unknown>) => T | null): T[] {
   return Array.isArray(value) ? value.map((item) => { const r = asRecord(item); return r && typeof r.id === "string" ? map(r) : null; }).filter((item): item is T => item !== null) : [];
 }
+const optionalText = (r: Record<string, unknown>, key: string) => typeof r[key] === "string" && r[key] ? { [key]: r[key] as string } : {};
+
 function normalizeExtras(saved: Record<string, unknown>) {
   const card = asRecord(saved.creditCard);
   return {
     creditCard: { closingDay: dayValue(card?.closingDay, 1), dueDay: dayValue(card?.dueDay, 10), limit: Math.max(0, num(card?.limit)) },
-    recurringBills: listOf<RecurringBill>(saved.recurringBills, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, amount: Math.max(0, num(r.amount)), category: stringValue(r.category, "Contas da casa"), dueDay: dayValue(r.dueDay, 10), account: accountValue(r.account), paidMonths: stringList(r.paidMonths), active: r.active !== false } : null),
-    goals: listOf<SavingsGoal>(saved.goals, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, target: Math.max(0, num(r.target)), saved: Math.max(0, num(r.saved)), deadline: stringValue(r.deadline) } : null),
+    recurringBills: listOf<RecurringBill>(saved.recurringBills, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, amount: Math.max(0, num(r.amount)), category: stringValue(r.category, "Contas da casa"), dueDay: dayValue(r.dueDay, 10), account: accountValue(r.account), paidMonths: stringList(r.paidMonths), active: r.active !== false, ...optionalText(r, "icon") } : null),
+    goals: listOf<SavingsGoal>(saved.goals, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, target: Math.max(0, num(r.target)), saved: Math.max(0, num(r.saved)), deadline: stringValue(r.deadline), ...optionalText(r, "icon") } : null),
     debts: listOf<Debt>(saved.debts, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name, total: Math.max(0, num(r.total)), paid: Math.max(0, num(r.paid)), monthly: Math.max(0, num(r.monthly)), interest: Math.max(0, num(r.interest)) } : null),
     studySubjects: listOf<StudySubject>(saved.studySubjects, (r) => typeof r.name === "string" ? { id: r.id as string, name: r.name } : null),
     studyItems: listOf<StudyItem>(saved.studyItems, (r) => typeof r.title === "string" ? { id: r.id as string, subjectId: stringValue(r.subjectId), title: r.title, kind: r.kind === "exam" || r.kind === "reading" ? r.kind : "assignment", dueDate: stringValue(r.dueDate), done: r.done === true } : null),
@@ -247,6 +254,7 @@ function normalizeTransaction(value: unknown): Transaction | null {
     ...(typeof item.installment === "string" ? { installment: item.installment } : {}),
     ...(typeof item.installmentGroup === "string" ? { installmentGroup: item.installmentGroup } : {}),
     ...(typeof item.recurringBillId === "string" ? { recurringBillId: item.recurringBillId } : {}),
+    ...optionalText(item, "icon"),
   };
 }
 
@@ -262,6 +270,8 @@ function normalizeHabit(value: unknown): Habit | null {
     priority: priorityValue(item.priority),
     archived: Boolean(item.archived),
     goalLabel: stringValue(item.goalLabel),
+    ...optionalText(item, "icon"),
+    ...optionalText(item, "sound"),
   };
 }
 
@@ -278,6 +288,8 @@ function normalizeNote(value: unknown): Note | null {
     relatedTaskId: stringValue(item.relatedTaskId),
     createdAt: stringValue(item.createdAt, timestamp),
     updatedAt: timestamp,
+    ...optionalText(item, "icon"),
+    ...optionalText(item, "sound"),
   };
 }
 

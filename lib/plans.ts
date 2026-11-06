@@ -7,6 +7,9 @@ export const PRO_SALES_OPEN = false;
 
 export const PRO_PRICE = { monthly: "R$ 9,90", yearly: "R$ 89,90" };
 
+/** Formas previstas para quando a venda abrir. */
+export const PAYMENT_METHODS = ["Pix", "Cartão de crédito"];
+
 export const FREE_FEATURES = [
   "Hoje, finanças, anotações, hábitos, saúde, tarefas e estudos",
   "Gráficos e lembretes",

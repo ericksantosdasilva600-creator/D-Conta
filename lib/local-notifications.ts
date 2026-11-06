@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { AppData, Transaction, Habit, Task } from "@/lib/app-data";
 import { eventsBetween } from "@/lib/reminders";
+import { SOUNDS, type SoundId } from "@/lib/themes";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -34,11 +35,15 @@ export async function requestNotificationPermission() {
   }
 }
 
-async function scheduleAt(title: string, body: string, date: Date) {
+const soundFile = (sound: SoundId) => sound === "padrao" ? "default" : `nyvo_${sound}.wav`;
+// No Android, o som pertence ao canal: cada som tem o seu.
+const channelOf = (sound: SoundId) => sound === "padrao" ? "reminders" : `reminders_${sound}`;
+
+async function scheduleAt(title: string, body: string, date: Date, sound: SoundId = "padrao") {
   if (date.getTime() <= Date.now()) return;
   return Notifications.scheduleNotificationAsync({
-    content: { title, body, sound: "default" },
-    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: Platform.OS === "android" ? "reminders" : undefined },
+    content: { title, body, sound: soundFile(sound) },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: Platform.OS === "android" ? channelOf(sound) : undefined },
   });
 }
 
@@ -94,12 +99,13 @@ export async function scheduleTaskReminder(task: Task) {
 export async function refreshLocalNotifications(data: AppData) {
   if (Platform.OS === "web") return false;
   try {
+    await enableNotificationChannel();
     await Notifications.cancelAllScheduledNotificationsAsync();
     const allowed = await getNotificationPermission();
     if (!allowed) return false;
     const now = new Date();
     const events = eventsBetween(data, now, new Date(now.getTime() + 14 * 86400000), 60).slice(0, 60);
-    for (const event of events) await scheduleAt(event.title, event.body, event.at);
+    for (const event of events) await scheduleAt(event.title, event.body, event.at, event.sound);
     return true;
   } catch {
     return false;
@@ -115,6 +121,16 @@ export async function enableNotificationChannel() {
       vibrationPattern: [0, 200, 120, 200],
       lightColor: "#187A61",
     });
+    for (const { id, label } of SOUNDS) {
+      if (id === "padrao") continue;
+      await Notifications.setNotificationChannelAsync(channelOf(id), {
+        name: `Lembretes com som: ${label}`,
+        importance: Notifications.AndroidImportance.DEFAULT,
+        vibrationPattern: [0, 200, 120, 200],
+        lightColor: "#187A61",
+        sound: soundFile(id),
+      });
+    }
   } catch {
     // Notifications remain optional; the app can still show due dates in its own lists.
   }

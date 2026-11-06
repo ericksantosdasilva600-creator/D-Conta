@@ -3,6 +3,7 @@
  * Funções puras (sem React), usadas pelo site e pelo app nativo.
  */
 import type { AppData } from "./app-data";
+import { soundFor, type SoundId } from "./themes";
 
 export type ReminderRepeat = "once" | "minutes" | "hours" | "daily" | "weekly" | "monthly" | "days";
 
@@ -26,6 +27,9 @@ export type Reminder = {
   windowEnd: string;
   /** Opcional: para de avisar depois desta data. */
   endDate: string;
+  icon?: string;
+  /** Vazio: som sugerido pelo título. */
+  sound?: string;
 };
 
 export type NotificationPrefs = {
@@ -58,7 +62,7 @@ export const DEFAULT_PREFS: NotificationPrefs = {
   quietEnabled: false,
 };
 
-export type ReminderEvent = { key: string; title: string; body: string; at: Date; source: "custom" | "auto" };
+export type ReminderEvent = { key: string; title: string; body: string; at: Date; source: "custom" | "auto"; sound: SoundId };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 export const dateKeyOf = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -147,7 +151,7 @@ export const describeReminder = REPEAT_LABEL;
 /** Avisos automáticos: contas, cartão, tarefas, provas, hábitos e resumo do dia. */
 export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, to: Date): ReminderEvent[] {
   const events: ReminderEvent[] = [];
-  const push = (key: string, title: string, body: string, when: Date) => { if (when > from && when <= to) events.push({ key, title, body, at: when, source: "auto" }); };
+  const push = (key: string, title: string, body: string, when: Date, sound: SoundId = "padrao") => { if (when > from && when <= to) events.push({ key, title, body, at: when, source: "auto", sound }); };
   const billMin = isTime(prefs.billTime) ? minutesOf(prefs.billTime) : 9 * 60;
   const dueText = (d: number) => d === 0 ? "vence hoje" : d === 1 ? "vence amanhã" : `vence em ${d} dias`;
   const startDay = dateKeyOf(from);
@@ -160,27 +164,27 @@ export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, 
       if (bill.paidMonths.includes(month)) continue;
       const lastDay = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
       const due = `${month}-${pad(Math.min(bill.dueDay, lastDay))}`;
-      for (const d of prefs.billDaysBefore) push(`bill:${bill.id}:${month}:${d}`, "Conta a pagar", `${bill.name} ${dueText(d)}.`, at(addDays(due, -d), billMin));
+      for (const d of prefs.billDaysBefore) push(`bill:${bill.id}:${month}:${d}`, "Conta a pagar", `${bill.name} ${dueText(d)}.`, at(addDays(due, -d), billMin), "moedas");
     }
   }
   // Despesas pendentes com vencimento.
   for (const t of data.transactions) {
     if (t.kind !== "expense" || t.paid || !t.dueDate) continue;
-    for (const d of prefs.billDaysBefore) push(`tx:${t.id}:${d}`, "Despesa pendente", `${t.merchant || "Uma despesa"} ${dueText(d)}.`, at(addDays(t.dueDate.slice(0, 10), -d), billMin));
+    for (const d of prefs.billDaysBefore) push(`tx:${t.id}:${d}`, "Despesa pendente", `${t.merchant || "Uma despesa"} ${dueText(d)}.`, at(addDays(t.dueDate.slice(0, 10), -d), billMin), "moedas");
   }
   // Tarefas.
   const taskMin = isTime(prefs.taskTime) ? minutesOf(prefs.taskTime) : 9 * 60;
   for (const task of data.tasks) {
     if (task.status === "done" || !task.dueDate || !task.remindAtDue) continue;
-    push(`task:${task.id}:0`, "Tarefa para hoje", task.title, at(task.dueDate.slice(0, 10), taskMin));
-    if (prefs.taskDayBefore) push(`task:${task.id}:1`, "Tarefa para amanhã", task.title, at(addDays(task.dueDate.slice(0, 10), -1), taskMin));
+    push(`task:${task.id}:0`, "Tarefa para hoje", task.title, at(task.dueDate.slice(0, 10), taskMin), soundFor(task.sound, task.title));
+    if (prefs.taskDayBefore) push(`task:${task.id}:1`, "Tarefa para amanhã", task.title, at(addDays(task.dueDate.slice(0, 10), -1), taskMin), soundFor(task.sound, task.title));
   }
   // Provas, trabalhos e leituras.
   const studyMin = isTime(prefs.studyTime) ? minutesOf(prefs.studyTime) : 19 * 60;
   const kindLabel = { exam: "Prova", assignment: "Trabalho", reading: "Leitura" } as const;
   for (const item of data.studyItems) {
     if (item.done || !item.dueDate) continue;
-    for (const d of prefs.studyDaysBefore) push(`study:${item.id}:${d}`, `${kindLabel[item.kind]} ${d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`}`, item.title, at(addDays(item.dueDate, -d), studyMin));
+    for (const d of prefs.studyDaysBefore) push(`study:${item.id}:${d}`, `${kindLabel[item.kind]} ${d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`}`, item.title, at(addDays(item.dueDate, -d), studyMin), "livro");
   }
   // Hábitos e resumo diário: percorre os dias do intervalo.
   for (let day = startDay, guard = 0; day <= endDay && guard < 400; day = addDays(day, 1), guard++) {
@@ -189,7 +193,7 @@ export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, 
       for (const h of data.habits) {
         if (h.archived || !h.weekdays.includes(weekday) || !isTime(h.reminderTime)) continue;
         if ((data.completedByDate[day] ?? []).includes(h.id)) continue;
-        push(`habit:${h.id}:${day}`, "Hora do seu hábito", h.name, at(day, minutesOf(h.reminderTime)));
+        push(`habit:${h.id}:${day}`, "Hora do seu hábito", h.name, at(day, minutesOf(h.reminderTime)), soundFor(h.sound, h.name));
       }
     }
     if (prefs.dailySummary && isTime(prefs.dailySummaryTime)) {
@@ -206,7 +210,7 @@ export function eventsBetween(data: AppData, from: Date, to: Date, limitPerRemin
   const prefs = data.notificationPrefs;
   const custom = data.reminders.flatMap((r) => occurrences(r, from, to, limitPerReminder)
     .filter((d) => r.repeat === "once" || !inQuietHours(d, prefs))
-    .map((d) => ({ key: `custom:${r.id}:${d.getTime()}`, title: r.title, body: r.message || describeReminder(r), at: d, source: "custom" as const })));
+    .map((d) => ({ key: `custom:${r.id}:${d.getTime()}`, title: r.title, body: r.message || describeReminder(r), at: d, source: "custom" as const, sound: soundFor(r.sound, r.title) })));
   const auto = autoEvents(data, prefs, from, to).filter((e) => {
     if (e.key.startsWith("bill:") || e.key.startsWith("tx:")) return data.dueRemindersEnabled;
     if (e.key.startsWith("task:")) return data.taskRemindersEnabled;
@@ -232,6 +236,8 @@ export function normalizeReminder(value: unknown): Reminder | null {
     windowStart: typeof r.windowStart === "string" && isTime(r.windowStart) ? r.windowStart : "08:00",
     windowEnd: typeof r.windowEnd === "string" && isTime(r.windowEnd) ? r.windowEnd : "22:00",
     endDate: typeof r.endDate === "string" ? r.endDate : "",
+    ...(typeof r.icon === "string" && r.icon ? { icon: r.icon } : {}),
+    ...(typeof r.sound === "string" && r.sound ? { sound: r.sound } : {}),
   };
 }
 

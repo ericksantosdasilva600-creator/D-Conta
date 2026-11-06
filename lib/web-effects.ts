@@ -1,3 +1,4 @@
+import { playSound } from "@/lib/sound-player";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import type { AppData } from "@/lib/app-data";
@@ -69,6 +70,7 @@ export function useReminderScheduler(data: AppData, onFire: (title: string, body
         fireRef.current(`${events.length} lembretes`, events.slice(-2).map((e) => e.title).join(", "));
         return;
       }
+      void playSound(events[events.length - 1].sound);
       for (const e of events) {
         if (system) void showSystemNotification(e.title, e.body, e.key);
         fireRef.current(e.title, e.body);

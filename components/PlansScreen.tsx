@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Card, Field, Header, IconButton, Page, PrimaryButton, SectionTitle, Tag } from "@/components/app-ui";
 import { C, SANS, SERIF } from "@/lib/design";
-import { FREE_FEATURES, PRO_FEATURES, PRO_PRICE, isValidEmail, type ProFeatureId } from "@/lib/plans";
+import { FREE_FEATURES, PAYMENT_METHODS, PRO_FEATURES, PRO_PRICE, isValidEmail, type ProFeatureId } from "@/lib/plans";
 import { joinProWaitlist } from "@/lib/pro-interest";
 
 export function PlansScreen() {
@@ -36,6 +36,7 @@ export function PlansScreen() {
       <Card style={{ gap: 14 }}>
         <View style={planHead}><Text style={planName}>Pro</Text><Tag label="Em breve" tone="amber" /></View>
         <Text style={muted}>Preço previsto: {PRO_PRICE.monthly} por mês ou {PRO_PRICE.yearly} por ano. Pode mudar até o lançamento.</Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>{PAYMENT_METHODS.map((m) => <Tag key={m} label={m} tone="muted" icon={m === "Pix" ? "qrcode" : "credit-card-outline"} />)}</View>
         {PRO_FEATURES.map((item) => <View key={item.id} style={row}>
           <MaterialCommunityIcons name={item.icon} size={22} color={C.green} />
           <View style={{ flex: 1 }}><Text style={strong}>{item.title}</Text><Text style={muted}>{item.text}</Text></View>

@@ -116,7 +116,7 @@ const config: ExpoConfig & { logoUrl: string } = {
         photosPermission: "Permite escolher uma imagem do recibo.",
       },
     ],
-    ["expo-notifications", { color: "#187A61" }],
+    ["expo-notifications", { color: "#187A61", sounds: ["agua", "livro", "sino", "moedas", "treino", "remedio"].map((s) => `./assets/sounds/nyvo_${s}.wav`) }],
       [
       "expo-splash-screen",
       {

@@ -5,7 +5,8 @@ import type { Session } from "@supabase/supabase-js";
 import { AppModal, PrimaryButton } from "@/components/app-ui";
 import { normalizeStoredData, useAppData, type AppData } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
-import { sb, siteUrl } from "@/lib/supabase";
+import { sb, siteUrl, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/supabase";
+import * as WebBrowser from "expo-web-browser";
 
 export type CloudStatus = "signed_out" | "checking" | "synced" | "syncing" | "offline" | "error" | "choose" | "conflict";
 type Meta = { userId: string; revision: number; lastHash: string };
@@ -14,6 +15,7 @@ type Ctx = {
   session: Session | null; email: string; status: CloudStatus; label: string; error: string; lastSync: string;
   signIn: (email: string, password: string) => Promise<string | null>;
   signUp: (email: string, password: string) => Promise<string | null>;
+  signInWithGoogle: () => Promise<string | null>;
   resetPassword: (email: string) => Promise<string | null>;
   signOut: () => Promise<void>;
   syncNow: () => Promise<void>;
@@ -43,6 +45,31 @@ const friendly = (msg: string) => {
   if (m.includes("fetch") || m.includes("network")) return "Sem internet. Seus dados continuam salvos neste aparelho.";
   return msg;
 };
+
+/** Entrada com Google: no site, o navegador vai e volta; no app, abre uma sessão segura de login. */
+async function signInWithGoogle() {
+  const native = Platform.OS !== "web";
+  const redirectTo = native ? "nyvo://auth" : siteUrl();
+  const { data, error } = await sb().auth.signInWithOAuth({ provider: "google", options: { redirectTo, skipBrowserRedirect: native } });
+  if (error) return friendly(error.message);
+  if (!native) return null;
+  if (!data.url) return "Não foi possível abrir o Google. Tente de novo.";
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  if (result.type !== "success") return null;
+  const params = new URLSearchParams(result.url.split("#")[1] ?? "");
+  const access_token = params.get("access_token"), refresh_token = params.get("refresh_token");
+  if (!access_token || !refresh_token) return "O Google não confirmou a entrada. Tente de novo.";
+  const { error: failed } = await sb().auth.setSession({ access_token, refresh_token });
+  return failed ? friendly(failed.message) : null;
+}
+
+/** O botão só aparece quando o Google estiver ligado no painel do Supabase. */
+export async function googleLoginEnabled() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_PUBLISHABLE_KEY } });
+    return (await res.json())?.external?.google === true;
+  } catch { return false; }
+}
 
 export function SupabaseSyncProvider({ children }: { children: React.ReactNode }) {
   const app = useAppData();
@@ -159,6 +186,7 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
     label: status === "synced" ? "Sincronizado" : status === "syncing" || status === "checking" ? "Sincronizando…" : status === "offline" ? "Sem internet · salvo no aparelho" : status === "error" ? "Erro ao sincronizar" : status === "choose" || status === "conflict" ? "Escolha qual versão usar" : "Salvo neste aparelho",
     signIn: async (email, password) => { const { error: e } = await sb().auth.signInWithPassword({ email: email.trim(), password }); return e ? friendly(e.message) : null; },
     signUp: async (email, password) => { const { data, error: e } = await sb().auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: siteUrl() } }); if (e) return friendly(e.message); return data.session ? null : "CONFIRM"; },
+    signInWithGoogle,
     resetPassword: async (email) => { const { error: e } = await sb().auth.resetPasswordForEmail(email.trim(), { redirectTo: siteUrl() }); return e ? friendly(e.message) : null; },
     signOut: async () => { await sb().auth.signOut(); await saveMeta(null); setStatus("signed_out"); },
     syncNow: pull,

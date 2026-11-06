@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, Text, TextInput, View } from "react-native";
+import { IconPicker, SoundPicker } from "@/components/ThemePickers";
+import { iconFor } from "@/lib/themes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, BrandMark, Card, EmptyState, Field, Header, IconButton, OfflineBanner, Page, PrimaryButton, PriorityPicker, PriorityTag, SectionTitle, StorageBanner, Tag } from "@/components/app-ui";
 import { useAppData, type Habit, type Priority } from "@/lib/app-data";
@@ -135,7 +137,7 @@ function HabitCard({ habit, checked, canCheck, onCheck, onEdit }: { habit: Habit
     <View style={[habitCard, checked ? { borderColor: "rgba(255,255,255,0.8)", backgroundColor: "#FBFDFB" } : null]}>
       <Pressable onPress={onEdit} accessibilityRole="button" accessibilityLabel={`Editar hábito ${habit.name}`} style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
         {canCheck ? <Pressable onPress={(event) => { event.stopPropagation(); onCheck(); }} accessibilityRole="checkbox" accessibilityState={{ checked }} accessibilityLabel={checked ? `Desmarcar ${habit.name}` : `Marcar ${habit.name} como concluído`} style={[checkButton, checked ? { backgroundColor: C.green, borderColor: C.green } : null]}><MaterialCommunityIcons name={checked ? "check" : "check"} size={21} color={checked ? "#FFFFFF" : C.muted} /></Pressable> : <View style={[checkButton, { backgroundColor: "#F0EFEA", borderColor: "#F0EFEA" }]}><MaterialCommunityIcons name={habit.archived ? "archive-outline" : "checkbox-blank-outline"} size={18} color={C.muted} /></View>}
-        <View style={{ flex: 1, gap: 4 }}><Text style={[habitTitle, checked ? { textDecorationLine: "line-through", color: C.muted } : null]}>{habit.name}</Text><Text style={habitDetails}>{dayText || "Sem dias selecionados"} · {habit.reminderTime}</Text></View>
+        <MaterialCommunityIcons name={iconFor(habit.icon, habit.name, "repeat") as "repeat"} size={21} color={C.green} /><View style={{ flex: 1, gap: 4 }}><Text style={[habitTitle, checked ? { textDecorationLine: "line-through", color: C.muted } : null]}>{habit.name}</Text><Text style={habitDetails}>{dayText || "Sem dias selecionados"} · {habit.reminderTime}</Text></View>
         <MaterialCommunityIcons name="chevron-right" size={19} color={C.muted} />
       </Pressable>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginLeft: canCheck ? 54 : 0 }}><PriorityTag priority={habit.priority} /><Tag label={habit.archived ? "Arquivado" : "Lembrete"} icon={habit.archived ? "archive-outline" : "bell-outline"} tone={habit.archived ? "muted" : "green"} /></View>
@@ -150,18 +152,22 @@ function HabitForm({ visible, initial, onClose, onSave, onArchive }: { visible: 
   const [time, setTime] = useState(initial?.reminderTime ?? "09:00");
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? "medium");
   const [goalLabel, setGoalLabel] = useState(initial?.goalLabel ?? "");
+  const [icon, setIcon] = useState(initial?.icon ?? "");
+  const [sound, setSound] = useState(initial?.sound ?? "");
   const [error, setError] = useState("");
   const toggleDay = (day: number) => setWeekdays((current) => current.includes(day) ? current.filter((item) => item !== day) : [...current, day]);
   const submit = () => {
     if (!name.trim()) { setError("Dê um nome a este hábito."); return; }
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) { setError("Use o formato de 24 horas, por exemplo 08:30."); return; }
     if (!weekdays.length) { setError("Escolha pelo menos um dia da semana."); return; }
-    onSave({ id: initial?.id ?? createId(), name: name.trim(), weekdays: [...weekdays].sort((a, b) => a - b), reminderTime: time, priority, archived: initial?.archived ?? false, goalLabel: goalLabel.trim() });
+    onSave({ id: initial?.id ?? createId(), name: name.trim(), weekdays: [...weekdays].sort((a, b) => a - b), reminderTime: time, priority, archived: initial?.archived ?? false, goalLabel: goalLabel.trim(), ...(icon ? { icon } : {}), ...(sound ? { sound } : {}) });
   };
   return <AppModal visible={visible} title={initial ? "Editar hábito" : "Novo hábito"} subtitle="Escolha uma rotina que você quer acompanhar." onClose={onClose} footer={<View style={{ gap: 9 }}>{initial ? <PrimaryButton title={initial.archived ? "Reativar hábito" : "Arquivar hábito"} tone="light" icon={initial.archived ? "restore" : "archive-outline"} onPress={() => onArchive(initial)} /> : null}<PrimaryButton title="Salvar hábito" icon="check" onPress={submit} /></View>}>
     <Field label="Nome do hábito" value={name} onChangeText={setName} placeholder="Ex.: Beber água" maxLength={55} />
+    <IconPicker text={name} value={icon} onChange={setIcon} />
     <View style={{ gap: 8 }}><Text style={formLabel}>Dias da semana</Text><View style={{ flexDirection: "row", gap: 7, justifyContent: "space-between" }}>{DAYS.map((day) => { const selected = weekdays.includes(day.value); return <Pressable key={day.value} onPress={() => toggleDay(day.value)} accessibilityRole="checkbox" accessibilityState={{ checked: selected }} accessibilityLabel={day.label} style={[dayChip, selected ? { backgroundColor: C.green, borderColor: C.green } : null]}><Text style={[dayTextStyle, selected ? { color: "#FFFFFF" } : null]}>{day.label}</Text></Pressable>; })}</View></View>
     <Field label="Hora do lembrete" value={time} onChangeText={setTime} placeholder="09:00" keyboardType="numbers-and-punctuation" />
+    <SoundPicker text={name} value={sound} onChange={setSound} />
     <Field label="Objetivo (opcional)" value={goalLabel} onChangeText={setGoalLabel} placeholder="Ex.: mais energia, aprender um tema" maxLength={70} />
     <View style={{ gap: 8 }}><Text style={formLabel}>Prioridade</Text><PriorityPicker value={priority} onChange={setPriority} /></View>
     {error ? <Text accessibilityRole="alert" style={{ color: C.danger, fontFamily: SANS, fontSize: 12 }}>{error}</Text> : null}

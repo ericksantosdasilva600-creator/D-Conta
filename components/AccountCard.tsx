@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, Card, ChoiceChips, Field, PrimaryButton } from "@/components/app-ui";
 import { C, SANS } from "@/lib/design";
-import { useSupabaseSync } from "@/lib/supabase-sync";
+import { googleLoginEnabled, useSupabaseSync } from "@/lib/supabase-sync";
 
 export function AccountCard({ initialMode = "Entrar" }: { initialMode?: "Entrar" | "Criar conta" } = {}) {
   const sync = useSupabaseSync();
@@ -13,6 +13,9 @@ export function AccountCard({ initialMode = "Entrar" }: { initialMode?: "Entrar"
   const [message, setMessage] = useState("");
   const [working, setWorking] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [google, setGoogle] = useState(false);
+  useEffect(() => { void googleLoginEnabled().then(setGoogle); }, []);
+  const minPassword = mode === "Criar conta" ? 8 : 6;
   const run = async (fn: () => Promise<string | null>, ok?: string) => { setWorking(true); setMessage(""); const r = await fn(); setWorking(false); setMessage(r === "CONFIRM" ? "Conta criada! Enviamos um e-mail de confirmação. Toque no link do e-mail e depois entre aqui com seu e-mail e senha." : r ?? ok ?? ""); };
 
   if (sync.session) {
@@ -45,10 +48,11 @@ export function AccountCard({ initialMode = "Entrar" }: { initialMode?: "Entrar"
         <View style={iconBox}><MaterialCommunityIcons name="cloud-sync-outline" size={22} color={C.green} /></View>
         <View style={{ flex: 1 }}><Text style={strong}>Conta grátis e sincronização</Text><Text style={muted}>Opcional. Entre para usar os mesmos dados no celular e no notebook. Sem conta, tudo continua funcionando neste aparelho.</Text></View>
       </View>
+      {google ? <PrimaryButton title="Continuar com Google" tone="light" icon="google" disabled={working} onPress={() => void run(() => sync.signInWithGoogle())} /> : null}
       <ChoiceChips values={["Entrar", "Criar conta"]} selected={mode} onSelect={(v) => { setMode(v as typeof mode); setMessage(""); }} />
       <Field label="E-mail" value={email} onChangeText={setEmail} placeholder="voce@email.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
-      <Field label="Senha" value={password} onChangeText={setPassword} placeholder={mode === "Criar conta" ? "Pelo menos 6 caracteres" : "Sua senha"} secureTextEntry autoCapitalize="none" autoComplete={mode === "Criar conta" ? "new-password" : "current-password"} onSubmitEditing={() => void run(() => mode === "Entrar" ? sync.signIn(email, password) : sync.signUp(email, password))} />
-      <PrimaryButton title={working ? "Aguarde…" : mode} icon={mode === "Entrar" ? "login" : "account-plus-outline"} disabled={working || !email.includes("@") || password.length < 6} onPress={() => void run(() => mode === "Entrar" ? sync.signIn(email, password) : sync.signUp(email, password))} />
+      <Field label="Senha" value={password} onChangeText={setPassword} placeholder={mode === "Criar conta" ? "Pelo menos 8 caracteres" : "Sua senha"} secureTextEntry autoCapitalize="none" autoComplete={mode === "Criar conta" ? "new-password" : "current-password"} onSubmitEditing={() => void run(() => mode === "Entrar" ? sync.signIn(email, password) : sync.signUp(email, password))} />
+      <PrimaryButton title={working ? "Aguarde…" : mode} icon={mode === "Entrar" ? "login" : "account-plus-outline"} disabled={working || !email.includes("@") || password.length < minPassword} onPress={() => void run(() => mode === "Entrar" ? sync.signIn(email, password) : sync.signUp(email, password))} />
       {mode === "Entrar" ? <Pressable onPress={() => email.includes("@") ? void run(() => sync.resetPassword(email), "Enviamos um link para criar uma nova senha. Confira seu e-mail.") : setMessage("Escreva seu e-mail acima e toque de novo.")} accessibilityRole="button"><Text style={link}>Esqueci minha senha</Text></Pressable> : null}
       {message ? <Text accessibilityRole="alert" style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>{message}</Text> : null}
     </Card>

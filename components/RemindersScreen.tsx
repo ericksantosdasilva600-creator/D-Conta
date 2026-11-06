@@ -5,6 +5,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppModal, Card, ChoiceChips, EmptyState, Field, Header, IconButton, Page, PrimaryButton, SectionTitle, Tag } from "@/components/app-ui";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useAppData } from "@/lib/app-data";
+import { IconPicker, SoundPicker } from "@/components/ThemePickers";
+import { iconFor } from "@/lib/themes";
 import { toast } from "@/lib/toast";
 import { C, SANS } from "@/lib/design";
 import { createId, localDateKey } from "@/lib/format";
@@ -137,7 +139,7 @@ export function RemindersScreen() {
         <ChoiceChips values={REMINDER_TEMPLATES.map((t) => t.label)} selected="" onSelect={(v) => fromTemplate(REMINDER_TEMPLATES.findIndex((t) => t.label === v))} horizontal={false} />
         {data.reminders.length ? data.reminders.map((r) => { const next = nextOccurrences(r, 1)[0]; return (
           <Pressable key={r.id} onPress={() => { setEditing(r); setOpen(true); }} accessibilityRole="button" style={[card, !r.enabled ? { opacity: 0.6 } : null]}>
-            <View style={[iconBox, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name="bell-outline" size={18} color={C.green} /></View>
+            <View style={[iconBox, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name={iconFor(r.icon, r.title, "bell-outline") as "bell-outline"} size={18} color={C.green} /></View>
             <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
               <Text numberOfLines={1} style={strong}>{r.title}</Text>
               <Text style={muted}>{describeReminder(r)}</Text>
@@ -210,7 +212,9 @@ function ReminderForm({ initial, onClose, onSave, onDelete }: { initial: Reminde
   return (
     <AppModal visible title={initial?.id ? "Editar lembrete" : "Novo lembrete"} subtitle="Do jeito que você quiser." onClose={onClose} footer={<View style={{ gap: 9 }}><PrimaryButton title="Salvar lembrete" icon="check" onPress={submit} />{initial?.id ? <PrimaryButton title="Excluir lembrete" tone="light" icon="delete-outline" onPress={() => onDelete(initial)} /> : null}</View>}>
       <Field label="Nome" value={r.title} onChangeText={(v) => patch({ title: v })} placeholder="Ex.: Beber água, Remédio, Pagar fatura" />
+      <IconPicker text={r.title} value={r.icon ?? ""} onChange={(icon) => patch({ icon })} />
       <Field label="Mensagem (opcional)" value={r.message} onChangeText={(v) => patch({ message: v })} placeholder="O texto que aparece no aviso" />
+      <SoundPicker text={r.title} value={r.sound ?? ""} onChange={(sound) => patch({ sound })} />
       <View style={{ gap: 7 }}><Text style={labelStyle}>Repetir</Text><ChoiceChips values={REPEATS.map((x) => x.label)} selected={REPEATS.find((x) => x.id === r.repeat)?.label ?? ""} onSelect={(v) => { const rep = REPEATS.find((x) => x.label === v)?.id ?? "daily"; const every = rep === "minutes" ? 30 : rep === "days" ? 2 : 1; setEveryText(String(every)); patch({ repeat: rep, every, times: r.times.length ? r.times : ["09:00"] }); }} horizontal={false} /></View>
 
       {r.repeat === "minutes" || r.repeat === "hours" || r.repeat === "days" ? <View style={{ gap: 7 }}>

@@ -1,3 +1,4 @@
+import { IconPicker } from "@/components/ThemePickers";
 import React, { useMemo, useState } from "react";
 import { Linking, Platform, Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -28,6 +29,7 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
   const [installments, setInstallments] = useState("1");
   const [amount, setAmount] = useState(initial ? String(initial.amount).replace(".", ",") : "");
   const [merchant, setMerchant] = useState(initial?.merchant ?? "");
+  const [icon, setIcon] = useState(initial?.icon ?? "");
   const [category, setCategory] = useState(initial?.category ?? EXPENSE_CATEGORIES[0]);
   const [date, setDate] = useState(initial?.date ?? localDateKey());
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
@@ -135,6 +137,7 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
       category: categoryToAdd?.name ?? category, date, dueDate: kind === "expense" ? dueDate : "",
       paid: kind === "expense" ? paid : true, priority, notes: notes.trim(), receiptUri, scope, account,
       ...(initial?.installment ? { installment: initial.installment, installmentGroup: initial.installmentGroup } : {}),
+      ...(icon ? { icon } : {}),
       ...(receiptId ? { receiptId } : {}),
       ...(receiptPendingBase64 ? { receiptPendingBase64 } : {}),
       ...(receiptMimeType ? { receiptMimeType } : {}),
@@ -164,6 +167,7 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
       </View>
       <Field label="Valor" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0,00" error={error && (!Number.isFinite(parseAmount(amount)) || parseAmount(amount) <= 0) ? error : undefined} />
       <Field label={kind === "expense" ? "Estabelecimento" : "Origem da receita"} value={merchant} onChangeText={setMerchant} placeholder={kind === "expense" ? "Ex.: Café da Praça" : "Ex.: Reembolso do hotel"} />
+      <IconPicker text={`${merchant} ${category}`} value={icon} onChange={setIcon} />
       {quickOptions.length ? <View style={{ gap: 7 }}><Text style={helperStyle}>Sugestões rápidas · toque para preencher</Text><ChoiceChips values={quickOptions} selected={merchant} onSelect={chooseQuickOption} horizontal={false} /></View> : null}
       <DatePickerField label="Data do movimento" value={date} onChange={setDate} placeholder="Toque para escolher uma data" />
       {kind === "expense" ? <>

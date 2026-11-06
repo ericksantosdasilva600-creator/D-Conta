@@ -10,3 +10,5 @@
 - Lupa e assistente: busca e respostas locais em `lib/assistant.ts`; IA em `supabase/functions/nyvo-assistente` (Supabase, segredo `ANTHROPIC_API_KEY`, limites na tabela `nyvo_ai_usage`). Nunca enviar dados do usuário para a IA sem consentimento explícito e sem atualizar a política de privacidade.
 - Calculadoras públicas em `site-static/calculadoras/` (cálculos em `calc.js`, testados em `tests/calculadoras.test.ts`). As tabelas de INSS e IRRF valem para 2026: revisar todo ano, em janeiro.
 - Contagem anônima de visitas: `site-static/conta.js` grava em `nyvo_visits` (Supabase), só no domínio publicado; nunca incluir hash, query ou dados do app. Se o domínio mudar, atualize a checagem de `host` nesse arquivo.
+- Ícones e sons: temas em `lib/themes.ts`, sons em `assets/sounds` (app) e `site-static/sons` (site). Som novo no app exige nova versão instalada. No Android cada som tem um canal próprio.
+- Entrar com Google: o botão só aparece quando o provedor Google está ligado no Supabase. `docs/app` tem uma política de segurança (CSP) em `scripts/finish-site.mjs`: serviços novos no app precisam entrar nela.

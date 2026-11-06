@@ -1,3 +1,5 @@
+import { IconPicker } from "@/components/ThemePickers";
+import { iconFor } from "@/lib/themes";
 import React, { useMemo, useState } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -37,7 +39,7 @@ export function RecurringBillsPanel({ onToast }: { onToast: (message: string) =>
       </Card> : null}
       {bills.length ? bills.map(({ bill, paid, days, overdue, dueDate }) => (
         <Pressable key={bill.id} onPress={() => { setEditing(bill); setOpen(true); }} accessibilityRole="button" style={row}>
-          <View style={[icon, { backgroundColor: paid ? C.greenSoft : overdue ? C.dangerSoft : C.amberSoft }]}><MaterialCommunityIcons name={paid ? "check" : "calendar-clock"} size={18} color={paid ? C.green : overdue ? C.danger : "#80611E"} /></View>
+          <View style={[icon, { backgroundColor: paid ? C.greenSoft : overdue ? C.dangerSoft : C.amberSoft }]}><MaterialCommunityIcons name={(paid ? "check" : iconFor(bill.icon, bill.name, "calendar-clock")) as "check"} size={18} color={paid ? C.green : overdue ? C.danger : "#80611E"} /></View>
           <View style={{ flex: 1, minWidth: 0, gap: 3 }}><Text numberOfLines={1} style={strong}>{bill.name}</Text><Text style={muted}>{money(bill.amount, data.currency)} · vence dia {bill.dueDay} · {accountLabel(bill.account)}</Text></View>
           {paid ? <Tag label="Paga" tone="green" /> : <Pressable onPress={(e) => { e.stopPropagation(); pay(bill); }} accessibilityRole="button" accessibilityLabel={`Pagar ${bill.name}`} style={payButton}><Text style={payText}>{overdue ? `Atrasada ${Math.abs(days)} d · Pagar` : days === 0 ? "Hoje · Pagar" : "Pagar"}</Text></Pressable>}
         </Pressable>
@@ -52,6 +54,7 @@ function BillForm({ initial, onClose, onSave, onDelete }: { initial: RecurringBi
   const [name, setName] = useState(initial?.name ?? "");
   const [amount, setAmount] = useState(initial ? String(initial.amount).replace(".", ",") : "");
   const [dueDay, setDueDay] = useState(String(initial?.dueDay ?? 10));
+  const [billIcon, setBillIcon] = useState(initial?.icon ?? "");
   const [category, setCategory] = useState(initial?.category ?? "Contas da casa");
   const [account, setAccount] = useState<AccountId>(initial?.account ?? "main");
   const [error, setError] = useState("");
@@ -60,11 +63,12 @@ function BillForm({ initial, onClose, onSave, onDelete }: { initial: RecurringBi
     if (!name.trim()) return setError("Dê um nome para a conta, como Aluguel ou Internet.");
     if (!Number.isFinite(value) || value <= 0) return setError("Informe o valor mensal.");
     if (!Number.isInteger(day) || day < 1 || day > 31) return setError("O dia do vencimento vai de 1 a 31.");
-    onSave({ id: initial?.id ?? createId(), name: name.trim(), amount: value, dueDay: day, category, account, paidMonths: initial?.paidMonths ?? [], active: true });
+    onSave({ id: initial?.id ?? createId(), name: name.trim(), amount: value, dueDay: day, category, account, paidMonths: initial?.paidMonths ?? [], active: true, ...(billIcon ? { icon: billIcon } : {}) });
   };
   return (
     <AppModal visible title={initial ? "Editar conta fixa" : "Nova conta fixa"} subtitle="Contas que se repetem todo mês." onClose={onClose} footer={<View style={{ gap: 9 }}><PrimaryButton title="Salvar conta" icon="check" onPress={submit} />{initial ? <PrimaryButton title="Remover conta fixa" tone="light" icon="delete-outline" onPress={() => onDelete(initial)} /> : null}</View>}>
       <Field label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Aluguel, Internet, Faculdade" />
+      <IconPicker text={name} value={billIcon} onChange={setBillIcon} />
       <ChoiceChips values={["Aluguel", "Luz", "Água", "Internet", "Celular", "Faculdade", "Academia", "Streaming"]} selected={name} onSelect={(v) => { setName(v); setCategory(v === "Aluguel" ? "Moradia" : v === "Faculdade" ? "Educação" : v === "Academia" ? "Saúde" : v === "Streaming" ? "Assinaturas" : "Contas da casa"); }} horizontal={false} />
       <Field label="Valor mensal" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0,00" />
       <Field label="Dia do vencimento" value={dueDay} onChangeText={(v) => setDueDay(v.replace(/\D/g, "").slice(0, 2))} keyboardType="number-pad" placeholder="10" />
@@ -152,7 +156,7 @@ export function GoalsPanel({ onToast }: { onToast: (message: string) => void }) 
         const monthsLeft = g.deadline ? Math.max(1, (Number(g.deadline.slice(0, 4)) - new Date().getFullYear()) * 12 + Number(g.deadline.slice(5, 7)) - (new Date().getMonth() + 1)) : 0;
         const perMonth = monthsLeft ? Math.max(0, g.target - g.saved) / monthsLeft : 0;
         return <Card key={g.id} style={{ gap: 9 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><View style={[icon, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name={pct >= 1 ? "trophy-outline" : "piggy-bank-outline"} size={18} color={C.green} /></View><View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={strong}>{g.name}</Text><Text style={muted}>{money(g.saved, data.currency)} de {money(g.target, data.currency)}{g.deadline ? ` · até ${displayDate(g.deadline)}` : ""}</Text></View><IconButton name="pencil-outline" label={`Editar ${g.name}`} tone="soft" onPress={() => { setEditing(g); setOpen(true); }} /></View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><View style={[icon, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name={(pct >= 1 ? "trophy-outline" : iconFor(g.icon, g.name, "piggy-bank-outline")) as "check"} size={18} color={C.green} /></View><View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={strong}>{g.name}</Text><Text style={muted}>{money(g.saved, data.currency)} de {money(g.target, data.currency)}{g.deadline ? ` · até ${displayDate(g.deadline)}` : ""}</Text></View><IconButton name="pencil-outline" label={`Editar ${g.name}`} tone="soft" onPress={() => { setEditing(g); setOpen(true); }} /></View>
           <View style={barLight}><View style={[barFill, { width: `${pct * 100}%`, backgroundColor: C.green }]} /></View>
           <Text style={muted}>{pct >= 1 ? "Meta alcançada. Parabéns!" : perMonth ? `Guardando ${money(perMonth, data.currency)} por mês você chega lá no prazo.` : `${Math.round(pct * 100)}% do caminho.`}</Text>
           <PrimaryButton title="Guardar dinheiro" tone="light" icon="plus" onPress={() => { setDeposit(g); setDepositValue(""); }} />
@@ -173,17 +177,19 @@ function GoalForm({ initial, onClose, onSave, onDelete }: { initial: SavingsGoal
   const [target, setTarget] = useState(initial?.target ? String(initial.target).replace(".", ",") : "");
   const [saved, setSaved] = useState(initial?.saved ? String(initial.saved).replace(".", ",") : "");
   const [deadline, setDeadline] = useState(initial?.deadline ?? "");
+  const [goalIcon, setGoalIcon] = useState(initial?.icon ?? "");
   const [error, setError] = useState("");
   const submit = () => {
     const t = parseAmount(target); const s = saved ? parseAmount(saved) : 0;
     if (!name.trim()) return setError("Dê um nome para a meta.");
     if (!Number.isFinite(t) || t <= 0) return setError("Informe quanto quer juntar.");
     if (deadline && !/^\d{4}-\d{2}(-\d{2})?$/.test(deadline)) return setError("Use o prazo no formato AAAA-MM, por exemplo 2027-06.");
-    onSave({ id: initial?.id || createId(), name: name.trim(), target: t, saved: Number.isFinite(s) ? s : 0, deadline: deadline.length === 7 ? `${deadline}-28` : deadline });
+    onSave({ id: initial?.id || createId(), name: name.trim(), target: t, saved: Number.isFinite(s) ? s : 0, deadline: deadline.length === 7 ? `${deadline}-28` : deadline, ...(goalIcon ? { icon: goalIcon } : {}) });
   };
   return (
     <AppModal visible title={initial?.id ? "Editar meta" : "Nova meta"} onClose={onClose} footer={<View style={{ gap: 9 }}><PrimaryButton title="Salvar meta" icon="check" onPress={submit} />{initial?.id ? <PrimaryButton title="Remover meta" tone="light" icon="delete-outline" onPress={() => onDelete(initial)} /> : null}</View>}>
       <Field label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Reserva de emergência, Viagem, Moto" />
+      <IconPicker text={name} value={goalIcon} onChange={setGoalIcon} />
       <Field label="Quanto quer juntar" value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="0,00" />
       {monthlyExpense > 0 && /reserva/i.test(name) ? <Pressable onPress={() => setTarget(String(Math.round(monthlyExpense * 6)))}><Text style={link}>Sugestão: 6 meses dos seus gastos = {money(monthlyExpense * 6, data.currency)}</Text></Pressable> : null}
       <Field label="Já guardado (opcional)" value={saved} onChangeText={setSaved} keyboardType="decimal-pad" placeholder="0,00" />
