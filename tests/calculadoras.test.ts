@@ -22,6 +22,22 @@ describe("calculadoras 2026", () => {
     expect(C.decimoTerceiro(2400, 7).bruto).toBe(1400);
     expect(C.decimoTerceiro(1621, 12).liquido).toBe(1499.42);
   });
+  it("acha os dias de férias pelas faltas", () => {
+    expect([0, 5, 6, 14, 15, 23, 24, 32, 33].map(C.diasFerias)).toEqual([30, 30, 24, 24, 18, 18, 12, 12, 0]);
+  });
+  it("calcula férias de 30 dias com o terço", () => {
+    expect(C.ferias(3000, 0, 0, false, 0)).toMatchObject({ direito: 30, gozo: 30, ferias: 3000, terco: 1000, abono: 0, bruto: 4000, inss: 368.6, irrf: 0, liquido: 3631.4 });
+  });
+  it("não cobra INSS sobre a venda de dias e leva o terço dela ao IR", () => {
+    const r = C.ferias(6000, 0, 0, true, 0);
+    expect(r).toMatchObject({ gozo: 20, vendidos: 10, ferias: 4000, terco: 1333.33, abono: 2666.67, bruto: 8000, inss: C.inss(5333.33) });
+    // Base de R$ 6.000 (férias, terço e terço do abono): simplificada dá R$ 574,29; redução de R$ 179,75.
+    expect(r.irrf).toBe(394.54);
+  });
+  it("soma a média e reduz os dias com faltas", () => {
+    expect(C.ferias(2800, 200, 10, false, 0)).toMatchObject({ gozo: 24, ferias: 2400, terco: 800, bruto: 3200 });
+    expect(C.ferias(3000, 0, 33, false, 0).direito).toBe(0);
+  });
   it("calcula a reserva", () => {
     expect(C.reserva(2500, 6, 3000, 500)).toEqual({ meta: 15000, falta: 12000, mesesAteMeta: 24 });
     expect(C.reserva(1000, 3, 5000, 0).mesesAteMeta).toBe(0);

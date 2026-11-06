@@ -39,6 +39,22 @@
     var primeira = cents(bruto / 2);
     return { bruto: bruto, inss: i, irrf: irrf, primeira: primeira, segunda: cents(bruto - primeira - i - irrf), liquido: cents(bruto - i - irrf) };
   }
+  // CLT, arts. 130, 142 e 143. Férias e terço pagam INSS e IR (em separado do salário do mês); o abono é isento,
+  // mas o terço sobre ele entra no IR (Solução de Consulta Cosit nº 209/2021).
+  function diasFerias(faltas) {
+    var f = faltas || 0;
+    return f <= 5 ? 30 : f <= 14 ? 24 : f <= 23 ? 18 : f <= 32 ? 12 : 0;
+  }
+  function ferias(salario, media, faltas, vender, dependentes) {
+    var direito = diasFerias(faltas), vendidos = vender ? Math.floor(direito / 3) : 0, gozo = direito - vendidos;
+    var dia = (salario + (media || 0)) / 30;
+    var valor = dia * gozo, terco = valor / 3, abono = dia * vendidos, tercoAbono = abono / 3;
+    var i = inss(cents(valor + terco)), tributavel = valor + terco + tercoAbono;
+    var legal = tributavel - i - (dependentes || 0) * DEPENDENTE;
+    var irrf = comReducao(Math.min(tabelaIR(legal), tabelaIR(tributavel - SIMPLIFICADO)), tributavel);
+    var bruto = cents(valor + terco + abono + tercoAbono);
+    return { direito: direito, gozo: gozo, vendidos: vendidos, ferias: cents(valor), terco: cents(terco), abono: cents(abono + tercoAbono), bruto: bruto, inss: i, irrf: irrf, liquido: cents(bruto - i - irrf) };
+  }
   function reserva(gasto, meses, guardado, aporte) {
     var meta = cents(gasto * meses), falta = Math.max(0, cents(meta - (guardado || 0)));
     return { meta: meta, falta: falta, mesesAteMeta: falta === 0 ? 0 : aporte > 0 ? Math.ceil(falta / aporte) : null };
@@ -66,7 +82,7 @@
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -94,6 +110,15 @@
       var prazo = r.falta === 0 ? "Sua reserva já chegou à meta." : r.mesesAteMeta ? "No ritmo informado, faltam " + r.mesesAteMeta + (r.mesesAteMeta === 1 ? " mês." : " meses.") : "Informe quanto pode guardar por mês para ver o prazo.";
       return linhas([["Meta da reserva", r.meta], ["Quanto falta", r.falta, 1]]) + '<p class="note">' + prazo + "</p>";
     },
+  };
+  telas.ferias = function () {
+    var s = num("salario");
+    if (!s) return null;
+    var r = ferias(s, num("media"), Math.floor(num("faltas")), document.getElementById("vender").value === "1", num("dependentes"));
+    if (!r.direito) return '<p class="note">Com mais de 32 faltas sem justificativa, a CLT não prevê férias nesse período.</p>';
+    var itens = [["Férias de " + r.gozo + " dias", r.ferias], ["Um terço das férias", r.terco]];
+    if (r.vendidos) itens.push(["Venda de " + r.vendidos + " dias, com o terço", r.abono]);
+    return linhas(itens.concat([["INSS", r.inss], ["Imposto de Renda", r.irrf], ["Total líquido das férias", r.liquido, 1]]));
   };
   telas.horas = function () {
     var s = num("salario");
