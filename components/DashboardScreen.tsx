@@ -45,10 +45,10 @@ export function DashboardScreen() {
   const [captureOpen, setCaptureOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
   const showToast = (message: string) => toast(message);
-  const [firstStepsHidden, setFirstStepsHidden] = useState(() => readFlag("nyvo.first-steps") === "hidden");
+  const [firstStepsHidden, setFirstStepsHidden] = useState(() => readFlag("daconta.first-steps") === "hidden");
   const cloud = useOptionalSupabaseSync();
   // Depois do primeiro "Agora não" o aviso não volta mais aqui; a conta continua em Configurações.
-  const [accountNudgeHidden, setAccountNudgeHidden] = useState(() => readFlag("nyvo.account-nudge") !== null);
+  const [accountNudgeHidden, setAccountNudgeHidden] = useState(() => readFlag("daconta.account-nudge") !== null);
   const recordCount = data.transactions.length + data.tasks.length + data.notes.length + data.healthLogs.length + Object.values(data.completedByDate).reduce((n, l) => n + l.length, 0);
   const showAccountNudge = !accountNudgeHidden && cloud !== null && !cloud.session && cloud.status === "signed_out" && recordCount >= 3;
   const today = localDateKey();
@@ -120,7 +120,7 @@ export function DashboardScreen() {
           <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 17 }}>Crie uma conta grátis e seus registros ficam salvos mesmo se trocar de celular ou limpar o navegador.</Text>
           <View style={{ flexDirection: "row", gap: 14 }}>
             <Pressable onPress={() => router.push("/settings")} accessibilityRole="button"><Text style={{ color: C.blueDark, fontFamily: SANS, fontSize: 13, fontWeight: "800" }}>Criar conta</Text></Pressable>
-            <Pressable onPress={() => { writeFlag("nyvo.account-nudge", "dismissed"); setAccountNudgeHidden(true); showToast("Tudo bem. Dá para criar a conta quando quiser em Configurações."); }} accessibilityRole="button"><Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>Agora não</Text></Pressable>
+            <Pressable onPress={() => { writeFlag("daconta.account-nudge", "dismissed"); setAccountNudgeHidden(true); showToast("Tudo bem. Dá para criar a conta quando quiser em Configurações."); }} accessibilityRole="button"><Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, fontWeight: "700" }}>Agora não</Text></Pressable>
           </View>
         </View>
       </View> : null}
@@ -128,7 +128,7 @@ export function DashboardScreen() {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <MaterialCommunityIcons name="flag-checkered" size={20} color={C.green} />
           <View style={{ flex: 1 }}><Text style={pillarTitle}>Primeiros passos</Text><Text style={pillarDetail}>{firstStepsDone} de {firstSteps.length} feitos · leva 2 minutos</Text></View>
-          <Pressable onPress={() => { writeFlag("nyvo.first-steps", "hidden"); setFirstStepsHidden(true); }} accessibilityRole="button" accessibilityLabel="Esconder primeiros passos" hitSlop={10}><MaterialCommunityIcons name="close" size={18} color={C.muted} /></Pressable>
+          <Pressable onPress={() => { writeFlag("daconta.first-steps", "hidden"); setFirstStepsHidden(true); }} accessibilityRole="button" accessibilityLabel="Esconder primeiros passos" hitSlop={10}><MaterialCommunityIcons name="close" size={18} color={C.muted} /></Pressable>
         </View>
         <ProgressBar value={firstStepsDone} max={firstSteps.length} />
         {firstSteps.map((item) => <Pressable key={item.key} disabled={item.done} onPress={item.onPress} accessibilityRole="button" accessibilityState={{ checked: item.done, disabled: item.done }} style={({ pressed }) => [stepRow, { opacity: pressed ? 0.75 : 1 }]}>

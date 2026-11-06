@@ -2,7 +2,7 @@ import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-const NATIVE_OAUTH_NONCE_KEY = "nyvo.oauth.native-nonce";
+const NATIVE_OAUTH_NONCE_KEY = "daconta.oauth.native-nonce";
 
 export type OAuthState = { redirectUri: string; nonce: string };
 

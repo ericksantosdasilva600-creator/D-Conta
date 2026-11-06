@@ -22,5 +22,5 @@ export function sb() {
 
 export function siteUrl() {
   if (Platform.OS === "web" && typeof window !== "undefined") return `${window.location.origin}${SITE_ROOT}/`;
-  return "https://ericksantosdasilva600-creator.github.io/nyvo/";
+  return "https://ericksantosdasilva600-creator.github.io/daconta/";
 }

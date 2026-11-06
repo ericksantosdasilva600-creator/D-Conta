@@ -1,7 +1,7 @@
 // Monta a pasta docs/ do GitHub Pages:
 //   docs/index.html         página de apresentação (indexada no Google)
 //   docs/app/index.html     o aplicativo
-//   docs/404.html           cópia do app; endereços antigos (/nyvo/finance…) vão para /nyvo/app/…
+//   docs/404.html           cópia do app; endereços antigos (/nyvo/… e /daconta/finance…) vão para /daconta/app/…
 import fs from "node:fs";
 const base = (process.env.NYVO_BASE_URL || "").replace(/\/$/, "");
 const root = base.replace(/\/app$/, "");

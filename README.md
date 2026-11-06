@@ -2,7 +2,7 @@
 
 **App grátis para controlar gastos, hábitos, estudos e tarefas, num lugar só.**
 
-👉 **Use agora:** https://ericksantosdasilva600-creator.github.io/nyvo/
+👉 **Use agora:** https://ericksantosdasilva600-creator.github.io/daconta/
 
 O Dá Conta é um organizador pessoal em português do Brasil:
 
@@ -14,13 +14,13 @@ O Dá Conta é um organizador pessoal em português do Brasil:
 
 ## Guias
 
-- [Como controlar seus gastos sem planilha](https://ericksantosdasilva600-creator.github.io/nyvo/guias/controle-de-gastos.html)
-- [Como criar hábitos que duram](https://ericksantosdasilva600-creator.github.io/nyvo/guias/criar-habitos.html)
-- [Como organizar os estudos da faculdade](https://ericksantosdasilva600-creator.github.io/nyvo/guias/organizar-estudos.html)
+- [Como controlar seus gastos sem planilha](https://ericksantosdasilva600-creator.github.io/daconta/guias/controle-de-gastos.html)
+- [Como criar hábitos que duram](https://ericksantosdasilva600-creator.github.io/daconta/guias/criar-habitos.html)
+- [Como organizar os estudos da faculdade](https://ericksantosdasilva600-creator.github.io/daconta/guias/organizar-estudos.html)
 
 ## Privacidade
 
-[Política de privacidade e termos](https://ericksantosdasilva600-creator.github.io/nyvo/privacidade.html). Contato: ericksantosdasilva600@gmail.com
+[Política de privacidade e termos](https://ericksantosdasilva600-creator.github.io/daconta/privacidade.html). Contato: ericksantosdasilva600@gmail.com
 
 ---
 

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 const [dist, out] = process.argv.slice(2);
 const base = (process.env.NYVO_BASE_URL || "").replace(/\/$/, "");
-// O app mora em /nyvo/app; a página de apresentação, o manifesto, os ícones e o service worker ficam na raiz /nyvo.
+// O app mora em /daconta/app; a página de apresentação, o manifesto, os ícones e o service worker ficam na raiz /daconta.
 const root = base.replace(/\/app$/, "");
 let html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
 const strip = (p) => (base && p.startsWith(base + "/") ? p.slice(base.length) : p);
@@ -25,7 +25,7 @@ const boot = sw + `<script>try{if(!${JSON.stringify(routes)}.includes(location.p
 const icon = fs.readFileSync(path.join(dist, "favicon.ico")).toString("base64");
 html = html
   .replace(/<html\s+lang="en">/, '<html lang="pt-BR">')
-  .replace("</head>", `<style>html,body{background:#F7F5EF;color-scheme:light}</style><meta name="theme-color" content="#187A61"/><meta name="description" content="Dá Conta é um organizador pessoal grátis: controle de gastos, contas fixas e cartão, hábitos, estudos e tarefas num lugar só. Funciona sem conta e no celular."/><meta property="og:title" content="Dá Conta: você dá conta, a gente organiza"/><meta property="og:description" content="Grátis, sem anúncios e funciona sem conta. Gastos, contas, hábitos, estudos e tarefas num app só."/><meta property="og:type" content="website"/><meta property="og:locale" content="pt_BR"/><meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/nyvo/icon-512.png"/><meta name="twitter:card" content="summary"/><meta name="robots" content="noindex"/><link rel="manifest" href="${root}/manifest.webmanifest"/><link rel="apple-touch-icon" href="${root}/icon-192.png"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Dá Conta"/></head>`)
+  .replace("</head>", `<style>html,body{background:#F7F5EF;color-scheme:light}</style><meta name="theme-color" content="#187A61"/><meta name="description" content="Dá Conta é um organizador pessoal grátis: controle de gastos, contas fixas e cartão, hábitos, estudos e tarefas num lugar só. Funciona sem conta e no celular."/><meta property="og:title" content="Dá Conta: você dá conta, a gente organiza"/><meta property="og:description" content="Grátis, sem anúncios e funciona sem conta. Gastos, contas, hábitos, estudos e tarefas num app só."/><meta property="og:type" content="website"/><meta property="og:locale" content="pt_BR"/><meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/daconta/icon-512.png"/><meta name="twitter:card" content="summary"/><meta name="robots" content="noindex"/><link rel="manifest" href="${root}/manifest.webmanifest"/><link rel="apple-touch-icon" href="${root}/icon-192.png"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Dá Conta"/></head>`)
   .replace(/<title[^>]*><\/title>/, "<title>Dá Conta: organize dinheiro, hábitos e tarefas</title>")
   .replace(/<link rel="icon" href="[^"]+"\/>/, `<link rel="icon" href="data:image/x-icon;base64,${icon}"/>`)
   .replace(/<link rel="preload" href="[^"]+" as="style">/, "")

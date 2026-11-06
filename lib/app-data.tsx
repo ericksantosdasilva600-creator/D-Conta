@@ -1,3 +1,4 @@
+import { migrateNativeStorageKeys } from "./storage-migration";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Network from "expo-network";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -143,9 +144,10 @@ export type AppData = {
 export type UserProfile = { name: string; gender: string; country: string; state: string; source: string; occupation: string; interests: string[]; goal: string; ageRange: string };
 
 // A chave legada permanece intacta após migração; os novos dados Dá Conta usam uma chave independente.
-export const STORAGE_KEY = "nyvo.app-data.v2";
+export const STORAGE_KEY = "daconta.app-data.v2";
+export const PREVIOUS_STORAGE_KEY = "nyvo.app-data.v2";
 export const LEGACY_STORAGE_KEY = "viaja.app-data.v1";
-export const STORAGE_MIGRATION_BACKUP_KEY = "nyvo.migration.viaja-app-data-v1";
+export const STORAGE_MIGRATION_BACKUP_KEY = "daconta.migration.viaja-app-data-v1";
 export const STORAGE_RECOVERY_BACKUP_KEY = `${STORAGE_KEY}.recovery-backup`;
 export const EXPENSE_CATEGORIES = ["Mercado", "Alimentação", "Delivery", "Moradia", "Contas da casa", "Transporte", "Combustível", "Saúde", "Educação", "Assinaturas", "Lazer", "Compras", "Viagem", "Outros"];
 export const INCOME_CATEGORIES = ["Salário", "13º salário", "Férias", "Bonificação", "Pix recebido", "Freela", "Rendimentos", "Reembolsos", "Outras receitas"];
@@ -467,7 +469,10 @@ async function loadStoredData(): Promise<StoredLoadResult> {
   let raw: string | null;
   let sourceKey = STORAGE_KEY;
   try {
+    await migrateNativeStorageKeys();
     raw = await AsyncStorage.getItem(STORAGE_KEY);
+    // Dados salvos antes da troca de nome (Nyvo → Dá Conta).
+    if (!raw) raw = await AsyncStorage.getItem(PREVIOUS_STORAGE_KEY);
     if (!raw) {
       raw = await AsyncStorage.getItem(LEGACY_STORAGE_KEY);
       sourceKey = LEGACY_STORAGE_KEY;

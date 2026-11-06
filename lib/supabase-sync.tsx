@@ -22,7 +22,7 @@ type Ctx = {
   deleteCloudData: () => Promise<string | null>;
 };
 const CloudCtx = createContext<Ctx | null>(null);
-const META_KEY = "nyvo.cloud.meta";
+const META_KEY = "daconta.cloud.meta";
 
 /** Remove imagens de recibo (ficam só no aparelho) para o pacote da nuvem ficar leve. */
 export function cloudPayload(data: AppData) {
@@ -49,7 +49,7 @@ const friendly = (msg: string) => {
 /** Entrada com Google: no site, o navegador vai e volta; no app, abre uma sessão segura de login. */
 async function signInWithGoogle() {
   const native = Platform.OS !== "web";
-  const redirectTo = native ? "nyvo://auth" : siteUrl();
+  const redirectTo = native ? "daconta://auth" : siteUrl();
   const { data, error } = await sb().auth.signInWithOAuth({ provider: "google", options: { redirectTo, skipBrowserRedirect: native } });
   if (error) return friendly(error.message);
   if (!native) return null;

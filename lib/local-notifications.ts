@@ -35,7 +35,7 @@ export async function requestNotificationPermission() {
   }
 }
 
-const soundFile = (sound: SoundId) => sound === "padrao" ? "default" : `nyvo_${sound}.wav`;
+const soundFile = (sound: SoundId) => sound === "padrao" ? "default" : `daconta_${sound}.wav`;
 // No Android, o som pertence ao canal: cada som tem o seu.
 const channelOf = (sound: SoundId) => sound === "padrao" ? "reminders" : `reminders_${sound}`;
 

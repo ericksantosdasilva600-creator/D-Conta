@@ -87,7 +87,7 @@ export function RemindersScreen() {
   };
 
   const test = async () => {
-    const ok = Platform.OS === "web" ? await showSystemNotification("Dá Conta · teste", "As notificações estão funcionando.", "nyvo-test") : false;
+    const ok = Platform.OS === "web" ? await showSystemNotification("Dá Conta · teste", "As notificações estão funcionando.", "daconta-test") : false;
     showToast(ok ? "Notificação de teste enviada." : "Aviso de teste: se as notificações do sistema estiverem bloqueadas, você vê só esta mensagem.");
   };
 

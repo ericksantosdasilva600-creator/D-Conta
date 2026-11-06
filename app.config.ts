@@ -32,10 +32,10 @@ const env = {
   appSlug: "nyvo",
   // Public brand asset used by the project platform; native launch icons are bundled separately.
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663929773641/FFQDkXiMFpWktfUF.png",
-  scheme: "nyvo",
+  scheme: "daconta",
   // Identificador definitivo do Dá Conta nas lojas (não pode mudar depois da primeira publicação).
-  iosBundleId: "com.ericksantos.nyvo",
-  androidPackage: "com.ericksantos.nyvo",
+  iosBundleId: "com.ericksantos.daconta",
+  androidPackage: "com.ericksantos.daconta",
 };
 
 // Expo serializes this browser-safe subset into native and web bundles. The server-only
@@ -116,7 +116,7 @@ const config: ExpoConfig & { logoUrl: string } = {
         photosPermission: "Permite escolher uma imagem do recibo.",
       },
     ],
-    ["expo-notifications", { color: "#187A61", sounds: ["agua", "livro", "sino", "moedas", "treino", "remedio"].map((s) => `./assets/sounds/nyvo_${s}.wav`) }],
+    ["expo-notifications", { color: "#187A61", sounds: ["agua", "livro", "sino", "moedas", "treino", "remedio"].map((s) => `./assets/sounds/daconta_${s}.wav`) }],
       [
       "expo-splash-screen",
       {
@@ -142,7 +142,7 @@ const config: ExpoConfig & { logoUrl: string } = {
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
-    // Publicação em subpasta (ex.: GitHub Pages em /nyvo). Vazio = raiz do domínio.
+    // Publicação em subpasta (ex.: GitHub Pages em /daconta). Vazio = raiz do domínio.
     ...(process.env.NYVO_BASE_URL ? { baseUrl: process.env.NYVO_BASE_URL } : {}),
   },
 };

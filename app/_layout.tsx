@@ -1,3 +1,4 @@
+import "@/lib/storage-migration";
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Stack, usePathname } from "expo-router";

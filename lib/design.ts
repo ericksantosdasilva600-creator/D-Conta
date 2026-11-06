@@ -33,7 +33,7 @@ export const PALETTES: Palette[] = [
   { id: "graphite", name: "Grafite", primary: "#34404A", secondary: "#5A7A8C", paper: "#F4F4F2" },
 ];
 
-export const THEME_STORAGE_KEY = "nyvo.theme";
+export const THEME_STORAGE_KEY = "daconta.theme";
 export type ThemeChoice = { palette: string; primary?: string; secondary?: string };
 
 const hex = (v: string) => /^#[0-9a-fA-F]{6}$/.test(v);

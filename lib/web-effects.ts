@@ -8,14 +8,14 @@ import { eventsBetween } from "@/lib/reminders";
 export function useWebDarkMode(enabled: boolean) {
   useEffect(() => {
     if (Platform.OS !== "web" || typeof document === "undefined") return;
-    const id = "nyvo-dark-style";
+    const id = "daconta-dark-style";
     if (!document.getElementById(id)) {
       const style = document.createElement("style");
       style.id = id;
-      style.textContent = "html.nyvo-dark{background:#151917!important}html.nyvo-dark body{filter:invert(0.9) hue-rotate(180deg);background:#F7F5EF!important;min-height:100%}html.nyvo-dark img,html.nyvo-dark video{filter:invert(1) hue-rotate(180deg)}";
+      style.textContent = "html.daconta-dark{background:#151917!important}html.daconta-dark body{filter:invert(0.9) hue-rotate(180deg);background:#F7F5EF!important;min-height:100%}html.daconta-dark img,html.daconta-dark video{filter:invert(1) hue-rotate(180deg)}";
       document.head.appendChild(style);
     }
-    document.documentElement.classList.toggle("nyvo-dark", enabled);
+    document.documentElement.classList.toggle("daconta-dark", enabled);
     document.documentElement.setAttribute("data-theme", enabled ? "dark" : "light");
     document.documentElement.style.colorScheme = enabled ? "dark" : "light";
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -37,8 +37,8 @@ export async function showSystemNotification(title: string, body: string, tag?: 
   } catch { return false; }
 }
 
-const LAST_KEY = "nyvo.reminders.last-check";
-const FIRED_KEY = "nyvo.reminders.fired";
+const LAST_KEY = "daconta.reminders.last-check";
+const FIRED_KEY = "daconta.reminders.fired";
 
 /**
  * Relógio dos lembretes no site: a cada 15 s verifica o que deveria ter tocado.
@@ -66,7 +66,7 @@ export function useReminderScheduler(data: AppData, onFire: (title: string, body
       const system = dataRef.current.browserNotifications;
       if (events.length > 3) {
         const body = events.slice(-4).map((e) => `${e.title}: ${e.body}`).join("\n");
-        if (system) void showSystemNotification(`Dá Conta · ${events.length} lembretes`, body, "nyvo-batch");
+        if (system) void showSystemNotification(`Dá Conta · ${events.length} lembretes`, body, "daconta-batch");
         fireRef.current(`${events.length} lembretes`, events.slice(-2).map((e) => e.title).join(", "));
         return;
       }
