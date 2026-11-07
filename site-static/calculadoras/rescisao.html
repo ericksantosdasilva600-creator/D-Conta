@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de rescisão 2026: sem justa causa, acordo e pedido | Dá Conta</title>
+<meta name="description" content="Calcule grátis sua rescisão em 2026: saldo de salário, aviso prévio proporcional, 13º, férias, multa do FGTS e descontos.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/nyvo/calculadoras/rescisao.html">
+<meta property="og:title" content="Calculadora de rescisão 2026: sem justa causa, acordo e pedido | Dá Conta">
+<meta property="og:description" content="Calcule grátis sua rescisão em 2026: saldo de salário, aviso prévio proporcional, 13º, férias, multa do FGTS e descontos.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/nyvo/calculadoras/rescisao.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/nyvo/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Calculadora de rescisão", "url": "https://ericksantosdasilva600-creator.github.io/nyvo/calculadoras/rescisao.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Em quanto tempo a empresa paga a rescisão?", "acceptedAnswer": {"@type": "Answer", "text": "Em até 10 dias depois do fim do contrato, contando o aviso trabalhado. No mesmo prazo a empresa entrega os documentos para sacar o FGTS e pedir o seguro-desemprego, quando houver direito."}}, {"@type": "Question", "name": "Quantos dias de aviso prévio eu tenho?", "acceptedAnswer": {"@type": "Answer", "text": "São 30 dias, mais 3 por ano completo na mesma empresa, até 90 dias. A parte proporcional vale para quem é dispensado. Com 1 ano completo, são 33 dias; com 5 anos, 45."}}, {"@type": "Question", "name": "O que muda na rescisão por acordo?", "acceptedAnswer": {"@type": "Answer", "text": "Desde a reforma de 2017, empresa e trabalhador podem encerrar o contrato em comum acordo. O aviso indenizado e a multa do FGTS saem pela metade (multa de 20%), as outras verbas saem inteiras, você saca até 80% do FGTS e não tem seguro-desemprego."}}, {"@type": "Question", "name": "Tem desconto de INSS e Imposto de Renda na rescisão?", "acceptedAnswer": {"@type": "Answer", "text": "Só no saldo de salário e no 13º, calculados em separado. Aviso prévio indenizado, férias indenizadas com o terço e multa do FGTS não têm desconto."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Calculadora de rescisão</h1>
+<p class="lead">Estime quanto você recebe ao sair do emprego, com o aviso proporcional, o 13º, as férias e a multa do FGTS.</p>
+<form class="calc" data-calc="rescisao">
+<label for="salario">Último salário bruto mensal<input id="salario" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 3000"></label>
+<label for="tipo">Como o contrato terminou<select id="tipo"><option value="sem" selected>Fui dispensado sem justa causa</option><option value="acordo">Acordo com a empresa</option><option value="pedido">Pedi demissão</option><option value="justa">Fui dispensado por justa causa</option></select></label>
+<label for="admissao">Data de admissão<input id="admissao" type="date"></label>
+<label for="saida">Último dia de trabalho<input id="saida" type="date"></label>
+<label for="aviso">Aviso prévio<small> Vale para dispensa sem justa causa e acordo.</small><select id="aviso"><option value="1" selected>Indenizado (não vou trabalhar)</option><option value="0">Trabalhado (já cumpri)</option></select></label>
+<label for="vencidas">Férias vencidas não tiradas<small> Períodos de 12 meses completos sem férias.</small><input id="vencidas" type="number" inputmode="numeric" min="0" max="2" step="1" value="0"></label>
+<label for="fgts">Saldo do FGTS desta empresa<small> Opcional. Veja no app FGTS. Serve para estimar a multa.</small><input id="fgts" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 8000"></label>
+<label for="adiantamento">Parcela do 13º já recebida este ano<small> Opcional. É descontada na rescisão.</small><input id="adiantamento" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1500"></label>
+<label for="dependentes">Dependentes no Imposto de Renda<input id="dependentes" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
+<button type="submit">Calcular rescisão</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Calculei%20minha%20rescis%C3%A3o%20de%20gra%C3%A7a.%20Fa%C3%A7a%20a%20sua%3A%20https%3A//ericksantosdasilva600-creator.github.io/nyvo/calculadoras/rescisao.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Organizar o dinheiro da rescisão no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado. O resultado é uma estimativa com as regras e tabelas de 2026; o valor certo é o do termo de rescisão. Na dúvida, confira com o sindicato ou um advogado trabalhista.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>O que entra em cada tipo de saída</h2>
+<p><b>Dispensa sem justa causa:</b> saldo de salário, aviso prévio, 13º e férias proporcionais com o terço, férias vencidas e multa de 40% do FGTS. <b>Acordo:</b> o mesmo, mas o aviso indenizado e a multa saem pela metade. <b>Pedido de demissão:</b> saldo, 13º, férias proporcionais e vencidas, sem aviso nem multa. <b>Justa causa:</b> saldo de salário e férias vencidas com o terço.</p>
+<h2>Como o aviso prévio muda a conta</h2>
+<p>O aviso indenizado conta como tempo de serviço. Com 3 anos de casa, são 39 dias de aviso, e esses dias podem somar mais um avo de 13º e de férias. Exemplo: salário de R$ 3.000, admissão em 1º/3/2023 e saída em 20/11/2026. O aviso de R$ 3.900 leva o contrato até 29/12, o que completa 12/12 do 13º e 10/12 de férias.</p>
+<h2>Como são contados os avos</h2>
+<p>No 13º, cada mês do ano com 15 dias ou mais de trabalho vale 1/12. Nas férias proporcionais, conta-se cada mês desde o último aniversário de admissão, e a sobra de mais de 14 dias vale mais 1/12.</p>
+<h2>O que o cálculo não inclui</h2>
+<p>Médias de horas extras e comissões, férias vencidas pagas em dobro por atraso, descontos de vale, pensão e empréstimo, estabilidade e regras da convenção coletiva. No acordo, a lei não diz se o tempo projetado do aviso também cai pela metade; a calculadora usa a metade. A multa usa o saldo informado mais o depósito do mês da rescisão.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Em quanto tempo a empresa paga a rescisão?</h3>
+<p>Em até 10 dias depois do fim do contrato, contando o aviso trabalhado. No mesmo prazo a empresa entrega os documentos para sacar o FGTS e pedir o seguro-desemprego, quando houver direito.</p>
+<h3>Quantos dias de aviso prévio eu tenho?</h3>
+<p>São 30 dias, mais 3 por ano completo na mesma empresa, até 90 dias. A parte proporcional vale para quem é dispensado. Com 1 ano completo, são 33 dias; com 5 anos, 45.</p>
+<h3>O que muda na rescisão por acordo?</h3>
+<p>Desde a reforma de 2017, empresa e trabalhador podem encerrar o contrato em comum acordo. O aviso indenizado e a multa do FGTS saem pela metade (multa de 20%), as outras verbas saem inteiras, você saca até 80% do FGTS e não tem seguro-desemprego.</p>
+<h3>Tem desconto de INSS e Imposto de Renda na rescisão?</h3>
+<p>Só no saldo de salário e no 13º, calculados em separado. Aviso prévio indenizado, férias indenizadas com o terço e multa do FGTS não têm desconto.</p>
+<p class="note">Regras: CLT, arts. 146, 477, 484-A e 487; Lei nº 4.090/1962; Lei nº 8.036/1990, art. 18; Lei nº 12.506/2011; Súmulas 171 e 261 do TST; Nota PGFN/CRJ nº 485/2016; Receita Federal, isenções na demissão.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="ferias.html">Calculadora de férias</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>

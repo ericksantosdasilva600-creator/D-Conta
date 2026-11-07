@@ -55,6 +55,63 @@
     var bruto = cents(valor + terco + abono + tercoAbono);
     return { direito: direito, gozo: gozo, vendidos: vendidos, ferias: cents(valor), terco: cents(terco), abono: cents(abono + tercoAbono), bruto: bruto, inss: i, irrf: irrf, liquido: cents(bruto - i - irrf) };
   }
+  // Rescisão (CLT, arts. 146, 477, 484-A e 487; Lei 4.090/1962; Lei 12.506/2011; Súmulas 171 e 261 do TST).
+  // Datas em "AAAA-MM-DD". Aviso indenizado, férias indenizadas com o terço e multa do FGTS não têm INSS nem IR
+  // (Nota PGFN 485/2016; Receita Federal). O 13º paga INSS e IR em separado; o saldo de salário, como um salário.
+  var DIA = 86400000;
+  function dataUTC(s) { var p = String(s || "").split("-"); var t = Date.UTC(+p[0], +p[1] - 1, +p[2]); return isNaN(t) ? null : t; }
+  function maisMeses(t, n) {
+    var d = new Date(t), y = d.getUTCFullYear(), m = d.getUTCMonth() + n, dia = d.getUTCDate();
+    var ultimo = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    return Date.UTC(y, m, Math.min(dia, ultimo));
+  }
+  function anosCompletos(adm, fim) { var k = 0; while (maisMeses(adm, 12 * (k + 1)) <= fim + DIA) k++; return k; }
+  function avosDecimo(adm, fim) {
+    var ano = new Date(fim).getUTCFullYear(), avos = 0;
+    for (var m = 0; m < 12; m++) {
+      var ini = Math.max(Date.UTC(ano, m, 1), adm), fimMes = Math.min(Date.UTC(ano, m + 1, 0), fim);
+      if (fimMes >= ini && (fimMes - ini) / DIA + 1 >= 15) avos++;
+    }
+    return avos;
+  }
+  function avosFerias(adm, fim) {
+    var ini = maisMeses(adm, 12 * anosCompletos(adm, fim)), m = 0;
+    while (maisMeses(ini, m + 1) <= fim + DIA) m++;
+    if ((fim + DIA - maisMeses(ini, m)) / DIA > 14) m++;
+    return Math.min(12, m);
+  }
+  function rescisao(p) {
+    var adm = dataUTC(p.admissao), saida = dataUTC(p.saida), sal = p.salario || 0, tipo = p.tipo || "sem";
+    if (adm === null || saida === null || saida < adm) return null;
+    var dia = sal / 30, d = new Date(saida);
+    var ultimoDoMes = d.getUTCDate() === new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    var inicioMes = Math.max(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1), adm);
+    var diasSaldo = ultimoDoMes && inicioMes === Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) ? 30 : Math.min(30, (saida - inicioMes) / DIA + 1);
+    var anos = anosCompletos(adm, saida), diasAviso = 0, aviso = 0, projetado = saida;
+    if ((tipo === "sem" || tipo === "acordo") && p.avisoIndenizado) {
+      // No acordo, o aviso indenizado sai pela metade; aqui o tempo projetado também é a metade.
+      var cheio = 30 + 3 * Math.min(20, anos), metade = tipo === "acordo";
+      diasAviso = metade ? Math.floor(cheio / 2) : cheio;
+      aviso = dia * (metade ? cheio / 2 : cheio);
+      projetado = saida + diasAviso * DIA;
+    }
+    var justa = tipo === "justa";
+    var avos13 = justa ? 0 : avosDecimo(adm, projetado), avosF = justa ? 0 : avosFerias(adm, projetado);
+    var decimo = sal * avos13 / 12, vencidas = sal * (p.vencidas || 0) * 4 / 3, proporcionais = sal * avosF / 12 * 4 / 3;
+    var saldo = dia * diasSaldo;
+    var mult = tipo === "sem" ? 0.4 : tipo === "acordo" ? 0.2 : 0;
+    var multa = mult && p.fgts > 0 ? (p.fgts + 0.08 * (saldo + aviso + decimo)) * mult : 0;
+    var liq = salarioLiquido(cents(saldo), p.dependentes);
+    var d13 = decimoTerceiro(sal, avos13, 0, p.dependentes);
+    var adiantamento = Math.min(cents(p.adiantamento || 0), d13.bruto);
+    var bruto = cents(saldo + aviso + decimo + vencidas + proporcionais + multa);
+    var inssT = cents(liq.inss + d13.inss), irT = cents(liq.irrf + d13.irrf);
+    return {
+      anos: anos, diasSaldo: diasSaldo, saldo: cents(saldo), diasAviso: diasAviso, aviso: cents(aviso), avos13: avos13, decimo: cents(decimo),
+      vencidas: cents(vencidas), avosFerias: avosF, proporcionais: cents(proporcionais), multa: cents(multa), percMulta: mult * 100,
+      bruto: bruto, inss: inssT, irrf: irT, adiantamento: adiantamento, liquido: cents(bruto - inssT - irT - adiantamento)
+    };
+  }
   function reserva(gasto, meses, guardado, aporte) {
     var meta = cents(gasto * meses), falta = Math.max(0, cents(meta - (guardado || 0)));
     return { meta: meta, falta: falta, mesesAteMeta: falta === 0 ? 0 : aporte > 0 ? Math.ceil(falta / aporte) : null };
@@ -82,7 +139,7 @@
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -119,6 +176,25 @@
     var itens = [["Férias de " + r.gozo + " dias", r.ferias], ["Um terço das férias", r.terco]];
     if (r.vendidos) itens.push(["Venda de " + r.vendidos + " dias, com o terço", r.abono]);
     return linhas(itens.concat([["INSS", r.inss], ["Imposto de Renda", r.irrf], ["Total líquido das férias", r.liquido, 1]]));
+  };
+  telas.rescisao = function () {
+    var s = num("salario"), tipo = document.getElementById("tipo").value;
+    if (!s) return null;
+    var r = rescisao({ salario: s, admissao: document.getElementById("admissao").value, saida: document.getElementById("saida").value, tipo: tipo,
+      avisoIndenizado: document.getElementById("aviso").value === "1", vencidas: Math.floor(num("vencidas")), fgts: num("fgts"), adiantamento: num("adiantamento"), dependentes: num("dependentes") });
+    if (!r) return '<p class="note">Confira as datas: a saída precisa ser depois da admissão.</p>';
+    var itens = [["Saldo de salário (" + r.diasSaldo + (r.diasSaldo === 1 ? " dia)" : " dias)"), r.saldo]];
+    if (r.aviso) itens.push(["Aviso prévio indenizado (" + (tipo === "acordo" ? "metade de " + (30 + 3 * Math.min(20, r.anos)) : r.diasAviso) + " dias)", r.aviso]);
+    if (r.avos13) itens.push(["13º proporcional (" + r.avos13 + "/12)", r.decimo]);
+    if (r.vencidas) itens.push(["Férias vencidas com o terço", r.vencidas]);
+    if (r.avosFerias) itens.push(["Férias proporcionais (" + r.avosFerias + "/12) com o terço", r.proporcionais]);
+    if (r.multa) itens.push(["Multa de " + r.percMulta + "% do FGTS", r.multa]);
+    itens.push(["INSS", r.inss], ["Imposto de Renda", r.irrf]);
+    if (r.adiantamento) itens.push(["Adiantamento do 13º já recebido", r.adiantamento]);
+    itens.push(["Total líquido estimado", r.liquido, 1]);
+    var notas = { sem: "Você também pode sacar todo o FGTS e pedir o seguro-desemprego, se cumprir os requisitos.", acordo: "No acordo você saca até 80% do FGTS e não tem seguro-desemprego.", pedido: "Quem pede demissão não saca o FGTS nem recebe seguro-desemprego. Se não cumprir o aviso, a empresa pode descontar até um salário.", justa: "Na justa causa a lei não paga 13º nem férias proporcionais. Há decisões do TST que garantem as férias proporcionais; vale consultar o sindicato." };
+    var fgts = (tipo === "sem" || tipo === "acordo") && !num("fgts") ? " Informe o saldo do FGTS para estimar a multa." : "";
+    return linhas(itens) + '<p class="note">' + notas[tipo] + fgts + "</p>";
   };
   telas.horas = function () {
     var s = num("salario");

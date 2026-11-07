@@ -38,6 +38,37 @@ describe("calculadoras 2026", () => {
     expect(C.ferias(2800, 200, 10, false, 0)).toMatchObject({ gozo: 24, ferias: 2400, terco: 800, bruto: 3200 });
     expect(C.ferias(3000, 0, 33, false, 0).direito).toBe(0);
   });
+  it("conta os avos do 13º e das férias na rescisão", () => {
+    const d = (s: string) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+    expect(C.avosDecimo(d("2026-03-10"), d("2026-11-14"))).toBe(8); // março (22 dias) e abril a outubro contam; novembro (14 dias) não
+    expect(C.avosFerias(d("2025-03-01"), d("2026-02-20"))).toBe(12); // 11 meses e 20 dias
+    expect(C.avosFerias(d("2026-03-01"), d("2026-04-15"))).toBe(2); // 1 mês e 15 dias
+    expect(C.avosFerias(d("2026-03-01"), d("2026-04-14"))).toBe(1); // a fração de 14 dias não conta
+  });
+  it("calcula rescisão sem justa causa com aviso proporcional e multa de 40%", () => {
+    const r = C.rescisao({ salario: 3000, admissao: "2023-03-01", saida: "2026-11-20", tipo: "sem", avisoIndenizado: true, fgts: 10000 });
+    // 3 anos completos: 39 dias de aviso; a projeção vai até 29/12 e completa o 13º.
+    expect(r).toMatchObject({ anos: 3, diasSaldo: 20, saldo: 2000, diasAviso: 39, aviso: 3900, avos13: 12, decimo: 3000, avosFerias: 10, proporcionais: 3333.33, multa: 4284.8 });
+    expect(r.inss).toBe(404.29); // INSS do saldo (R$ 155,69) e do 13º (R$ 248,60), separados
+    expect(r.irrf).toBe(0);
+    expect(r.liquido).toBe(16113.84);
+  });
+  it("limita o aviso a 90 dias e corta pela metade no acordo", () => {
+    expect(C.rescisao({ salario: 3000, admissao: "2000-01-01", saida: "2026-11-30", tipo: "sem", avisoIndenizado: true }).diasAviso).toBe(90);
+    const a = C.rescisao({ salario: 3000, admissao: "2023-03-01", saida: "2026-11-20", tipo: "acordo", avisoIndenizado: true, fgts: 10000 });
+    expect(a).toMatchObject({ diasAviso: 19, aviso: 1950, avos13: 11, percMulta: 20, multa: 2107.2 });
+  });
+  it("tira aviso e multa no pedido de demissão e só deixa saldo e férias vencidas na justa causa", () => {
+    const p = C.rescisao({ salario: 3000, admissao: "2026-02-01", saida: "2026-07-31", tipo: "pedido", avisoIndenizado: true, fgts: 5000 });
+    expect(p).toMatchObject({ diasSaldo: 30, aviso: 0, multa: 0, avos13: 6, avosFerias: 6, proporcionais: 2000 });
+    const j = C.rescisao({ salario: 3000, admissao: "2020-01-01", saida: "2026-07-10", tipo: "justa", vencidas: 1, fgts: 5000 });
+    expect(j).toMatchObject({ saldo: 1000, decimo: 0, proporcionais: 0, vencidas: 4000, multa: 0 });
+  });
+  it("desconta o adiantamento do 13º e recusa datas trocadas", () => {
+    const r = C.rescisao({ salario: 3000, admissao: "2023-03-01", saida: "2026-12-10", tipo: "pedido", adiantamento: 1500 });
+    expect(r.adiantamento).toBe(1500);
+    expect(C.rescisao({ salario: 3000, admissao: "2026-05-01", saida: "2026-04-01", tipo: "sem" })).toBeNull();
+  });
   it("calcula a reserva", () => {
     expect(C.reserva(2500, 6, 3000, 500)).toEqual({ meta: 15000, falta: 12000, mesesAteMeta: 24 });
     expect(C.reserva(1000, 3, 5000, 0).mesesAteMeta).toBe(0);
