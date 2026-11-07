@@ -70,3 +70,4 @@ Thumbs.db
 # Estado local de plugins do Claude Code (não versionar; contém chaves)
 .agentic-qe/
 .claude-flow/
+.swarm/
