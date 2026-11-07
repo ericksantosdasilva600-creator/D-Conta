@@ -134,12 +134,26 @@
     }
     return { total: total, juros: juros, taxa: Math.round(((baixo + alto) / 2) * 10000) / 100 };
   }
+  // Juros compostos com aporte no fim de cada mês: M = C(1 + i)^n + A[(1 + i)^n − 1] / i.
+  // Taxa anual vira mensal equivalente: (1 + a)^(1/12) − 1. Não considera Imposto de Renda nem taxas.
+  function jurosCompostos(inicial, aporte, taxa, anual, meses) {
+    var c = inicial || 0, a = aporte || 0, n = Math.max(0, Math.round(meses || 0));
+    var i = anual ? Math.pow(1 + (taxa || 0) / 100, 1 / 12) - 1 : (taxa || 0) / 100;
+    var anos = [], saldo = c;
+    for (var m = 1; m <= n; m++) {
+      saldo = saldo * (1 + i) + a;
+      if (m % 12 === 0 || m === n) anos.push({ mes: m, investido: cents(c + a * m), total: cents(saldo) });
+    }
+    var final = n === 0 ? c : i === 0 ? c + a * n : c * Math.pow(1 + i, n) + a * (Math.pow(1 + i, n) - 1) / i;
+    var investido = cents(c + a * n), total = cents(final);
+    return { taxaMensal: Math.round(i * 1e6) / 1e4, investido: investido, juros: cents(total - investido), total: total, anos: anos };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -215,6 +229,20 @@
     var taxa = r.taxa.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
     var txt = r.juros > 0 ? "Esse parcelamento embute cerca de " + taxa + "% de juros ao mês. Compare com o que o seu dinheiro renderia guardado." : "Não há juros: o total parcelado não passa do preço à vista.";
     return linhas([["Total parcelado", r.total], [r.juros > 0 ? "Juros pagos" : "Economia ou diferença", Math.abs(r.juros), 1]]) + '<p class="note">' + txt + "</p>";
+  };
+  telas.juros = function () {
+    var c = num("inicial"), a = num("aporte"), t = num("taxa"), p = num("prazo");
+    if (!(c || a) || !p) return null;
+    var emAnos = document.getElementById("unidadePrazo").value === "anos";
+    var meses = Math.min(1200, Math.round(emAnos ? p * 12 : p));
+    var r = jurosCompostos(c, a, t, document.getElementById("unidadeTaxa").value === "ano", meses);
+    var pct = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 4 }); };
+    var tabela = r.anos.length > 1 ? '<table><thead><tr><th>Período</th><th>Investido</th><th>Total</th></tr></thead><tbody>' + r.anos.map(function (x) {
+      var rot = x.mes % 12 === 0 ? (x.mes / 12) + (x.mes === 12 ? " ano" : " anos") : x.mes + (x.mes === 1 ? " mês" : " meses");
+      return "<tr><td>" + rot + "</td><td>" + brl(x.investido) + "</td><td>" + brl(x.total) + "</td></tr>";
+    }).join("") + "</tbody></table>" : "";
+    return linhas([["Total investido", r.investido], ["Juros ganhos", r.juros], ["Valor final estimado", r.total, 1]]) +
+      '<p class="note">Taxa usada: ' + pct(r.taxaMensal) + "% ao mês, em " + meses + (meses === 1 ? " mês" : " meses") + ". É uma estimativa sem Imposto de Renda e taxas.</p>" + tabela;
   };
   var CHAVE = "nyvo.desafio52";
   var lerMarcas = function () { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de juros compostos grátis, com aporte mensal | Dá Conta</title>
+<meta name="description" content="Simule grátis quanto seu dinheiro cresce com juros compostos: valor inicial, aporte mensal, taxa ao mês ou ao ano e evolução ano a ano.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/nyvo/calculadoras/juros-compostos.html">
+<meta property="og:title" content="Calculadora de juros compostos grátis, com aporte mensal | Dá Conta">
+<meta property="og:description" content="Simule grátis quanto seu dinheiro cresce com juros compostos: valor inicial, aporte mensal, taxa ao mês ou ao ano e evolução ano a ano.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/nyvo/calculadoras/juros-compostos.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/nyvo/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Calculadora de juros compostos", "url": "https://ericksantosdasilva600-creator.github.io/nyvo/calculadoras/juros-compostos.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Qual a diferença entre juros simples e compostos?", "acceptedAnswer": {"@type": "Answer", "text": "Nos juros simples, a taxa incide só sobre o valor inicial. Nos compostos, incide também sobre os juros que já entraram, então o valor cresce cada vez mais rápido."}}, {"@type": "Question", "name": "Como converter taxa anual em mensal?", "acceptedAnswer": {"@type": "Answer", "text": "Não basta dividir por 12. A taxa mensal equivalente é (1 + taxa anual) elevado a 1/12, menos 1. Por exemplo, 12% ao ano equivalem a cerca de 0,95% ao mês."}}, {"@type": "Question", "name": "O resultado já desconta o Imposto de Renda?", "acceptedAnswer": {"@type": "Answer", "text": "Não. A calculadora mostra o valor bruto. Muitos investimentos têm Imposto de Renda e taxas, então o valor que você recebe pode ser menor."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Calculadora de juros compostos</h1>
+<p class="lead">Veja quanto seu dinheiro pode crescer com o tempo, guardando um pouco todo mês.</p>
+<form class="calc" data-calc="juros">
+<label for="inicial">Valor inicial<input id="inicial" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1000"></label>
+<label for="aporte">Quanto vai guardar por mês<input id="aporte" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 200"></label>
+<label for="taxa">Taxa de juros (%)<input id="taxa" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1"></label>
+<label for="unidadeTaxa">A taxa é<select id="unidadeTaxa"><option value="mes" selected>Ao mês</option><option value="ano">Ao ano</option></select></label>
+<label for="prazo">Prazo<input id="prazo" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 5"></label>
+<label for="unidadePrazo">O prazo é em<select id="unidadePrazo"><option value="anos" selected>Anos</option><option value="meses">Meses</option></select></label>
+<button type="submit">Calcular</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Veja%20quanto%20seu%20dinheiro%20pode%20crescer%20com%20juros%20compostos%3A%20https%3A//ericksantosdasilva600-creator.github.io/nyvo/calculadoras/juros-compostos.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Criar minha meta no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado. O resultado é uma estimativa educativa, sem Imposto de Renda e taxas, e não é uma recomendação de investimento.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>O que são juros compostos</h2>
+<p>São os juros sobre juros. Todo mês o rendimento entra no saldo e, no mês seguinte, também passa a render. Por isso o crescimento é lento no começo e acelera com o tempo.</p>
+<h2>Como a conta é feita</h2>
+<p>O valor final é o valor inicial multiplicado por (1 + taxa) elevado ao número de meses, somado ao que você guarda todo mês, que também rende. A calculadora considera que o depósito mensal é feito no fim de cada mês e que a taxa não muda.</p>
+<h2>Por que começar cedo faz diferença</h2>
+<p>O tempo pesa mais que o valor. Guardar pouco por muitos anos costuma render mais juros do que guardar muito por pouco tempo. Teste prazos diferentes e compare.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Qual a diferença entre juros simples e compostos?</h3>
+<p>Nos juros simples, a taxa incide só sobre o valor inicial. Nos compostos, incide também sobre os juros que já entraram, então o valor cresce cada vez mais rápido.</p>
+<h3>Como converter taxa anual em mensal?</h3>
+<p>Não basta dividir por 12. A taxa mensal equivalente é (1 + taxa anual) elevado a 1/12, menos 1. Por exemplo, 12% ao ano equivalem a cerca de 0,95% ao mês.</p>
+<h3>O resultado já desconta o Imposto de Renda?</h3>
+<p>Não. A calculadora mostra o valor bruto. Muitos investimentos têm Imposto de Renda e taxas, então o valor que você recebe pode ser menor.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="13-salario.html">Calculadora de 13º salário</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>

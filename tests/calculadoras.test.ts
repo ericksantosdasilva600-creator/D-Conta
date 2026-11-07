@@ -89,4 +89,19 @@ describe("calculadoras 2026", () => {
     expect(r.total).toBe(6890);
     expect(r.semanas[51]).toBe(260);
   });
+  it("calcula juros compostos com e sem aporte mensal", () => {
+    expect(C.jurosCompostos(1000, 0, 1, false, 12).total).toBe(1126.83); // 1000 × 1,01^12
+    expect(C.jurosCompostos(0, 100, 1, false, 12).total).toBe(1268.25); // 100 × (1,01^12 − 1) / 0,01
+    const r = C.jurosCompostos(1000, 200, 12, true, 60);
+    expect(r.taxaMensal).toBe(0.9489); // 12% ao ano ≈ 0,9489% ao mês
+    expect(r.investido).toBe(13000);
+    expect(r.total).toBe(17830.6);
+    expect(r.anos).toHaveLength(5);
+    expect(r.anos[4].total).toBe(r.total);
+  });
+  it("juros compostos com taxa zero só somam os depósitos", () => {
+    const r = C.jurosCompostos(500, 50, 0, false, 10);
+    expect(r.total).toBe(1000);
+    expect(r.juros).toBe(0);
+  });
 });
