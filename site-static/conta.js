@@ -9,7 +9,7 @@
     if (host !== "ericksantosdasilva600-creator.github.io") return;
     var sid = sessionStorage.getItem("nyvo.aba");
     if (!sid) { sid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); sessionStorage.setItem("nyvo.aba", sid); }
-    var path = location.pathname.replace(/^\/nyvo/, "") || "/";
+    var path = location.pathname.replace(/^\/(D-Conta|nyvo)/i, "") || "/";
     if (path.indexOf("/app") === 0) path = "/app";
     var ref = "";
     try { if (document.referrer) { var r = new window.URL(document.referrer).hostname; if (r !== host) ref = r; } } catch (e) {}

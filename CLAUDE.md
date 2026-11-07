@@ -1,13 +1,14 @@
 # Dá Conta (antigo Nyvo) — instruções para o Claude
 
-- Nome do produto: **Dá Conta** (trocado de "Nyvo" em 05/11/2026 porque já existia outro app Nyvo). Slogan: "Você dá conta. A gente organiza." Nos textos para o usuário use sempre "Dá Conta". Identificadores internos (pasta, repositório, URL /nyvo/, chaves `nyvo.*` do localStorage, pacote Android `com.ericksantos.nyvo`, slug Expo) continuam com "nyvo" de propósito: mudar quebraria dados, credenciais e o Search Console.
+- Nome do produto: **Dá Conta** (trocado de "Nyvo" em 05/11/2026 porque já existia outro app Nyvo). Slogan: "Você dá conta. A gente organiza." Nos textos para o usuário use sempre "Dá Conta". Identificadores internos (pasta local, chaves `nyvo.*` do localStorage, pacote Android `com.ericksantos.nyvo`, slug Expo, variável `NYVO_BASE_URL`) continuam com "nyvo" de propósito: mudar quebraria dados e credenciais.
+- Em 07/11/2026 o repositório no GitHub foi renomeado de `nyvo` para `D-Conta` (https://github.com/ericksantosdasilva600-creator/D-Conta) e o site passou a ficar em `/D-Conta/`. O GitHub Pages não redireciona o endereço antigo `/nyvo/`.
 
 - Projeto Expo (React Native Web) do Erick. Idioma da interface: português do Brasil; moeda padrão BRL.
-- O site público é o GitHub Pages servido a partir de `docs/` em https://ericksantosdasilva600-creator.github.io/nyvo/.
+- O site público é o GitHub Pages servido a partir de `docs/` em https://ericksantosdasilva600-creator.github.io/D-Conta/.
 - Modo publicado: local-only (`EXPO_PUBLIC_NYVO_LOCAL_ONLY=1`), sem login nem servidor; dados no localStorage do navegador.
-- Depois de qualquer mudança no app, SEMPRE reconstruir o site com `NYVO_BASE_URL=/nyvo/app pnpm build:site`, conferir que `pnpm check` e `pnpm test` passam, e fazer commit incluindo `docs/` inteiro (apresentação em `docs/index.html`, app em `docs/app/index.html`, `docs/404.html`).
+- Depois de qualquer mudança no app, SEMPRE reconstruir o site com `NYVO_BASE_URL=/D-Conta/app pnpm build:site`, conferir que `pnpm check` e `pnpm test` passam, e fazer commit incluindo `docs/` inteiro (apresentação em `docs/index.html`, app em `docs/app/index.html`, `docs/404.html`).
 - O código de login Manus / sincronização MySQL continua no projeto, desativado no modo local. Não remover.
-- Estrutura do site: `/nyvo/` é a página de apresentação (SEO, `site-static/index.html`), `/nyvo/app/` é o app, `/nyvo/guias/` tem os guias. Conteúdo estático fica em `site-static/`.
+- Estrutura do site: `/D-Conta/` é a página de apresentação (SEO, `site-static/index.html`), `/D-Conta/app/` é o app, `/D-Conta/guias/` tem os guias. Conteúdo estático fica em `site-static/`.
 - Monetização preparada e desligada: `PRO_SALES_OPEN` em `lib/plans.ts` e `ADSENSE_CLIENT`/`AD_SLOT` em `site-static/ads.js`. Anúncios só nas páginas públicas, nunca no app. Antes de ligar: sair do GitHub Pages (uso comercial proibido), domínio próprio, e atualizar a política e os textos "grátis/sem anúncios".
 - Lupa e assistente: busca e respostas locais em `lib/assistant.ts`; IA em `supabase/functions/nyvo-assistente` (Supabase, segredo `ANTHROPIC_API_KEY`, limites na tabela `nyvo_ai_usage`). Nunca enviar dados do usuário para a IA sem consentimento explícito e sem atualizar a política de privacidade.
 - Calculadoras públicas em `site-static/calculadoras/` (cálculos em `calc.js`, testados em `tests/calculadoras.test.ts`). As tabelas de INSS e IRRF valem para 2026: revisar todo ano, em janeiro.
