@@ -71,3 +71,6 @@ Thumbs.db
 .agentic-qe/
 .claude-flow/
 .swarm/
+agentdb.db
+agentdb.db-shm
+agentdb.db-wal
