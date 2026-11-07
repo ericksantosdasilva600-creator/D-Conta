@@ -66,3 +66,7 @@ Thumbs.db
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
+
+# Estado local de plugins do Claude Code (não versionar; contém chaves)
+.agentic-qe/
+.claude-flow/
