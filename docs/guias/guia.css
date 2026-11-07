@@ -58,3 +58,23 @@ th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); 
 .pomo .ctrl #zerar { background:transparent; color:var(--green); border:2px solid var(--green); }
 #tempo { font:800 clamp(72px,22vw,120px)/1 var(--display); font-variant-numeric:tabular-nums; }
 #ciclos { color:var(--muted); margin:0; }
+
+/* Guia de renda extra com IA */
+.jump { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 8px; }
+.jump a { font-size:15px; text-decoration:none; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:6px 14px; }
+.jump a:hover { border-color:var(--green); color:var(--green); }
+.oferta { scroll-margin-top:16px; }
+.oferta .tipo { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--green); margin:44px 0 0; }
+.oferta h2 { margin-top:4px; }
+.fatos { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:18px; overflow:hidden; margin:20px 0; }
+.fatos div { background:var(--surface); padding:14px 18px; min-width:0; }
+.fatos dt { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.fatos dd { margin:2px 0 0; font-size:16px; line-height:1.55; }
+.fatos .preco dd { font-weight:700; font-variant-numeric:tabular-nums; }
+@media (max-width:560px) { .fatos { grid-template-columns:minmax(0,1fr); } }
+.msg { background:var(--mint); border-radius:18px; padding:18px 20px; margin:20px 0; }
+.msg-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px; }
+.msg-top b { font-family:var(--display); font-size:18px; }
+.msg p { margin:0; font-size:17px; }
+.msg button { font:700 14px var(--body); color:var(--green); background:transparent; border:2px solid var(--green); border-radius:10px; min-height:40px; padding:0 14px; cursor:pointer; }
+.cuidado { color:var(--muted); font-size:16px; border-left:3px solid var(--line); padding-left:14px; }
