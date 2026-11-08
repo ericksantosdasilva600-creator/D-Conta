@@ -188,4 +188,19 @@ describe("calculadoras 2026", () => {
     expect(f.compra).toMatchObject({ fechamento: "2027-02-28", vencimento: "2027-03-08" });
     expect(f.melhor.compra).toBe("2027-03-01");
   });
+  it("divide a conta com taxa de serviço e itens só de quem consumiu", () => {
+    const r = C.dividirConta({ total: 240, taxa: 10, pessoas: 4, extra: 80, quemExtra: 2 });
+    expect(r).toMatchObject({ taxa: 24, total: 264, quemExtra: 2, soma: 264 });
+    expect(r.grupos).toEqual([{ extra: true, valor: 88, qtd: 2 }, { extra: false, valor: 44, qtd: 2 }]);
+  });
+  it("reparte os centavos para a soma fechar exata e limita entradas fora do normal", () => {
+    const r = C.dividirConta({ total: 200, taxa: 10, pessoas: 3 });
+    expect(r.grupos).toEqual([{ extra: false, valor: 73.34, qtd: 1 }, { extra: false, valor: 73.33, qtd: 2 }]);
+    expect(r.soma).toBe(220);
+    const s = C.dividirConta({ total: 100, taxa: 0, pessoas: 4, extra: 500, quemExtra: 9 });
+    expect(s).toMatchObject({ total: 100, quemExtra: 4, soma: 100 });
+    const q = C.dividirConta({ total: 99.99, taxa: 13, pessoas: 7, extra: 33.33, quemExtra: 3 });
+    expect(q.soma).toBe(112.99);
+    expect(q.grupos).toEqual([{ extra: true, valor: 23.32, qtd: 2 }, { extra: true, valor: 23.31, qtd: 1 }, { extra: false, valor: 10.76, qtd: 4 }]);
+  });
 });

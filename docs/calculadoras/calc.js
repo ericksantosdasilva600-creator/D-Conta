@@ -248,12 +248,34 @@
     return { compra: faturaDa(compra, fech, venc), melhor: faturaDa(melhor, fech, venc), pior: pior,
       melhorDia: new Date(melhor).getUTCDate(), menorPrazo: pior.dias };
   }
+  // Dividir a conta: a taxa de serviço vale para tudo; os itens extras (bebidas, por exemplo) só para quem consumiu.
+  // A conta é feita em centavos e a soma fecha exata: ninguém paga mais de 1 centavo acima da sua parte.
+  function dividirConta(o) {
+    var pessoas = Math.max(1, Math.floor(o.pessoas || 1)), taxa = Math.max(0, o.taxa || 0) / 100;
+    var total = Math.max(0, o.total || 0), extra = Math.min(total, Math.max(0, o.extra || 0));
+    var quem = extra > 0 ? Math.min(pessoas, Math.max(1, Math.floor(o.quemExtra || pessoas))) : 0;
+    var totalCent = Math.round(total * (1 + taxa) * 100), extraCent = Math.round(extra * (1 + taxa) * 100);
+    // Parte ideal de cada um em centavos; arredonda para baixo e dá os centavos que faltam a quem ficou mais perto de subir.
+    var ideal = [], pagos = [], falta = totalCent;
+    for (var i = 0; i < pessoas; i++) { ideal.push((totalCent - extraCent) / pessoas + (i < quem ? extraCent / quem : 0)); pagos.push(Math.floor(ideal[i] + 1e-9)); falta -= pagos[i]; }
+    var ordem = ideal.map(function (v, k) { return k; }).sort(function (x, y) { return (ideal[y] - pagos[y]) - (ideal[x] - pagos[x]) || x - y; });
+    for (var k = 0; k < falta; k++) pagos[ordem[k % pessoas]]++;
+    var grupos = [], soma = 0;
+    for (var j = 0; j < pessoas; j++) {
+      var consumiu = j < quem, c = pagos[j], g = null;
+      soma += c;
+      for (var q = 0; q < grupos.length; q++) if (grupos[q].extra === consumiu && grupos[q].valor === c / 100) g = grupos[q];
+      if (g) g.qtd++; else grupos.push({ extra: consumiu, valor: c / 100, qtd: 1 });
+    }
+    return { conta: total, taxa: cents((totalCent - Math.round(total * 100)) / 100), total: totalCent / 100, pessoas: pessoas, quemExtra: quem,
+      media: cents(totalCent / pessoas / 100), grupos: grupos, soma: soma / 100 };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -394,6 +416,24 @@
       "<h3>Se parcelar na fatura seguinte</h3>" +
       linhas([[r.parcelas + "x de", r.parcela], ["Juros do rotativo e do parcelamento", r.jurosTotal], ["Total pago pela dívida", r.totalPago, 1]]) + teto +
       '<p class="note">É uma estimativa com juros fixos e pagamentos em dia. Não inclui IOF, multa, juros de atraso nem compras novas. Confira as taxas e o Custo Efetivo Total (CET) na sua fatura.</p>';
+  };
+  telas.conta = function () {
+    var total = num("total"), pessoas = Math.floor(num("pessoas"));
+    if (!total || !pessoas) return null;
+    var campoTaxa = document.getElementById("taxa"), taxa = campoTaxa && campoTaxa.value !== "" ? num("taxa") : 10;
+    if (num("extra") > total) return '<p class="note">Os itens à parte não podem passar do valor da conta. O valor da conta é a soma de tudo, incluindo esses itens.</p>';
+    var r = dividirConta({ total: total, taxa: taxa, pessoas: pessoas, extra: num("extra"), quemExtra: num("quemExtra") });
+    var pct = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
+    var partes = r.grupos.map(function (g) {
+      var um = g.qtd === 1, quem = r.quemExtra ? (g.extra ? "" : " não") + (um ? " consumiu" : " consumiram") + " os itens à parte" : "";
+      var rot = g.qtd + (um ? " pessoa" : " pessoas") + (quem ? " que" + quem : "") + (um ? " paga" : " pagam");
+      return '<div class="line total"><span>' + rot + "</span><b>" + brl(g.valor) + "</b></div>";
+    }).join("");
+    var tipos = r.grupos.reduce(function (a, g) { a[g.extra] = 1; return a; }, {});
+    var centavos = r.grupos.length > Object.keys(tipos).length ? '<p class="note">A diferença de 1 centavo entre algumas pessoas é para a soma fechar exatamente o valor da conta.</p>' : "";
+    return linhas([["Valor da conta", r.conta], ["Taxa de serviço (" + pct(taxa) + "%)", r.taxa], ["Total a pagar", r.total, 1]]) +
+      "<h3>Quanto cada um paga</h3>" + partes + centavos +
+      '<p class="note">A taxa de serviço foi dividida na mesma proporção do que cada um consumiu. Confira o total com o valor impresso na conta antes de pagar.</p>';
   };
   telas.cartao = function () {
     var fech = num("fechamento"), venc = num("vencimento");

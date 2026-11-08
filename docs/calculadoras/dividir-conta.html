@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dividir a conta entre amigos, com taxa de serviço | Dá Conta</title>
+<meta name="description" content="Divida grátis a conta do bar ou do restaurante entre amigos, com os 10% de serviço e as bebidas só para quem bebeu. Sem cadastro.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/dividir-conta.html">
+<meta property="og:title" content="Dividir a conta entre amigos, com taxa de serviço | Dá Conta">
+<meta property="og:description" content="Divida grátis a conta do bar ou do restaurante entre amigos, com os 10% de serviço e as bebidas só para quem bebeu. Sem cadastro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/dividir-conta.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Dividir a conta entre amigos", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/dividir-conta.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Como dividir a conta com os 10% de serviço?", "acceptedAnswer": {"@type": "Answer", "text": "Some a taxa ao valor da conta e divida o total pelo número de pessoas. Numa conta de R$ 200 com 10%, o total é R$ 220. Entre 4 pessoas, cada uma paga R$ 55."}}, {"@type": "Question", "name": "Como dividir quando alguém não bebeu?", "acceptedAnswer": {"@type": "Answer", "text": "Separe o valor das bebidas. A comida é dividida entre todos e as bebidas só entre quem bebeu, cada parte com a sua taxa de serviço. A calculadora faz essa conta para você."}}, {"@type": "Question", "name": "Por que algumas pessoas pagam 1 centavo a mais?", "acceptedAnswer": {"@type": "Answer", "text": "Nem toda conta divide certinho. Para a soma fechar o valor exato, os centavos que sobram ficam com algumas pessoas."}}, {"@type": "Question", "name": "Posso usar outra porcentagem?", "acceptedAnswer": {"@type": "Answer", "text": "Pode. Se o restaurante cobrar outra taxa ou o grupo combinar outro valor, mude a porcentagem. Se a conta já vier com a taxa somada, coloque 0."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Dividir a conta entre amigos</h1>
+<p class="lead">Coloque o valor da conta, a taxa de serviço e quantas pessoas vão pagar. Se alguém não bebeu, separe as bebidas: só quem consumiu paga por elas.</p>
+<form class="calc" data-calc="conta">
+<label for="total">Valor da conta, sem a taxa de serviço<small>A soma de tudo o que foi consumido.</small><input id="total" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 240"></label>
+<label for="taxa">Taxa de serviço (%)<small>Se deixar em branco, usa 10%. Coloque 0 para não incluir.</small><input id="taxa" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="10"></label>
+<label for="pessoas">Quantas pessoas vão dividir<input id="pessoas" type="number" inputmode="numeric" min="1" step="1" placeholder="Ex.: 4"></label>
+<details class="mais"><summary>Alguém não bebeu ou não comeu algo?</summary>
+<label for="extra">Valor dos itens à parte<small>Por exemplo, as bebidas. Esse valor já está dentro do valor da conta.</small><input id="extra" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 80"></label>
+<label for="quemExtra">Quantas pessoas consumiram esses itens<input id="quemExtra" type="number" inputmode="numeric" min="1" step="1" placeholder="Ex.: 2"></label>
+</details>
+<button type="submit">Dividir a conta</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Dividi%20a%20conta%20aqui%2C%20com%20os%2010%25%20e%20as%20bebidas%20s%C3%B3%20pra%20quem%20bebeu%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/dividir-conta.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Anotar meus gastos no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como dividir a conta sem briga</h2>
+<p>O jeito mais simples é somar a taxa de serviço ao valor da conta e dividir o total pelo número de pessoas. Numa conta de R$ 240 com 10% de serviço, o total vai para R$ 264. Entre 4 amigos, cada um paga R$ 66.</p>
+<h2>Quando alguém não bebeu</h2>
+<p>Dividir tudo igual nem sempre é justo. Se só duas pessoas pediram cerveja, separe o valor das bebidas. A comida é dividida entre todos e as bebidas só entre quem bebeu. A taxa de serviço acompanha cada parte. Numa conta de R$ 240 com R$ 80 de bebidas para 2 das 4 pessoas, quem não bebeu paga R$ 44 e quem bebeu paga R$ 88.</p>
+<h2>Saída com amigos cabe no mês?</h2>
+<p>Lazer faz parte do orçamento. No <a href="orcamento-50-30-20.html">orçamento 50-30-20</a>, as saídas entram nos 30% dos desejos. Se pagar no cartão, veja o <a href="melhor-dia-cartao.html">melhor dia para comprar no cartão</a> e lembre de anotar o gasto para não ter surpresa na fatura.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Como dividir a conta com os 10% de serviço?</h3>
+<p>Some a taxa ao valor da conta e divida o total pelo número de pessoas. Numa conta de R$ 200 com 10%, o total é R$ 220. Entre 4 pessoas, cada uma paga R$ 55.</p>
+<h3>Como dividir quando alguém não bebeu?</h3>
+<p>Separe o valor das bebidas. A comida é dividida entre todos e as bebidas só entre quem bebeu, cada parte com a sua taxa de serviço. A calculadora faz essa conta para você.</p>
+<h3>Por que algumas pessoas pagam 1 centavo a mais?</h3>
+<p>Nem toda conta divide certinho. Para a soma fechar o valor exato, os centavos que sobram ficam com algumas pessoas.</p>
+<h3>Posso usar outra porcentagem?</h3>
+<p>Pode. Se o restaurante cobrar outra taxa ou o grupo combinar outro valor, mude a porcentagem. Se a conta já vier com a taxa somada, coloque 0.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>
