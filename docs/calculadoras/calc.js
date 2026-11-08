@@ -209,12 +209,29 @@
     return { impossivel: false, meses: mes, juros: cents(juros), pago: cents(pago), orcamento: cents(orcamento),
       ordem: ordem.map(function (d) { return { nome: d.nome, mes: d.fim }; }) };
   }
+  // Rotativo do cartão (Res. CMN 4.549/2017, com a Res. CMN 5.112/2023, e Lei 14.690/2023, art. 28): o saldo não pago
+  // fica no rotativo só até a fatura seguinte; depois pode virar parcelamento. Juros e encargos somados não podem
+  // passar do valor original da dívida. Parcelas pela Tabela Price. Não considera IOF, multa nem novas compras.
+  function rotativo(o) {
+    var saldo = cents(Math.max(0, (o.fatura || 0) - (o.pago || 0)));
+    var tr = Math.max(0, o.taxaRotativo || 0) / 100, tp = Math.max(0, o.taxaParcelado || 0) / 100;
+    var n = Math.max(1, Math.round(o.parcelas || 1));
+    var jurosRot = cents(Math.min(saldo * tr, saldo));
+    var proxima = cents(saldo + jurosRot);
+    var semTeto = tp > 0 ? proxima * tp / (1 - Math.pow(1 + tp, -n)) : proxima / n;
+    var jurosParc = cents(semTeto * n - proxima), teto = false;
+    if (jurosRot + jurosParc > saldo + 0.005) { teto = true; jurosParc = cents(saldo - jurosRot); }
+    var parcela = cents((proxima + jurosParc) / n);
+    return { saldo: saldo, jurosRotativo: jurosRot, proximaFatura: proxima, parcela: parcela, parcelas: n,
+      jurosParcelado: jurosParc, jurosTotal: cents(jurosRot + jurosParc), totalPago: cents(saldo + jurosRot + jurosParc),
+      teto: teto, limiteJuros: saldo, taxaAnual: Math.round((Math.pow(1 + tr, 12) - 1) * 10000) / 100 };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -342,6 +359,19 @@
     return linhas([["Você vai pagar por mês", melhor.orcamento], ["Juros até quitar tudo", melhor.juros]]) +
       '<div class="line total"><span>Livre das dívidas em</span><b>' + tempo(melhor.meses) + "</b></div>" +
       tabela + ordem + '<p class="note">' + txt + " É uma estimativa: considera juros fixos e pagamentos em dia, sem multas, tarifas, IOF ou renegociação.</p>";
+  };
+  telas.rotativo = function () {
+    var f = num("fatura");
+    if (!f) return null;
+    var r = rotativo({ fatura: f, pago: num("pago"), taxaRotativo: num("taxaRot"), taxaParcelado: num("taxaParc"), parcelas: Math.min(24, Math.floor(num("parcelas")) || 12) });
+    if (!r.saldo) return '<p class="note">Você vai pagar a fatura inteira, então não entra nada no rotativo e não há juros. Continue assim!</p>';
+    var pct = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
+    var teto = r.teto ? '<p class="note"><b>Aqui entra o teto:</b> pelas parcelas e taxas informadas, os juros passariam de ' + brl(r.limiteJuros) + ". Pela lei, juros e encargos somados não podem passar do valor original da dívida, então a calculadora limitou a conta a esse valor. Se o banco cobrar mais, reclame no SAC, na ouvidoria e no Procon.</p>" : "";
+    return linhas([["Vai para o rotativo", r.saldo], ["Juros de 1 mês no rotativo", r.jurosRotativo], ["Fica para a próxima fatura", r.proximaFatura, 1]]) +
+      '<p class="note">Uma taxa de ' + pct(num("taxaRot")) + "% ao mês equivale a cerca de " + pct(r.taxaAnual) + "% ao ano. O rotativo só pode durar até a fatura seguinte: se não der para pagar tudo nela, o banco pode oferecer um parcelamento.</p>" +
+      "<h3>Se parcelar na fatura seguinte</h3>" +
+      linhas([[r.parcelas + "x de", r.parcela], ["Juros do rotativo e do parcelamento", r.jurosTotal], ["Total pago pela dívida", r.totalPago, 1]]) + teto +
+      '<p class="note">É uma estimativa com juros fixos e pagamentos em dia. Não inclui IOF, multa, juros de atraso nem compras novas. Confira as taxas e o Custo Efetivo Total (CET) na sua fatura.</p>';
   };
   var CHAVE = "nyvo.desafio52";
   var lerMarcas = function () { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };

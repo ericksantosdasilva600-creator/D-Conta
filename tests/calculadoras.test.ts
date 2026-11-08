@@ -163,4 +163,15 @@ describe("calculadoras 2026", () => {
     expect(r.meses).toBe(11);
     expect(r.juros).toBe(58.98);
   });
+  it("calcula os juros do rotativo e o parcelamento da fatura", () => {
+    const r = C.rotativo({ fatura: 2000, pago: 500, taxaRotativo: 15, taxaParcelado: 9, parcelas: 12 });
+    expect(r).toMatchObject({ saldo: 1500, jurosRotativo: 225, proximaFatura: 1725, parcela: 240.9, teto: false });
+    expect(r.totalPago).toBe(2890.77);
+    expect(r.taxaAnual).toBe(435.03);
+  });
+  it("limita juros e encargos do cartão ao valor original da dívida", () => {
+    const r = C.rotativo({ fatura: 1000, pago: 0, taxaRotativo: 15, taxaParcelado: 9, parcelas: 24 });
+    expect(r).toMatchObject({ saldo: 1000, jurosTotal: 1000, totalPago: 2000, teto: true });
+    expect(C.rotativo({ fatura: 500, pago: 500, taxaRotativo: 15 }).saldo).toBe(0);
+  });
 });

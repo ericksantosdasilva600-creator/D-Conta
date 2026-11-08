@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de juros do rotativo do cartão | Dá Conta</title>
+<meta name="description" content="Veja grátis quanto você paga de juros ao deixar parte da fatura no rotativo do cartão, quanto fica a próxima fatura e quanto custa parcelar, com o teto de 100%.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/juros-rotativo.html">
+<meta property="og:title" content="Calculadora de juros do rotativo do cartão | Dá Conta">
+<meta property="og:description" content="Veja grátis quanto você paga de juros ao deixar parte da fatura no rotativo do cartão, quanto fica a próxima fatura e quanto custa parcelar, com o teto de 100%.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/juros-rotativo.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Calculadora de juros do rotativo do cartão", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/juros-rotativo.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "O que é o rotativo do cartão?", "acceptedAnswer": {"@type": "Answer", "text": "É o crédito que o banco dá quando você paga menos que o total da fatura. O que faltou passa para a fatura seguinte com juros. É uma das dívidas mais caras do Brasil."}}, {"@type": "Question", "name": "Por quanto tempo posso ficar no rotativo?", "acceptedAnswer": {"@type": "Answer", "text": "Só até o vencimento da fatura seguinte. Se ainda sobrar saldo, o banco pode oferecer um parcelamento, que deve ter condições melhores que o rotativo."}}, {"@type": "Question", "name": "Existe limite para os juros do rotativo?", "acceptedAnswer": {"@type": "Answer", "text": "Sim. Desde janeiro de 2024, pela Lei 14.690/2023 e pela regra do Conselho Monetário Nacional, juros e encargos do rotativo e do parcelamento da fatura somados não podem passar do valor original da dívida. Uma dívida de R$ 1.000 pode chegar a, no máximo, R$ 2.000."}}, {"@type": "Question", "name": "Pagar o mínimo da fatura é uma boa ideia?", "acceptedAnswer": {"@type": "Answer", "text": "Só em último caso. O que você não paga entra no rotativo e os juros correm todo mês. Se não der para pagar tudo, compare o parcelamento da fatura com um empréstimo mais barato e pare de usar o cartão até sair da dívida."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Juros do rotativo do cartão</h1>
+<p class="lead">Descubra quanto custa pagar só uma parte da fatura: os juros do rotativo, o valor da próxima fatura e quanto sai parcelar o que sobrou.</p>
+<form class="calc" data-calc="rotativo">
+<label for="fatura">Valor total da fatura<input id="fatura" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 2000"></label>
+<label for="pago">Quanto você vai pagar agora<small>Pode ser o mínimo da fatura ou zero.</small><input id="pago" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 500"></label>
+<label for="taxaRot">Juros do rotativo ao mês (%)<small>Aparece na fatura, perto do pagamento mínimo.</small><input id="taxaRot" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 15"></label>
+<label for="taxaParc">Juros do parcelamento da fatura ao mês (%)<small>Também aparece na fatura. Se não souber, deixe em branco.</small><input id="taxaParc" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 9"></label>
+<label for="parcelas">Em quantas vezes parcelaria<small>Até 24 vezes.</small><input id="parcelas" type="number" inputmode="decimal" min="0" step="any" max="24" placeholder="Ex.: 12"></label>
+<button type="submit">Calcular os juros</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Veja%20quanto%20custa%20deixar%20a%20fatura%20no%20rotativo%20do%20cart%C3%A3o%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/juros-rotativo.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Controlar meu cartão no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado. Esta página é educativa e não é uma recomendação financeira.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como funciona o rotativo</h2>
+<p>Quando você paga menos que o total da fatura, o que faltou vira um empréstimo do banco: o crédito rotativo. Ele aparece na fatura seguinte com juros, e as compras novas entram por cima. Pela regra do Banco Central, o saldo só pode ficar no rotativo até o vencimento da próxima fatura. Depois disso, o banco pode oferecer um parcelamento, que precisa ter condições melhores que o rotativo.</p>
+<h2>O teto de 100%</h2>
+<p>Desde 3 de janeiro de 2024 vale a Lei 14.690/2023, do programa Desenrola, regulamentada pelo Conselho Monetário Nacional (Resolução 5.112/2023). Os juros e encargos do rotativo e do parcelamento da fatura, somados, não podem passar do valor original da dívida. Entram nessa conta os juros, a multa e os juros de atraso, tarifas e comissões. Na prática, quem deixou R$ 1.000 no rotativo não pode pagar mais de R$ 1.000 de juros e encargos, ou R$ 2.000 no total. O banco também precisa mostrar na fatura o valor original e os juros de cada operação.</p>
+<h2>Como sair do rotativo</h2>
+<p>Pague o máximo que conseguir já na próxima fatura e pare de usar o cartão até zerar a dívida. Pergunte ao banco se ele tem uma proposta com juros menores. Compare com um empréstimo pessoal ou consignado: se a taxa for bem menor, trocar uma dívida pela outra sai mais barato. Depois, monte um <a href="quitar-dividas.html">plano para quitar as dívidas</a> e uma <a href="reserva-de-emergencia.html">reserva de emergência</a> para não voltar ao rotativo.</p>
+<h2>Perguntas frequentes</h2>
+<h3>O que é o rotativo do cartão?</h3>
+<p>É o crédito que o banco dá quando você paga menos que o total da fatura. O que faltou passa para a fatura seguinte com juros. É uma das dívidas mais caras do Brasil.</p>
+<h3>Por quanto tempo posso ficar no rotativo?</h3>
+<p>Só até o vencimento da fatura seguinte. Se ainda sobrar saldo, o banco pode oferecer um parcelamento, que deve ter condições melhores que o rotativo.</p>
+<h3>Existe limite para os juros do rotativo?</h3>
+<p>Sim. Desde janeiro de 2024, pela Lei 14.690/2023 e pela regra do Conselho Monetário Nacional, juros e encargos do rotativo e do parcelamento da fatura somados não podem passar do valor original da dívida. Uma dívida de R$ 1.000 pode chegar a, no máximo, R$ 2.000.</p>
+<h3>Pagar o mínimo da fatura é uma boa ideia?</h3>
+<p>Só em último caso. O que você não paga entra no rotativo e os juros correm todo mês. Se não der para pagar tudo, compare o parcelamento da fatura com um empréstimo mais barato e pare de usar o cartão até sair da dívida.</p>
+<p class="note">Fontes: <a href="https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2023/lei/l14690.htm" rel="noopener">Lei 14.690/2023</a> e <a href="https://normativos.bcb.gov.br/Lists/Normativos/Attachments/50330/Res_4549_v2_L.pdf" rel="noopener">Resolução CMN 4.549/2017</a>, com as mudanças da Resolução CMN 5.112/2023. Conferido em novembro de 2026.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>
