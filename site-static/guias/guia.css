@@ -46,6 +46,11 @@ th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); 
 .tools a { display:block; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:18px 20px; text-decoration:none; color:var(--ink); }
 .tools b { font:700 21px/1.25 var(--display); display:block; }
 .tools span { color:var(--muted); font-size:16px; }
+.divida { border:1px solid var(--line); border-radius:16px; padding:14px; margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+.divida legend { font-weight:700; padding:0 6px; }
+.mais { display:grid; gap:16px; }
+.mais summary { cursor:pointer; font-weight:700; color:var(--green); min-height:44px; display:flex; align-items:center; }
+.mais .divida { margin-top:12px; }
 .weeks { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:12px 0; }
 .weeks label { display:flex; align-items:center; gap:8px; font-size:15px; background:var(--surface); border-radius:10px; padding:8px 10px; min-height:44px; }
 .weeks b { margin-left:auto; }

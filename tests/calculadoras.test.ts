@@ -133,4 +133,34 @@ describe("calculadoras 2026", () => {
     expect(r.investido).toBe(200);
     expect(r.cdb.ir).toBeCloseTo(100 * i * 0.225, 2); // só o 1º aporte rendeu 1 mês; o 2º entrou no fim
   });
+  it("plano de dívidas: avalanche paga menos juros que a bola de neve", () => {
+    const dividas = [
+      { nome: "Cartão", saldo: 2000, juros: 12, minimo: 300 },
+      { nome: "Empréstimo", saldo: 5000, juros: 3, minimo: 250 },
+      { nome: "Loja", saldo: 600, juros: 5, minimo: 100 },
+    ];
+    const av = C.quitarDividas({ dividas, extra: 200, metodo: "avalanche" });
+    const bo = C.quitarDividas({ dividas, extra: 200, metodo: "bola" });
+    expect(av.orcamento).toBe(850);
+    expect(av.ordem.map((d: any) => d.nome)).toEqual(["Cartão", "Loja", "Empréstimo"]);
+    expect(bo.ordem.map((d: any) => d.nome)).toEqual(["Loja", "Cartão", "Empréstimo"]);
+    expect(av.juros).toBeLessThan(bo.juros);
+    expect(av.pago).toBeCloseTo(7600 + av.juros, 2); // tudo que foi pago = dívidas + juros
+    expect(bo.ordem[0].mes).toBeLessThan(av.ordem[0].mes); // bola de neve quita a primeira antes
+  });
+  it("plano de dívidas sem juros divide o saldo pelo pagamento", () => {
+    const r = C.quitarDividas({ dividas: [{ saldo: 1000, juros: 0, minimo: 100 }], extra: 0 });
+    expect(r.meses).toBe(10);
+    expect(r.juros).toBe(0);
+  });
+  it("plano de dívidas avisa quando o pagamento não cobre os juros", () => {
+    expect(C.quitarDividas({ dividas: [{ saldo: 1000, juros: 10, minimo: 100 }], extra: 0 }).impossivel).toBe(true);
+    expect(C.quitarDividas({ dividas: [{ saldo: 1000, juros: 2, minimo: 0 }], extra: 0 }).impossivel).toBe(true);
+    expect(C.quitarDividas({ dividas: [] })).toBeNull();
+  });
+  it("plano de dívidas com 1% ao mês e R$ 100 de parcela", () => {
+    const r = C.quitarDividas({ dividas: [{ saldo: 1000, juros: 1, minimo: 100 }], extra: 0 });
+    expect(r.meses).toBe(11);
+    expect(r.juros).toBe(58.98);
+  });
 });

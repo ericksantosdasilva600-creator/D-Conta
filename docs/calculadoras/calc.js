@@ -177,12 +177,44 @@
     saida.investido = investido; saida.cdi = Math.round(cdi * 1e4) / 100; saida.aliquotaInicial = aliquotaIR(Math.round(n * 365 / 12)) * 100;
     return saida;
   }
+  // Plano para quitar dívidas: compara avalanche (maiores juros primeiro) e bola de neve (menor saldo primeiro).
+  // Todo mês: juros entram no saldo, cada dívida recebe o mínimo e o que sobra do orçamento (soma dos mínimos + extra)
+  // vai para a dívida da vez. Quando uma dívida acaba, o mínimo dela passa a ajudar as outras. Matemática pura, sem regra legal.
+  function quitarDividas(o) {
+    var lista = (o.dividas || []).filter(function (d) { return d && d.saldo > 0; }).map(function (d, i) {
+      return { nome: d.nome || "Dívida " + (i + 1), saldo: d.saldo, inicial: d.saldo, taxa: (d.juros || 0) / 100, minimo: Math.max(0, d.minimo || 0), fim: 0 };
+    });
+    if (!lista.length) return null;
+    var ordem = lista.slice().sort(o.metodo === "bola" ?
+      function (a, b) { return a.inicial - b.inicial || b.taxa - a.taxa; } :
+      function (a, b) { return b.taxa - a.taxa || a.inicial - b.inicial; });
+    var orcamento = lista.reduce(function (s, d) { return s + d.minimo; }, 0) + Math.max(0, o.extra || 0);
+    var juros = 0, pago = 0, mes = 0, LIMITE = 600;
+    while (lista.some(function (d) { return d.saldo > 0.005; })) {
+      if (++mes > LIMITE) return { impossivel: true, orcamento: cents(orcamento) };
+      var antes = juros;
+      lista.forEach(function (d) { if (d.saldo > 0.005) { var j = d.saldo * d.taxa; juros += j; d.saldo += j; } });
+      var resta = orcamento;
+      lista.forEach(function (d) { if (d.saldo > 0.005) { var p = Math.min(d.minimo, d.saldo, resta); d.saldo -= p; resta -= p; } });
+      for (var k = 0; k < ordem.length && resta > 0.005; k++) {
+        var d = ordem[k];
+        if (d.saldo <= 0.005) continue;
+        var p = Math.min(d.saldo, resta); d.saldo -= p; resta -= p;
+      }
+      pago += orcamento - resta;
+      lista.forEach(function (d) { if (!d.fim && d.saldo <= 0.005) { d.saldo = 0; d.fim = mes; } });
+      // se a dívida total não cai no primeiro mês, o orçamento não cobre nem os juros
+      if (mes === 1 && orcamento <= juros - antes + 0.005) return { impossivel: true, orcamento: cents(orcamento) };
+    }
+    return { impossivel: false, meses: mes, juros: cents(juros), pago: cents(pago), orcamento: cents(orcamento),
+      ordem: ordem.map(function (d) { return { nome: d.nome, mes: d.fim }; }) };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -287,6 +319,29 @@
     var melhor = r[ordem[0]];
     return linhas([["Total que você vai guardar", r.investido], ["Ganho líquido na melhor opção", melhor.ganho], ["Melhor opção: " + nomes[ordem[0]], melhor.liquido, 1]]) + tabela +
       '<p class="note">Em ' + meses + (meses === 1 ? " mês" : " meses") + ", com CDI estimado em " + pct(r.cdi) + "% ao ano. Poupança rendendo " + pct(r.poupanca.taxaMensal) + "% ao mês. No CDB, o Imposto de Renda do valor inicial fica em " + pct(r.aliquotaInicial) + "%; cada depósito mensal paga conforme o tempo que ficou aplicado. É uma estimativa: taxas mudam e não há garantia de rendimento.</p>";
+  };
+  telas.dividas = function () {
+    var dividas = [];
+    for (var i = 1; i <= 6; i++) {
+      var el = document.getElementById("saldo" + i);
+      if (!el || !num("saldo" + i)) continue;
+      dividas.push({ nome: document.getElementById("nome" + i).value.trim().slice(0, 40), saldo: num("saldo" + i), juros: num("juros" + i), minimo: num("minimo" + i) });
+    }
+    if (!dividas.length) return null;
+    var extra = num("extra"), av = quitarDividas({ dividas: dividas, extra: extra, metodo: "avalanche" }), bo = quitarDividas({ dividas: dividas, extra: extra, metodo: "bola" });
+    if (av.impossivel) return '<p class="note">Com ' + brl(av.orcamento) + " por mês, as dívidas não acabam em 50 anos: o pagamento não cobre os juros. Aumente o valor extra, confira os pagamentos mínimos ou procure renegociar os juros com o credor.</p>";
+    var esc = function (t) { return t.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    var tempo = function (m) { var a = Math.floor(m / 12), r = m % 12; return (a ? a + (a === 1 ? " ano" : " anos") : "") + (a && r ? " e " : "") + (r ? r + (r === 1 ? " mês" : " meses") : ""); };
+    var melhor = bo.juros < av.juros - 0.005 ? bo : av, nomeMelhor = melhor === av ? "Avalanche" : "Bola de neve";
+    var tabela = '<table><thead><tr><th>Método</th><th>Prazo</th><th>Juros pagos</th></tr></thead><tbody>' +
+      "<tr><td>Avalanche: maiores juros primeiro</td><td>" + tempo(av.meses) + "</td><td>" + brl(av.juros) + "</td></tr>" +
+      "<tr><td>Bola de neve: menor dívida primeiro</td><td>" + tempo(bo.meses) + "</td><td>" + brl(bo.juros) + "</td></tr></tbody></table>";
+    var ordem = '<p class="note"><b>Ordem no método ' + nomeMelhor.toLowerCase() + ":</b></p><ol>" + melhor.ordem.map(function (d) { return "<li>" + esc(d.nome) + ": quitada no mês " + d.mes + "</li>"; }).join("") + "</ol>";
+    var dif = cents(Math.abs(av.juros - bo.juros));
+    var txt = dif < 0.01 ? "Aqui os dois métodos dão o mesmo resultado." : melhor === av ? "A avalanche economiza " + brl(dif) + " em juros. A bola de neve quita a primeira dívida mais cedo, o que ajuda a manter o ânimo." : "Aqui a bola de neve sai " + brl(dif) + " mais barata em juros e ainda quita a primeira dívida mais cedo.";
+    return linhas([["Você vai pagar por mês", melhor.orcamento], ["Juros até quitar tudo", melhor.juros]]) +
+      '<div class="line total"><span>Livre das dívidas em</span><b>' + tempo(melhor.meses) + "</b></div>" +
+      tabela + ordem + '<p class="note">' + txt + " É uma estimativa: considera juros fixos e pagamentos em dia, sem multas, tarifas, IOF ou renegociação.</p>";
   };
   var CHAVE = "nyvo.desafio52";
   var lerMarcas = function () { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };
