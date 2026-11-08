@@ -69,3 +69,4 @@ Thumbs.db
 
 # estado de ferramentas das sessões automáticas
 .claude-flow/
+.swarm/
