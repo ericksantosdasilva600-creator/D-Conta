@@ -174,4 +174,18 @@ describe("calculadoras 2026", () => {
     expect(r).toMatchObject({ saldo: 1000, jurosTotal: 1000, totalPago: 2000, teto: true });
     expect(C.rotativo({ fatura: 500, pago: 500, taxaRotativo: 15 }).saldo).toBe(0);
   });
+  it("acha o melhor dia de compra no cartão e o prazo até pagar", () => {
+    const r = C.melhorDiaCartao({ fechamento: 3, vencimento: 10, hoje: "2026-11-08" });
+    expect(r.compra).toEqual({ compra: "2026-11-08", fechamento: "2026-12-03", vencimento: "2026-12-10", dias: 32 });
+    expect(r.melhor).toEqual({ compra: "2026-12-04", fechamento: "2027-01-03", vencimento: "2027-01-10", dias: 37 });
+    expect(r).toMatchObject({ melhorDia: 4, menorPrazo: 7 });
+  });
+  it("vira o mês quando o vencimento vem antes do fechamento e trata meses curtos", () => {
+    const r = C.melhorDiaCartao({ fechamento: 25, vencimento: 5, hoje: "2026-11-08", compra: "2026-11-25" });
+    expect(r.compra).toMatchObject({ fechamento: "2026-11-25", vencimento: "2026-12-05", dias: 10 });
+    expect(r.melhor).toMatchObject({ compra: "2026-11-26", vencimento: "2027-01-05", dias: 40 });
+    const f = C.melhorDiaCartao({ fechamento: 31, vencimento: 8, hoje: "2027-02-10" });
+    expect(f.compra).toMatchObject({ fechamento: "2027-02-28", vencimento: "2027-03-08" });
+    expect(f.melhor.compra).toBe("2027-03-01");
+  });
 });

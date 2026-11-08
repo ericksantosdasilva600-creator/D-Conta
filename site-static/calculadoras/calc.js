@@ -226,12 +226,34 @@
       jurosParcelado: jurosParc, jurosTotal: cents(jurosRot + jurosParc), totalPago: cents(saldo + jurosRot + jurosParc),
       teto: teto, limiteJuros: saldo, taxaAnual: Math.round((Math.pow(1 + tr, 12) - 1) * 10000) / 100 };
   }
+  // Melhor dia para comprar no cartão: a compra entra na fatura do primeiro fechamento na mesma data ou depois dela
+  // (conta o dia do fechamento na fatura atual, o caso mais cauteloso). O melhor dia é o seguinte ao fechamento.
+  // Dias que não existem no mês (31 em abril, por exemplo) viram o último dia do mês. Datas em UTC, formato AAAA-MM-DD.
+  function diaDoMes(y, m, d) { var ultimo = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(); return Date.UTC(y, m, Math.min(d, ultimo)); }
+  function proximoDia(t, dia, depois) {
+    var x = new Date(t), y = x.getUTCFullYear(), m = x.getUTCMonth();
+    for (var k = 0; k < 3; k++) { var c = diaDoMes(y, m + k, dia); if (depois ? c > t : c >= t) return c; }
+    return diaDoMes(y, m + 3, dia);
+  }
+  function iso(t) { return new Date(t).toISOString().slice(0, 10); }
+  function faturaDa(t, fech, venc) {
+    var c = proximoDia(t, fech, false), v = proximoDia(c, venc, true);
+    return { compra: iso(t), fechamento: iso(c), vencimento: iso(v), dias: Math.round((v - t) / DIA) };
+  }
+  function melhorDiaCartao(o) {
+    var fech = Math.min(31, Math.max(1, Math.round(o.fechamento || 1))), venc = Math.min(31, Math.max(1, Math.round(o.vencimento || 1)));
+    var hoje = dataUTC(o.hoje), compra = (o.compra && dataUTC(o.compra)) || hoje;
+    var ultimoFech = proximoDia(hoje - DIA, fech, false), melhor = ultimoFech + DIA;
+    var pior = faturaDa(ultimoFech, fech, venc);
+    return { compra: faturaDa(compra, fech, venc), melhor: faturaDa(melhor, fech, venc), pior: pior,
+      melhorDia: new Date(melhor).getUTCDate(), menorPrazo: pior.dias };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -372,6 +394,22 @@
       "<h3>Se parcelar na fatura seguinte</h3>" +
       linhas([[r.parcelas + "x de", r.parcela], ["Juros do rotativo e do parcelamento", r.jurosTotal], ["Total pago pela dívida", r.totalPago, 1]]) + teto +
       '<p class="note">É uma estimativa com juros fixos e pagamentos em dia. Não inclui IOF, multa, juros de atraso nem compras novas. Confira as taxas e o Custo Efetivo Total (CET) na sua fatura.</p>';
+  };
+  telas.cartao = function () {
+    var fech = num("fechamento"), venc = num("vencimento");
+    if (!fech || !venc) return null;
+    var hoje = new Date(), hojeIso = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0") + "-" + String(hoje.getDate()).padStart(2, "0");
+    var campo = document.getElementById("compra"), compra = campo && /^\d{4}-\d{2}-\d{2}$/.test(campo.value) ? campo.value : hojeIso;
+    var r = melhorDiaCartao({ fechamento: fech, vencimento: venc, hoje: hojeIso, compra: compra });
+    var data = function (t) { return new Date(t + "T12:00:00Z").toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" }); };
+    var dias = function (n) { return n === 1 ? "1 dia" : n + " dias"; };
+    var linha = function (rot, val, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + val + "</b></div>"; };
+    var quando = compra === hojeIso ? "Se comprar hoje" : "Se comprar em " + data(r.compra.compra);
+    return linha("Melhor dia de compra", "dia " + r.melhorDia, 1) +
+      '<p class="note">A próxima vez é ' + data(r.melhor.compra) + ": a compra só vence em " + data(r.melhor.vencimento) + ", " + dias(r.melhor.dias) + " depois. Evite o dia do fechamento e os dias logo antes dele: aí o prazo cai para cerca de " + dias(r.menorPrazo) + ".</p>" +
+      "<h3>" + quando + "</h3>" +
+      linha("Entra na fatura que fecha em", data(r.compra.fechamento)) + linha("Você paga em", data(r.compra.vencimento)) + linha("Prazo até pagar", dias(r.compra.dias), 1) +
+      '<p class="note">É uma estimativa. Cada banco tem sua regra para compras feitas no próprio dia do fechamento, e o vencimento muda quando cai em fim de semana ou feriado. Confira o "melhor dia de compra" no app do seu cartão.</p>';
   };
   var CHAVE = "nyvo.desafio52";
   var lerMarcas = function () { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };
