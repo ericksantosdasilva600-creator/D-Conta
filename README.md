@@ -24,4 +24,4 @@ O Dá Conta é um organizador pessoal em português do Brasil:
 
 ---
 
-Feito com Expo (React Native Web). Criado por Erick Santos da Silva, Tangará da Serra (MT).
+Feito com Expo (React Native Web).
