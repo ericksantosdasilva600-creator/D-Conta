@@ -104,4 +104,33 @@ describe("calculadoras 2026", () => {
     expect(r.total).toBe(1000);
     expect(r.juros).toBe(0);
   });
+  it("usa a tabela regressiva do IR da renda fixa", () => {
+    expect(C.aliquotaIR(180)).toBe(0.225);
+    expect(C.aliquotaIR(181)).toBe(0.2);
+    expect(C.aliquotaIR(360)).toBe(0.2);
+    expect(C.aliquotaIR(361)).toBe(0.175);
+    expect(C.aliquotaIR(720)).toBe(0.175);
+    expect(C.aliquotaIR(721)).toBe(0.15);
+  });
+  it("compara poupança, CDB e LCI em 12 meses", () => {
+    const r = C.quantoRende({ inicial: 10000, aporte: 0, meses: 12, selic: 13.75, tr: 0, pctCdb: 100, pctLci: 90 });
+    expect(r.cdi).toBe(13.65); // Selic − 0,10 ponto
+    expect(r.poupanca.bruto).toBe(10616.78); // 0,5% ao mês com Selic acima de 8,5%
+    expect(r.poupanca.ir).toBe(0);
+    expect(r.cdb.bruto).toBe(11365);
+    expect(r.cdb.ir).toBeCloseTo(238.88, 1); // 17,5% sobre R$ 1.365 (365 dias)
+    expect(r.lci.bruto).toBe(11228.5);
+    expect(r.lci.ir).toBe(0);
+    expect(r.investido).toBe(10000);
+  });
+  it("poupança usa 70% da Selic quando ela fica em até 8,5%", () => {
+    const r = C.quantoRende({ inicial: 1000, meses: 12, selic: 8, tr: 0 });
+    expect(r.poupanca.bruto).toBe(1056); // 1000 × (1 + 0,7 × 8%)
+  });
+  it("cada aporte do CDB paga IR pelo próprio prazo", () => {
+    const r = C.quantoRende({ inicial: 0, aporte: 100, meses: 2, selic: 13.75, pctCdb: 100 });
+    const i = Math.pow(1.1365, 1 / 12) - 1;
+    expect(r.investido).toBe(200);
+    expect(r.cdb.ir).toBeCloseTo(100 * i * 0.225, 2); // só o 1º aporte rendeu 1 mês; o 2º entrou no fim
+  });
 });

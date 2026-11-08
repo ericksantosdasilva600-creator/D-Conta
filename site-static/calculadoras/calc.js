@@ -148,12 +148,41 @@
     var investido = cents(c + a * n), total = cents(final);
     return { taxaMensal: Math.round(i * 1e6) / 1e4, investido: investido, juros: cents(total - investido), total: total, anos: anos };
   }
+  // Quanto rende: poupança, CDB e LCI/LCA no mesmo prazo, com aporte no fim de cada mês.
+  // Poupança (Lei 8.177, art. 12, com a Lei 12.703): 0,5% ao mês + TR se a meta Selic passar de 8,5% ao ano;
+  // senão, 70% da Selic ao ano em base mensal + TR. Poupança e LCI/LCA são isentas de IR para pessoa física.
+  // CDB: IR regressivo da Receita (até 180 dias 22,5%; até 360, 20%; até 720, 17,5%; acima, 15%), cobrado só sobre o
+  // rendimento de cada depósito pelo tempo que ele ficou aplicado. CDI estimado como Selic − 0,10 ponto. Sem IOF (prazo ≥ 1 mês).
+  function aliquotaIR(dias) { return dias <= 180 ? 0.225 : dias <= 360 ? 0.2 : dias <= 720 ? 0.175 : 0.15; }
+  function quantoRende(o) {
+    var c = o.inicial || 0, a = o.aporte || 0, n = Math.max(1, Math.round(o.meses || 0));
+    var selic = (o.selic || 0) / 100, tr = (o.tr || 0) / 100, cdi = Math.max(0, selic - 0.001);
+    var mensal = function (anual) { return Math.pow(1 + anual, 1 / 12) - 1; };
+    var juroPoup = selic > 0.085 ? 0.005 : mensal(0.7 * selic);
+    var taxas = { poupanca: (1 + juroPoup) * (1 + tr) - 1, cdb: mensal(cdi * (o.pctCdb === undefined ? 100 : o.pctCdb) / 100), lci: mensal(cdi * (o.pctLci === undefined ? 90 : o.pctLci) / 100) };
+    var investido = cents(c + a * n), saida = {};
+    Object.keys(taxas).forEach(function (k) {
+      var i = taxas[k], bruto = 0, ir = 0;
+      // depósito inicial no mês 0 e um aporte no fim de cada mês 1..n
+      for (var m = 0; m <= n; m++) {
+        var v = m === 0 ? c : a;
+        if (!v) continue;
+        var meses = n - m, final = v * Math.pow(1 + i, meses);
+        bruto += final;
+        if (k === "cdb") ir += (final - v) * aliquotaIR(Math.round(meses * 365 / 12));
+      }
+      bruto = cents(bruto); ir = cents(ir);
+      saida[k] = { taxaMensal: Math.round(i * 1e6) / 1e4, bruto: bruto, ir: ir, liquido: cents(bruto - ir), ganho: cents(bruto - ir - investido) };
+    });
+    saida.investido = investido; saida.cdi = Math.round(cdi * 1e4) / 100; saida.aliquotaInicial = aliquotaIR(Math.round(n * 365 / 12)) * 100;
+    return saida;
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -243,6 +272,21 @@
     }).join("") + "</tbody></table>" : "";
     return linhas([["Total investido", r.investido], ["Juros ganhos", r.juros], ["Valor final estimado", r.total, 1]]) +
       '<p class="note">Taxa usada: ' + pct(r.taxaMensal) + "% ao mês, em " + meses + (meses === 1 ? " mês" : " meses") + ". É uma estimativa sem Imposto de Renda e taxas.</p>" + tabela;
+  };
+  telas.rende = function () {
+    var c = num("inicial"), a = num("aporte"), meses = Math.min(600, Math.round(num("meses")));
+    if (!(c || a) || !meses) return null;
+    var pCdb = num("pctCdb") || 100, pLci = num("pctLci") || 90;
+    var r = quantoRende({ inicial: c, aporte: a, meses: meses, selic: num("selic") || 13.75, tr: num("tr"), pctCdb: pCdb, pctLci: pLci });
+    var nomes = { poupanca: "Poupança", cdb: "CDB (" + pCdb.toLocaleString("pt-BR") + "% do CDI)", lci: "LCI ou LCA (" + pLci.toLocaleString("pt-BR") + "% do CDI)" };
+    var ordem = ["poupanca", "cdb", "lci"].sort(function (x, y) { return r[y].liquido - r[x].liquido; });
+    var pct = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
+    var tabela = '<table><thead><tr><th>Opção</th><th>Imposto</th><th>Você recebe</th></tr></thead><tbody>' + ordem.map(function (k, j) {
+      return "<tr><td>" + (j === 0 ? "<b>" + nomes[k] + "</b>" : nomes[k]) + "</td><td>" + brl(r[k].ir) + "</td><td>" + (j === 0 ? "<b>" + brl(r[k].liquido) + "</b>" : brl(r[k].liquido)) + "</td></tr>";
+    }).join("") + "</tbody></table>";
+    var melhor = r[ordem[0]];
+    return linhas([["Total que você vai guardar", r.investido], ["Ganho líquido na melhor opção", melhor.ganho], ["Melhor opção: " + nomes[ordem[0]], melhor.liquido, 1]]) + tabela +
+      '<p class="note">Em ' + meses + (meses === 1 ? " mês" : " meses") + ", com CDI estimado em " + pct(r.cdi) + "% ao ano. Poupança rendendo " + pct(r.poupanca.taxaMensal) + "% ao mês. No CDB, o Imposto de Renda do valor inicial fica em " + pct(r.aliquotaInicial) + "%; cada depósito mensal paga conforme o tempo que ficou aplicado. É uma estimativa: taxas mudam e não há garantia de rendimento.</p>";
   };
   var CHAVE = "nyvo.desafio52";
   var lerMarcas = function () { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quanto rende meu dinheiro? Compare poupança, CDB e LCI | Dá Conta</title>
+<meta name="description" content="Simule grátis quanto seu dinheiro rende na poupança, no CDB e na LCI ou LCA, já com o Imposto de Renda descontado, com as regras de 2026.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/quanto-rende.html">
+<meta property="og:title" content="Quanto rende meu dinheiro? Compare poupança, CDB e LCI | Dá Conta">
+<meta property="og:description" content="Simule grátis quanto seu dinheiro rende na poupança, no CDB e na LCI ou LCA, já com o Imposto de Renda descontado, com as regras de 2026.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/quanto-rende.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Quanto rende meu dinheiro", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/quanto-rende.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "A poupança paga Imposto de Renda?", "acceptedAnswer": {"@type": "Answer", "text": "Não. Para pessoa física, o rendimento da poupança é isento de Imposto de Renda. O mesmo vale para LCI e LCA."}}, {"@type": "Question", "name": "Quanto a poupança rende hoje?", "acceptedAnswer": {"@type": "Answer", "text": "Quando a meta da Selic está acima de 8,5% ao ano, a poupança rende 0,5% ao mês mais a TR. Quando está em 8,5% ou menos, rende 70% da Selic, em base mensal, mais a TR."}}, {"@type": "Question", "name": "Como funciona o Imposto de Renda do CDB?", "acceptedAnswer": {"@type": "Answer", "text": "É cobrado só sobre o rendimento, pela tabela regressiva: 22,5% até 180 dias, 20% de 181 a 360 dias, 17,5% de 361 a 720 dias e 15% acima de 720 dias."}}, {"@type": "Question", "name": "O que quer dizer 100% do CDI?", "acceptedAnswer": {"@type": "Answer", "text": "O CDI é uma taxa que fica bem perto da Selic. Um CDB que paga 100% do CDI rende o mesmo que essa taxa, antes do imposto. Se paga 90%, rende 90% dela."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Quanto rende meu dinheiro</h1>
+<p class="lead">Compare poupança, CDB e LCI ou LCA no mesmo prazo, já com o Imposto de Renda descontado.</p>
+<form class="calc" data-calc="rende">
+<label for="inicial">Quanto você tem para aplicar<input id="inicial" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1000"></label>
+<label for="aporte">Quanto vai guardar por mês<input id="aporte" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 200"></label>
+<label for="meses">Por quantos meses<input id="meses" type="number" inputmode="numeric" min="1" max="600" step="1" placeholder="Ex.: 12"></label>
+<label for="selic">Selic ao ano (%)<input id="selic" type="number" inputmode="decimal" min="0" step="any" value="13.75"></label>
+<label for="pctCdb">O CDB paga quanto do CDI (%)<input id="pctCdb" type="number" inputmode="decimal" min="0" step="any" value="100"></label>
+<label for="pctLci">A LCI ou LCA paga quanto do CDI (%)<input id="pctLci" type="number" inputmode="decimal" min="0" step="any" value="90"></label>
+<label for="tr">TR ao mês (%), se souber<input id="tr" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 0,1"></label>
+<button type="submit">Comparar</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Veja%20quanto%20seu%20dinheiro%20rende%20na%20poupan%C3%A7a%2C%20no%20CDB%20e%20na%20LCI%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/quanto-rende.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Criar minha meta no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado. A Selic vem preenchida com 13,75% ao ano, a meta definida pelo Copom em novembro de 2026; confira o valor atual no site do Banco Central. O resultado é uma estimativa educativa e não é uma recomendação de investimento.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como a calculadora compara</h2>
+<p>Ela aplica o mesmo valor, pelo mesmo prazo, em três opções comuns e mostra quanto você receberia em cada uma depois do imposto. O depósito mensal é feito no fim de cada mês e as taxas ficam iguais durante todo o prazo, o que na vida real quase nunca acontece.</p>
+<h2>Poupança</h2>
+<p>A regra está na lei: com a meta da Selic acima de 8,5% ao ano, a poupança rende 0,5% ao mês mais a TR. Com a Selic em 8,5% ou menos, rende 70% da Selic mais a TR. Não tem Imposto de Renda para pessoa física. Se você não souber a TR, deixe o campo vazio: a conta usa zero, e o rendimento real pode ser um pouco maior.</p>
+<h2>CDB</h2>
+<p>O CDB costuma pagar uma porcentagem do CDI, taxa que fica perto da Selic. A calculadora estima o CDI em 0,10 ponto abaixo da Selic. O Imposto de Renda é cobrado só sobre o rendimento, e a alíquota cai com o tempo: 22,5% até 180 dias, 20% de 181 a 360 dias, 17,5% de 361 a 720 dias e 15% acima disso. Cada depósito mensal paga conforme o tempo que ficou aplicado. Resgates com menos de 30 dias também pagam IOF, por isso o prazo mínimo aqui é de 1 mês.</p>
+<h2>LCI e LCA</h2>
+<p>São isentas de Imposto de Renda para pessoa física e por isso costumam pagar uma porcentagem menor do CDI. Elas têm prazo mínimo antes de poder resgatar, então confira a carência antes de aplicar o dinheiro da reserva de emergência.</p>
+<h2>Proteção do FGC</h2>
+<p>Poupança, CDB, LCI e LCA de bancos têm a garantia do Fundo Garantidor de Créditos, dentro dos limites dele. Mesmo assim, compare o banco, a liquidez e o prazo, e não só a taxa.</p>
+<h2>Perguntas frequentes</h2>
+<h3>A poupança paga Imposto de Renda?</h3>
+<p>Não. Para pessoa física, o rendimento da poupança é isento de Imposto de Renda. O mesmo vale para LCI e LCA.</p>
+<h3>Quanto a poupança rende hoje?</h3>
+<p>Quando a meta da Selic está acima de 8,5% ao ano, a poupança rende 0,5% ao mês mais a TR. Quando está em 8,5% ou menos, rende 70% da Selic, em base mensal, mais a TR.</p>
+<h3>Como funciona o Imposto de Renda do CDB?</h3>
+<p>É cobrado só sobre o rendimento, pela tabela regressiva: 22,5% até 180 dias, 20% de 181 a 360 dias, 17,5% de 361 a 720 dias e 15% acima de 720 dias.</p>
+<h3>O que quer dizer 100% do CDI?</h3>
+<p>O CDI é uma taxa que fica bem perto da Selic. Um CDB que paga 100% do CDI rende o mesmo que essa taxa, antes do imposto. Se paga 90%, rende 90% dela.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="vale-parcelar.html">Vale a pena parcelar?</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>
