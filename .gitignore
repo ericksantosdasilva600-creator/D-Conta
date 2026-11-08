@@ -66,3 +66,6 @@ Thumbs.db
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
+
+# estado de ferramentas das sessões automáticas
+.claude-flow/
