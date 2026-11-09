@@ -364,12 +364,38 @@
       horaVoce: cents(paraVoce / horasAno), horaCustos: cents(custosAno / horasAno), horaMargem: cents((semImposto - paraVoce - custosAno) / horasAno), horaImposto: cents((bruto - semImposto) / horasAno)
     };
   }
+  // MEI 2026: DAS = 5% do salário mínimo (R$ 1.621, Decreto 12.797/2025) de INSS + R$ 1 de ICMS (comércio/indústria) e/ou R$ 5 de ISS (serviços).
+  // Limite: R$ 81.000 no ano; no ano de abertura, R$ 6.750 por mês desde o mês de abertura (fração conta como mês inteiro).
+  // Passou até 20%: deixa de ser MEI em 1º de janeiro do ano seguinte e paga imposto sobre o excesso. Mais de 20%: perde o MEI desde o início do ano (ou da abertura).
+  // Fontes: Receita Federal, notícia de 02/01/2026 sobre o DAS-MEI e Manual do Desenquadramento do Simei (abr/2025). Revisar todo ano, em janeiro.
+  var MEI = { inss: 81.05, icms: 1, iss: 5, limiteAno: 81000, limiteMes: 6750 };
+  function mei(o) {
+    var at = o.atividade === "servicos" || o.atividade === "ambos" ? o.atividade : "comercio";
+    var das = MEI.inss + (at !== "servicos" ? MEI.icms : 0) + (at !== "comercio" ? MEI.iss : 0);
+    var inicio = Math.min(12, Math.max(1, Math.floor(o.inicio || 1)));
+    var ate = Math.min(12, Math.max(inicio, Math.floor(o.ate || inicio)));
+    var mesesAtivos = 13 - inicio, mesesPassados = ate - inicio + 1, mesesRestantes = 12 - ate;
+    var limite = inicio > 1 ? MEI.limiteMes * mesesAtivos : MEI.limiteAno;
+    var faturado = Math.min(1e12, Math.max(0, o.faturado || 0));
+    var media = faturado / mesesPassados;
+    var previsto = typeof o.previsto === "number" && isFinite(o.previsto) && o.previsto >= 0 ? Math.min(1e12, o.previsto) : media;
+    var projecao = faturado + previsto * mesesRestantes;
+    var situacao = function (v) { return v <= limite ? "dentro" : v <= limite * 1.2 ? "ate20" : "acima20"; };
+    var resta = Math.max(0, limite - faturado);
+    return {
+      das: cents(das), dasAno: cents(das * mesesAtivos), mesesAtivos: mesesAtivos, limite: limite, limite20: cents(limite * 1.2),
+      faturado: cents(faturado), usado: Math.round(faturado / limite * 1000) / 10,
+      resta: cents(resta), porMes: mesesRestantes ? cents(resta / mesesRestantes) : 0, mesesRestantes: mesesRestantes,
+      media: cents(media), previsto: cents(previsto), projecao: cents(projecao), excesso: cents(Math.max(0, projecao - limite)),
+      agora: situacao(faturado), situacao: situacao(projecao)
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -563,6 +589,34 @@
       "<h3>Para onde vai cada hora cobrada</h3>" + linhas(partes) +
       '<p class="note">É uma estimativa com os números que você informou. Ela mostra o mínimo para fechar a sua conta, não o preço do mercado: pesquise quanto outros profissionais da sua área cobram. O imposto muda conforme o regime (MEI, Simples, autônomo): confirme com um contador.</p>';
   };
+  telas.mei = function () {
+    var val = function (id, d) { var el = document.getElementById(id); return el ? el.value : d; };
+    var prev = document.getElementById("previsto");
+    var previsto = prev && prev.value !== "" && isFinite(parseFloat(prev.value)) ? Math.max(0, parseFloat(prev.value)) : null;
+    var r = mei({ atividade: val("atividade", "comercio"), inicio: parseInt(val("inicio", "1"), 10), ate: parseInt(val("ateMes", "1"), 10), faturado: num("faturado"), previsto: previsto });
+    var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+    var inicio = parseInt(val("inicio", "1"), 10) || 1;
+    var pct = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%"; };
+    var html = '<div class="line total"><span>DAS por mês em 2026</span><b>' + brl(r.das) + "</b></div>" +
+      linhas([["DAS no ano (" + r.mesesAtivos + (r.mesesAtivos === 1 ? " mês)" : " meses)"), r.dasAno], ["Seu limite de faturamento em 2026", r.limite], ["Você já faturou", r.faturado]]) +
+      '<div class="line"><span>Parte do limite já usada</span><b>' + pct(r.usado) + "</b></div>" +
+      linhas([["Ainda pode faturar no ano", r.resta]]);
+    if (r.mesesRestantes && r.resta) html += linhas([["Média por mês até dezembro, sem passar do limite", r.porMes]]);
+    if (inicio > 1) html += '<p class="note">Como o MEI foi aberto em ' + MESES[inicio - 1] + ", o limite é proporcional: R$ 6.750 por mês, de " + MESES[inicio - 1] + " a dezembro.</p>";
+    if (r.mesesRestantes) {
+      html += "<h3>Se continuar assim até dezembro</h3>" +
+        linhas([["Faturamento por mês daqui para frente", r.previsto], ["Faturamento previsto no ano", r.projecao, true]]);
+    }
+    var ja = r.agora === r.situacao;
+    if (r.situacao === "dentro") {
+      html += '<p class="note"><b>Dentro do limite.</b> ' + (r.mesesRestantes ? "Nesse ritmo, o ano fecha abaixo de " + brl(r.limite) + "." : "O ano fechou abaixo de " + brl(r.limite) + ".") + "</p>";
+    } else if (r.situacao === "ate20") {
+      html += '<p class="note"><b>' + (ja ? "Você já passou do limite" : "Atenção: nesse ritmo, você passa do limite") + " em até 20%</b> (" + brl(r.excesso) + " a mais). Você deixa de ser MEI em 1º de janeiro de 2027 e paga imposto sobre o valor que passou, junto com o DAS de janeiro. Avise a Receita até o último dia útil do mês seguinte ao que passou do limite.</p>";
+    } else {
+      html += '<p class="note"><b>' + (ja ? "Você já passou do limite" : "Cuidado: nesse ritmo, você passa do limite") + " em mais de 20%</b> (acima de " + brl(r.limite20) + "). Nesse caso a empresa deixa de ser MEI desde " + (inicio > 1 ? "a abertura" : "1º de janeiro de 2026") + " e paga os impostos de microempresa desse período. Fale com um contador o quanto antes.</p>";
+    }
+    return html + '<p class="note">É uma estimativa com as regras de 2026 e os números que você informou. O DAS vence todo dia 20. Confira sua situação no Portal do Empreendedor e, na dúvida, fale com um contador.</p>';
+  };
   telas.imovel = function () {
     var opt = function (id, d) { var el = document.getElementById(id); var v = el && el.value !== "" ? parseFloat(el.value) : NaN; return isFinite(v) ? Math.min(1000, Math.max(0, v)) : d; };
     var sistema = document.getElementById("sistema");
@@ -677,6 +731,8 @@
     var form = document.querySelector("form[data-calc]");
     if (!form) return;
     var saida = document.getElementById("resultado"), acoes = document.getElementById("depois");
+    var mesAtual = document.getElementById("ateMes");
+    if (mesAtual && !mesAtual.dataset.fixo) mesAtual.value = String(new Date().getMonth() + 1);
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var html = telas[form.dataset.calc]();

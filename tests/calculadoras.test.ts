@@ -228,6 +228,15 @@ describe("calculadoras 2026", () => {
   it("dividir a conta limita o número de pessoas", () => {
     expect(C.dividirConta({ total: 1000, pessoas: 1e8 }).pessoas).toBe(1000);
   });
+  it("calcula DAS e limite do MEI em 2026", () => {
+    expect(C.mei({ atividade: "comercio", faturado: 0, ate: 1 })).toMatchObject({ das: 82.05, dasAno: 984.6, limite: 81000, limite20: 97200 });
+    expect(C.mei({ atividade: "servicos", faturado: 60000, ate: 10 })).toMatchObject({ das: 86.05, resta: 21000, porMes: 10500, media: 6000, projecao: 72000, situacao: "dentro", agora: "dentro", usado: 74.1 });
+    expect(C.mei({ atividade: "ambos", faturado: 72000, ate: 9 })).toMatchObject({ das: 87.05, projecao: 96000, excesso: 15000, situacao: "ate20", agora: "dentro" });
+    expect(C.mei({ atividade: "servicos", faturado: 90000, ate: 11, previsto: 10000 })).toMatchObject({ resta: 0, porMes: 0, projecao: 100000, agora: "ate20", situacao: "acima20" });
+    expect(C.mei({ atividade: "servicos", inicio: 7, faturado: 20000, ate: 10 })).toMatchObject({ limite: 40500, mesesAtivos: 6, dasAno: 516.3, resta: 20500, porMes: 10250, media: 5000, projecao: 30000 });
+    expect(C.mei({ inicio: 7, faturado: 0, ate: 3 })).toMatchObject({ mesesRestantes: 5, mesesAtivos: 6 });
+    expect(C.mei({ faturado: 81000, ate: 12 })).toMatchObject({ mesesRestantes: 0, porMes: 0, situacao: "dentro", usado: 100 });
+  });
   it("calcula quanto cobrar por hora como autônomo", () => {
     expect(C.valorHora({ ganho: 4000, custos: 500, horasDia: 8, diasSemana: 5, semanasFolga: 4, naoCobrado: 25, imposto: 6, extras: true })).toMatchObject({ hora: 43.83, dia: 350.67, faturarMes: 5260.05, faturarAno: 63120.57, horasMes: 120, horasAno: 1440, horaVoce: 37.04, horaCustos: 4.17, horaMargem: 0, horaImposto: 2.63 });
     expect(C.valorHora({ ganho: 3000, horasDia: 6, diasSemana: 5, semanasFolga: 2, naoCobrado: 0 })).toMatchObject({ hora: 24, faturarMes: 3000, horasAno: 1500 });
