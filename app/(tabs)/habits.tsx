@@ -55,11 +55,11 @@ export default function HabitsScreen() {
 
   const notify = (message: string) => { toast(message); };
   const toggleDone = (habit: Habit, dateKey = checklistDate) => {
-    let isCompleted = false;
+    // Decide antes da atualização: o React pode rodar a função de setData mais tarde.
+    const isCompleted = !(data.completedByDate[dateKey] ?? []).includes(habit.id);
     updateData((current) => {
       const completedOnDate = current.completedByDate[dateKey] ?? [];
-      isCompleted = !completedOnDate.includes(habit.id);
-      const nextForDay = isCompleted ? [...completedOnDate, habit.id] : completedOnDate.filter((id) => id !== habit.id);
+      const nextForDay = isCompleted ? (completedOnDate.includes(habit.id) ? completedOnDate : [...completedOnDate, habit.id]) : completedOnDate.filter((id) => id !== habit.id);
       return { ...current, completedByDate: { ...current.completedByDate, [dateKey]: nextForDay } };
     });
     const completeNow = isCompleted && focusedHabits.length > 0 && completed.length + 1 >= focusedHabits.length;

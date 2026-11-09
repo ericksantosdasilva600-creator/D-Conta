@@ -1,5 +1,10 @@
 export function money(value: number, currency = "BRL") {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
+  try {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
+  } catch {
+    // Código de moeda inválido (ex.: vindo de um backup antigo) não pode derrubar a tela.
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 2 }).format(value);
+  }
 }
 
 export function parseAmount(value: string) {
@@ -39,4 +44,12 @@ export function isValidDateKey(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T12:00:00`);
   return !Number.isNaN(date.getTime()) && localDateKey(date) === value;
+}
+
+/** Dia local (AAAA-MM-DD) de um horário salvo em ISO/UTC; datas sem horário ficam como estão. */
+export function localDayOf(value: string) {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value.slice(0, 10) : localDateKey(date);
 }

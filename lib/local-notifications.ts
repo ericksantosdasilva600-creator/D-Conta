@@ -96,8 +96,21 @@ export async function scheduleTaskReminder(task: Task) {
  * O sistema limita a quantidade de avisos agendados, por isso agendamos os próximos 60
  * dentro de 14 dias; a lista é refeita sempre que o app abre ou os dados mudam.
  */
-export async function refreshLocalNotifications(data: AppData) {
-  if (Platform.OS === "web") return false;
+// Várias telas pedem o reagendamento ao mesmo tempo: as chamadas rodam uma de cada vez
+// e uma chamada mais nova interrompe a anterior, para não sobrar aviso duplicado.
+let refreshQueue: Promise<unknown> = Promise.resolve();
+let refreshGeneration = 0;
+
+export function refreshLocalNotifications(data: AppData): Promise<boolean> {
+  if (Platform.OS === "web") return Promise.resolve(false);
+  const generation = ++refreshGeneration;
+  const run = refreshQueue.then(() => refreshNow(data, generation), () => refreshNow(data, generation));
+  refreshQueue = run;
+  return run;
+}
+
+async function refreshNow(data: AppData, generation: number) {
+  if (generation !== refreshGeneration) return false;
   try {
     await enableNotificationChannel();
     await Notifications.cancelAllScheduledNotificationsAsync();
@@ -105,7 +118,10 @@ export async function refreshLocalNotifications(data: AppData) {
     if (!allowed) return false;
     const now = new Date();
     const events = eventsBetween(data, now, new Date(now.getTime() + 14 * 86400000), 60).slice(0, 60);
-    for (const event of events) await scheduleAt(event.title, event.body, event.at, event.sound);
+    for (const event of events) {
+      if (generation !== refreshGeneration) return false;
+      await scheduleAt(event.title, event.body, event.at, event.sound);
+    }
     return true;
   } catch {
     return false;

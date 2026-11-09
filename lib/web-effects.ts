@@ -60,7 +60,7 @@ export function useReminderScheduler(data: AppData, onFire: (title: string, body
       write(LAST_KEY, String(now.getTime()));
       if (from >= now) return;
       let fired: string[] = [];
-      try { fired = JSON.parse(read(FIRED_KEY) || "[]"); } catch { fired = []; }
+      try { const parsed: unknown = JSON.parse(read(FIRED_KEY) || "[]"); fired = Array.isArray(parsed) ? parsed.filter((k): k is string => typeof k === "string") : []; } catch { fired = []; }
       const events = eventsBetween(dataRef.current, from, now, 50).filter((e) => !fired.includes(e.key));
       if (!events.length) return;
       write(FIRED_KEY, JSON.stringify([...fired, ...events.map((e) => e.key)].slice(-400)));

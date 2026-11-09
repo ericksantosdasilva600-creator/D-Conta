@@ -35,7 +35,8 @@
   function decimoTerceiro(salario, meses, media, dependentes) {
     var bruto = cents((salario + (media || 0)) * meses / 12);
     var i = inss(bruto), base = bruto - i - (dependentes || 0) * DEPENDENTE;
-    var irrf = comReducao(tabelaIR(base), bruto);
+    // Como no salário e nas férias, vale o menor imposto entre as deduções legais e o desconto simplificado.
+    var irrf = comReducao(Math.min(tabelaIR(base), tabelaIR(bruto - SIMPLIFICADO)), bruto);
     var primeira = cents(bruto / 2);
     return { bruto: bruto, inss: i, irrf: irrf, primeira: primeira, segunda: cents(bruto - primeira - i - irrf), liquido: cents(bruto - i - irrf) };
   }
@@ -355,7 +356,7 @@
   };
   var telas = {
     decimo: function () {
-      var s = num("salario"), m = Math.min(12, Math.max(1, Math.floor(num("meses")) || 12));
+      var s = num("salario"), m = Math.min(12, Math.max(1, Math.floor(num("meses") || 12)));
       if (!s) return null;
       var r = decimoTerceiro(s, m, num("media"), num("dependentes"));
       return linhas([["1ª parcela, sem descontos", r.primeira], ["2ª parcela, já com os descontos", r.segunda], ["INSS", r.inss], ["Imposto de Renda", r.irrf], ["Total líquido do 13º", r.liquido, 1]]);

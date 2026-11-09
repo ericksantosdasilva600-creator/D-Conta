@@ -33,7 +33,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const pathname = usePathname();
-  const { data, loading, storageReady, storageError, retryStorage, updateData } = useAppData();
+  const { data, loading, storageReady, storageError, retryStorage, recoverStorage, updateData } = useAppData();
   const bottomPadding = Platform.OS === "web" ? 11 : Math.max(insets.bottom, 8);
   const desktop = Platform.OS === "web" && width >= 1024;
   const [quickOpen, setQuickOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function TabLayout() {
     return () => clearTimeout(id);
   }, [data, loading]);
   if (loading) return <LoadingState />;
-  if (!storageReady) return <StorageRecoveryScreen message={storageError} onRetry={retryStorage} />;
+  if (!storageReady) return <StorageRecoveryScreen message={storageError} onRetry={retryStorage} onRecover={recoverStorage} />;
   if (!data.onboarded) return <Redirect href="/onboarding" />;
 
   const tabs = <Tabs screenOptions={{
@@ -115,11 +115,16 @@ export default function TabLayout() {
   </View>;
 }
 
-function StorageRecoveryScreen({ message, onRetry }: { message: string | null; onRetry: () => Promise<void> }) {
+function StorageRecoveryScreen({ message, onRetry, onRecover }: { message: string | null; onRetry: () => Promise<void>; onRecover: (() => Promise<void>) | null }) {
   const [retrying, setRetrying] = useState(false);
   const retry = async () => {
     setRetrying(true);
     try { await onRetry(); } finally { setRetrying(false); }
+  };
+  const recover = async () => {
+    if (!onRecover) return;
+    setRetrying(true);
+    try { await onRecover(); } finally { setRetrying(false); }
   };
   return (
     <Page>
@@ -128,6 +133,10 @@ function StorageRecoveryScreen({ message, onRetry }: { message: string | null; o
         <Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 20 }}>{message ?? "Não foi possível ler os dados deste aparelho."}</Text>
         <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>A cópia original permanece intacta. O app não vai substituir seus registros por uma estrutura vazia. Tente novamente; se o problema continuar, não apague os dados locais.</Text>
         <PrimaryButton title={retrying ? "Verificando os dados…" : "Tentar novamente"} icon="refresh" onPress={() => void retry()} disabled={retrying} />
+        {onRecover ? <>
+          <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>Se o aviso continuar, dá para seguir usando o app: datas impossíveis são ajustadas e registros que não dá para aproveitar ficam de fora. A cópia original continua guardada no aparelho.</Text>
+          <PrimaryButton title="Continuar com os dados corrigidos" icon="check" onPress={() => void recover()} disabled={retrying} />
+        </> : null}
       </Card>
     </Page>
   );

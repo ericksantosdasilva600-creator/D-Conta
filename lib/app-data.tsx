@@ -229,6 +229,28 @@ function stringList(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+/** Data guardada fora do formato (ex.: 2026-02-31) vira o último dia válido do mês, ou hoje. */
+function safeDateKey(value: unknown) {
+  if (typeof value === "string" && isValidDateKey(value)) return value;
+  const match = typeof value === "string" ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
+  if (match) {
+    const year = Number(match[1]); const month = Number(match[2]);
+    if (month >= 1 && month <= 12) {
+      const lastDay = new Date(year, month, 0).getDate();
+      return `${match[1]}-${match[2]}-${String(Math.min(Math.max(1, Number(match[3])), lastDay)).padStart(2, "0")}`;
+    }
+  }
+  return localDateKey();
+}
+
+function optionalDateKey(value: unknown) {
+  return typeof value === "string" && isValidDateKey(value) ? value : "";
+}
+
+function currencyValue(value: unknown) {
+  return typeof value === "string" && /^[A-Za-z]{3}$/.test(value) ? value.toUpperCase() : "BRL";
+}
+
 function normalizeTransaction(value: unknown): Transaction | null {
   const item = asRecord(value);
   const amount = Number(item?.amount);
@@ -239,8 +261,8 @@ function normalizeTransaction(value: unknown): Transaction | null {
     amount,
     merchant: stringValue(item.merchant),
     category: stringValue(item.category, "Outros"),
-    date: stringValue(item.date),
-    dueDate: stringValue(item.dueDate),
+    date: safeDateKey(item.date),
+    dueDate: optionalDateKey(item.dueDate),
     paid: item.paid !== false,
     priority: priorityValue(item.priority),
     notes: stringValue(item.notes),
@@ -266,7 +288,7 @@ function normalizeHabit(value: unknown): Habit | null {
     id: item.id,
     name: item.name,
     weekdays,
-    reminderTime: stringValue(item.reminderTime, "09:00"),
+    reminderTime: typeof item.reminderTime === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(item.reminderTime) ? item.reminderTime : "09:00",
     priority: priorityValue(item.priority),
     archived: Boolean(item.archived),
     goalLabel: stringValue(item.goalLabel),
@@ -304,7 +326,7 @@ function normalizeTask(value: unknown): Task | null {
     description: stringValue(item.description),
     status,
     priority: priorityValue(item.priority),
-    dueDate: stringValue(item.dueDate),
+    dueDate: optionalDateKey(item.dueDate),
     project: stringValue(item.project),
     linkedBudgetId: stringValue(item.linkedBudgetId),
     remindAtDue: Boolean(item.remindAtDue),
@@ -322,7 +344,7 @@ function normalizeHealthLog(value: unknown): HealthLog | null {
   return {
     id: item.id,
     kind: item.kind,
-    date: stringValue(item.date, localDateKey()),
+    date: safeDateKey(item.date),
     amountMl: Math.max(0, Number(item.amountMl) || 0),
     durationMinutes: Math.max(0, Number(item.durationMinutes) || 0),
     notes: stringValue(item.notes),
@@ -332,7 +354,7 @@ function normalizeHealthLog(value: unknown): HealthLog | null {
 function normalizeBudget(value: unknown): MonthlyBudget | null {
   const item = asRecord(value);
   const limit = Number(item?.limit);
-  if (!item || typeof item.id !== "string" || typeof item.month !== "string" || typeof item.category !== "string" || !Number.isFinite(limit) || limit <= 0) return null;
+  if (!item || typeof item.id !== "string" || typeof item.month !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(item.month) || typeof item.category !== "string" || !Number.isFinite(limit) || limit <= 0) return null;
   return {
     id: item.id,
     month: item.month,
@@ -353,7 +375,7 @@ export function normalizeStoredData(value: unknown): AppData {
   const completions = asRecord(saved.completedByDate);
   if (completions) {
     Object.entries(completions).forEach(([date, ids]) => {
-      if (Array.isArray(ids)) completedByDate[date] = stringList(ids);
+      if (Array.isArray(ids) && isValidDateKey(date)) completedByDate[date] = stringList(ids);
     });
   }
 
@@ -373,7 +395,7 @@ export function normalizeStoredData(value: unknown): AppData {
     dueRemindersEnabled: saved.dueRemindersEnabled !== false,
     taskRemindersEnabled: saved.taskRemindersEnabled === true,
     reduceMotion: Boolean(saved.reduceMotion),
-    currency: stringValue(saved.currency, "BRL"),
+    currency: currencyValue(saved.currency),
     tripName: stringValue(saved.tripName, "Minha viagem").trim() || "Minha viagem",
     ...normalizeExtras(saved),
   };
@@ -448,7 +470,12 @@ function validateStoredPayload(value: unknown, version: number) {
   return [...issues];
 }
 
-type StoredLoadResult = { data: AppData; error: string | null; canWrite: boolean };
+/** recoverKey: chave onde dá para gravar `data` (já corrigido) ignorando registros inválidos; a cópia original fica preservada. */
+type StoredLoadResult = { data: AppData; error: string | null; canWrite: boolean; recoverKey?: string };
+
+function canRecover(data: AppData) {
+  return validateStoredPayload(JSON.parse(JSON.stringify(data)), data.schemaVersion).length === 0;
+}
 
 async function preserveRawPayload(key: string, raw: string) {
   const previous = await AsyncStorage.getItem(key);
@@ -495,7 +522,7 @@ async function loadStoredData(): Promise<StoredLoadResult> {
       } catch {
         return { data: normalized, error: "Foram encontrados registros incompletos. A migração foi interrompida e a chave original permanece intacta, mas não foi possível criar outra cópia de recuperação.", canWrite: false };
       }
-      return { data: normalized, error: `A migração foi interrompida: alguns registros ou campos são inválidos (${issues.join(", ")}). A cópia original foi preservada e não será substituída. Tente novamente antes de continuar.`, canWrite: false };
+      return { data: normalized, error: `A migração foi interrompida: alguns registros ou campos são inválidos (${issues.join(", ")}). A cópia original foi preservada e não será substituída. Tente novamente antes de continuar.`, canWrite: false, ...(canRecover(normalized) ? { recoverKey: STORAGE_KEY } : {}) };
     }
   } catch (caught) {
     const backupKey = sourceKey === LEGACY_STORAGE_KEY ? STORAGE_MIGRATION_BACKUP_KEY : STORAGE_RECOVERY_BACKUP_KEY;
@@ -542,7 +569,7 @@ async function loadAccountData(id: number): Promise<StoredLoadResult & { meta: S
       const issues = validateStoredPayload(JSON.parse(raw), data.schemaVersion);
       if (issues.length) {
         await preserveRawPayload(`${key}.recovery-backup`, raw);
-        return { data, error: `A cópia local da conta contém campos inválidos (${issues.join(", ")}); a cópia original foi preservada.`, canWrite: false, meta: EMPTY_SYNC_META, unlinked: false };
+        return { data, error: `A cópia local da conta contém campos inválidos (${issues.join(", ")}); a cópia original foi preservada.`, canWrite: false, meta: EMPTY_SYNC_META, unlinked: false, ...(canRecover(data) ? { recoverKey: key } : {}) };
       }
       let meta = EMPTY_SYNC_META;
       try { const savedMeta = asRecord(JSON.parse((await AsyncStorage.getItem(syncMetaKey(id))) || "null")); if (savedMeta) meta = { lastSyncedRevision: typeof savedMeta.lastSyncedRevision === "number" ? savedMeta.lastSyncedRevision : null, dirty: savedMeta.dirty === true, linked: savedMeta.linked === true }; } catch { /* Metadados danificados não invalidam o payload local. */ }
@@ -568,7 +595,7 @@ async function loadAccountData(id: number): Promise<StoredLoadResult & { meta: S
 
 type AppDataContextValue = {
   data: AppData; updateData: (updater: (current: AppData) => AppData) => void;
-  loading: boolean; storageReady: boolean; storageError: string | null; retryStorage: () => Promise<void>; isOnline: boolean | null;
+  loading: boolean; storageReady: boolean; storageError: string | null; retryStorage: () => Promise<void>; recoverStorage: (() => Promise<void>) | null; isOnline: boolean | null;
   accountId: number | null; syncMeta: SyncMeta; isLocalDataUnlinked: boolean; linkLocalData: () => Promise<void>;
   replaceFromCloud: (data: unknown, revision: number) => Promise<void>; markSynced: (revision: number) => Promise<void>;
   markDirty: () => Promise<void>; updateSyncMeta: (updates: Partial<SyncMeta>) => Promise<void>; resetLocalData: () => Promise<void>;
@@ -582,6 +609,7 @@ export function AppDataProvider({ children, accountId = null }: { children: Reac
   const [storageError, setStorageError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState<boolean | null>(null);
   const [storageReady, setStorageReady] = useState(false);
+  const [recoverKey, setRecoverKey] = useState<string | null>(null);
   const [syncMeta, setSyncMeta] = useState<SyncMeta>(EMPTY_SYNC_META);
   const [isLocalDataUnlinked, setIsLocalDataUnlinked] = useState(false);
   const [activeAccountId, setActiveAccountId] = useState<number | null>(accountId);
@@ -597,7 +625,7 @@ export function AppDataProvider({ children, accountId = null }: { children: Reac
     const load = accountId === null ? loadStoredData().then((r) => ({ ...r, meta: EMPTY_SYNC_META, unlinked: false })) : loadAccountData(accountId);
     void load.then((result) => {
       if (token !== loadToken.current) return;
-      setData(result.data); setStorageError(result.error); setStorageReady(result.canWrite);
+      setData(result.data); setStorageError(result.error); setStorageReady(result.canWrite); setRecoverKey(result.recoverKey ?? null);
       setSyncMeta(result.meta); metaRef.current = result.meta; setIsLocalDataUnlinked(result.unlinked); setUseGlobalUntilLinked(accountId === null); setLoading(false);
     });
     return () => { loadToken.current++; };
@@ -682,11 +710,11 @@ export function AppDataProvider({ children, accountId = null }: { children: Reac
     if (!storageReady) {
       if (activeAccountId === null) {
         const result = await loadStoredData();
-        setData(result.data); setStorageError(result.error); setStorageReady(result.canWrite);
+        setData(result.data); setStorageError(result.error); setStorageReady(result.canWrite); setRecoverKey(result.recoverKey ?? null);
         setSyncMeta(EMPTY_SYNC_META); setIsLocalDataUnlinked(false); setUseGlobalUntilLinked(true);
       } else {
         const result = await loadAccountData(activeAccountId);
-        setData(result.data); setStorageError(result.error); setStorageReady(result.canWrite);
+        setData(result.data); setStorageError(result.error); setStorageReady(result.canWrite); setRecoverKey(result.recoverKey ?? null);
         setSyncMeta(result.meta); metaRef.current = result.meta; setIsLocalDataUnlinked(result.unlinked); setUseGlobalUntilLinked(false);
       }
       return;
@@ -694,7 +722,14 @@ export function AppDataProvider({ children, accountId = null }: { children: Reac
     try { await AsyncStorage.setItem(currentStorageKey, JSON.stringify(data)); setStorageError(null); }
     catch { setStorageError("Ainda não foi possível salvar. Libere espaço no aparelho e tente novamente."); }
   }, [data, storageReady, activeAccountId, currentStorageKey]);
-  const value = useMemo(() => ({ data, updateData, loading, storageReady, storageError, retryStorage, isOnline, accountId, syncMeta, isLocalDataUnlinked, linkLocalData, replaceFromCloud, markSynced, markDirty, updateSyncMeta: persistMeta, resetLocalData }), [data, updateData, loading, storageReady, storageError, retryStorage, isOnline, accountId, syncMeta, isLocalDataUnlinked, linkLocalData, replaceFromCloud, markSynced, markDirty, persistMeta, resetLocalData]);
+  // Grava a versão corrigida (registros inválidos ajustados ou descartados). A cópia original já foi guardada na chave de recuperação.
+  const recoverIgnoringInvalid = useCallback(async () => {
+    if (storageReady || !recoverKey) return;
+    await AsyncStorage.setItem(recoverKey, JSON.stringify(data));
+    await retryStorage();
+  }, [storageReady, recoverKey, data, retryStorage]);
+  const recoverStorage = !storageReady && recoverKey ? recoverIgnoringInvalid : null;
+  const value = useMemo(() => ({ data, updateData, loading, storageReady, storageError, retryStorage, recoverStorage, isOnline, accountId, syncMeta, isLocalDataUnlinked, linkLocalData, replaceFromCloud, markSynced, markDirty, updateSyncMeta: persistMeta, resetLocalData }), [data, updateData, loading, storageReady, storageError, retryStorage, recoverStorage, isOnline, accountId, syncMeta, isLocalDataUnlinked, linkLocalData, replaceFromCloud, markSynced, markDirty, persistMeta, resetLocalData]);
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
 }
 

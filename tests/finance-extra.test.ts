@@ -8,6 +8,10 @@ describe("registro por frase", () => {
   });
   it("entende receita com milhar", () => {
     expect(parsePhrase("recebi 2.500,00 de salário")).toMatchObject({ kind: "income", amount: 2500, category: "Salário" });
+    expect(parsePhrase("recebi 13º 2000")).toMatchObject({ amount: 2000, category: "13º salário" });
+    expect(parsePhrase("recebi o 13º")).toBeNull();
+    expect(parsePhrase("gastei 45 no mercado ontem no cartão")).toMatchObject({ amount: 45, merchant: "Mercado", account: "card" });
+    expect(parseStatement('Data,Descrição,Valor\n05/11/2026,Mercado,"-45,90"\n')[0]).toMatchObject({ amount: 45.9, kind: "expense" });
   });
   it("detecta cartão e combustível", () => {
     expect(parsePhrase("paguei 120,50 de gasolina no cartão")).toMatchObject({ amount: 120.5, category: "Combustível", account: "card" });

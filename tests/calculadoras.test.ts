@@ -21,6 +21,8 @@ describe("calculadoras 2026", () => {
     expect(C.decimoTerceiro(3000, 12)).toMatchObject({ bruto: 3000, inss: 248.6, irrf: 0, primeira: 1500, segunda: 1251.4, liquido: 2751.4 });
     expect(C.decimoTerceiro(2400, 7).bruto).toBe(1400);
     expect(C.decimoTerceiro(1621, 12).liquido).toBe(1499.42);
+    // Desconto simplificado (R$ 607,20) vale mais que o INSS de R$ 571,51.
+    expect(C.decimoTerceiro(5500, 12).irrf).toBe(190.47);
   });
   it("acha os dias de férias pelas faltas", () => {
     expect([0, 5, 6, 14, 15, 23, 24, 32, 33].map(C.diasFerias)).toEqual([30, 30, 24, 24, 18, 18, 12, 12, 0]);

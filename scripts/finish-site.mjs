@@ -7,7 +7,7 @@ const base = (process.env.NYVO_BASE_URL || "").replace(/\/$/, "");
 const root = base.replace(/\/app$/, "");
 fs.cpSync("site-static", "docs", { recursive: true });
 // Limita para onde o app pode enviar dados e de onde pode carregar código.
-const csp = `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://bxwcqljlbrwpasfkmdhc.supabase.co wss://bxwcqljlbrwpasfkmdhc.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">`;
+const csp = `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://bxwcqljlbrwpasfkmdhc.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">`;
 const app = fs.readFileSync("docs/app/index.html", "utf8").replace("</body>", `<script src="${root}/conta.js" defer></script></body>`)
   .replace("<head>", `<head>${csp}`);
 fs.writeFileSync("docs/app/index.html", app);

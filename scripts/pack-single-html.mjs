@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 const [dist, out] = process.argv.slice(2);
 const base = (process.env.NYVO_BASE_URL || "").replace(/\/$/, "");
-// O app mora em /nyvo/app; a página de apresentação, o manifesto, os ícones e o service worker ficam na raiz /nyvo.
+// O app mora em /D-Conta/app; a página de apresentação, o manifesto, os ícones e o service worker ficam na raiz /D-Conta.
 const root = base.replace(/\/app$/, "");
 let html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
 const strip = (p) => (base && p.startsWith(base + "/") ? p.slice(base.length) : p);

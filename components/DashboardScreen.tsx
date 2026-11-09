@@ -8,7 +8,7 @@ import { PhraseCapture, QuickAddModal } from "@/components/QuickAdd";
 import { greeting, tipFor } from "@/lib/brand";
 import { useOptionalSupabaseSync } from "@/lib/supabase-sync";
 import { hasDemoData, removeDemoData } from "@/lib/demo-data";
-import { billStatus, cardInvoices, currentInvoiceMonth, payBill } from "@/lib/finance-extra";
+import { billStatus, cardInvoices, payBill } from "@/lib/finance-extra";
 import { C, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -71,8 +71,9 @@ export function DashboardScreen() {
       const d = daysUntil(t.dueDate);
       if (d !== null && d <= 5) items.push({ key: `tx-${t.id}`, title: t.merchant, detail: "Despesa pendente", days: d, amount: t.amount, onPay: () => { updateData((c) => ({ ...c, transactions: c.transactions.map((x) => x.id === t.id ? { ...x, paid: true } : x) })); toast("Despesa marcada como paga."); } });
     });
-    const invoice = cardInvoices(data.transactions, data.creditCard).find((i) => i.month === currentInvoiceMonth(data.creditCard));
-    if (invoice && invoice.total > 0) { const d = daysUntil(invoice.dueDate); if (d !== null && d >= 0 && d <= 7) items.push({ key: "card", title: "Fatura do cartão", detail: `Vence ${displayDate(invoice.dueDate)}`, days: d, amount: invoice.total }); }
+    // A fatura que vence nos próximos dias costuma ser a que já fechou (mês anterior ao atual), então olha todas.
+    const invoice = cardInvoices(data.transactions, data.creditCard).find((i) => { const d = daysUntil(i.dueDate); return i.total > 0 && d !== null && d >= 0 && d <= 7; });
+    if (invoice) { const d = daysUntil(invoice.dueDate); if (d !== null) items.push({ key: "card", title: "Fatura do cartão", detail: `Vence ${displayDate(invoice.dueDate)}`, days: d, amount: invoice.total }); }
     return items.sort((a, b) => a.days - b.days);
   }, [data.recurringBills, data.transactions, data.creditCard, updateData]);
   const tasksToday = openTasks.filter((task) => task.dueDate && task.dueDate <= today).slice(0, 5);

@@ -153,12 +153,14 @@ export function GoalsPanel({ onToast }: { onToast: (message: string) => void }) 
       <SectionTitle title="Metas de economia" action="Nova meta" onAction={() => { setEditing(null); setOpen(true); }} />
       {data.goals.length ? data.goals.map((g) => {
         const pct = g.target ? Math.min(1, g.saved / g.target) : 0;
-        const monthsLeft = g.deadline ? Math.max(1, (Number(g.deadline.slice(0, 4)) - new Date().getFullYear()) * 12 + Number(g.deadline.slice(5, 7)) - (new Date().getMonth() + 1)) : 0;
+        const rawMonths = g.deadline ? (Number(g.deadline.slice(0, 4)) - new Date().getFullYear()) * 12 + Number(g.deadline.slice(5, 7)) - (new Date().getMonth() + 1) : 0;
+        const expired = Boolean(g.deadline) && rawMonths < 0;
+        const monthsLeft = g.deadline && !expired ? Math.max(1, rawMonths) : 0;
         const perMonth = monthsLeft ? Math.max(0, g.target - g.saved) / monthsLeft : 0;
         return <Card key={g.id} style={{ gap: 9 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><View style={[icon, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name={(pct >= 1 ? "trophy-outline" : iconFor(g.icon, g.name, "piggy-bank-outline")) as "check"} size={18} color={C.green} /></View><View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={strong}>{g.name}</Text><Text style={muted}>{money(g.saved, data.currency)} de {money(g.target, data.currency)}{g.deadline ? ` · até ${displayDate(g.deadline)}` : ""}</Text></View><IconButton name="pencil-outline" label={`Editar ${g.name}`} tone="soft" onPress={() => { setEditing(g); setOpen(true); }} /></View>
           <View style={barLight}><View style={[barFill, { width: `${pct * 100}%`, backgroundColor: C.green }]} /></View>
-          <Text style={muted}>{pct >= 1 ? "Meta alcançada. Parabéns!" : perMonth ? `Guardando ${money(perMonth, data.currency)} por mês você chega lá no prazo.` : `${Math.round(pct * 100)}% do caminho.`}</Text>
+          <Text style={muted}>{pct >= 1 ? "Meta alcançada. Parabéns!" : expired ? `Prazo encerrado · ${Math.round(pct * 100)}% do caminho. Edite a meta para escolher um novo prazo.` : perMonth ? `Guardando ${money(perMonth, data.currency)} por mês você chega lá no prazo.` : `${Math.round(pct * 100)}% do caminho.`}</Text>
           <PrimaryButton title="Guardar dinheiro" tone="light" icon="plus" onPress={() => { setDeposit(g); setDepositValue(""); }} />
         </Card>;
       }) : <Card><EmptyState icon="piggy-bank-outline" title="Nenhuma meta ainda" description="Comece pela reserva de emergência: o ideal é juntar de 3 a 6 meses dos seus gastos." action={<PrimaryButton title="Criar reserva de emergência" icon="plus" onPress={() => { setEditing({ id: "", name: "Reserva de emergência", target: 0, saved: 0, deadline: "" }); setOpen(true); }} />} /></Card>}
@@ -183,7 +185,7 @@ function GoalForm({ initial, onClose, onSave, onDelete }: { initial: SavingsGoal
     const t = parseAmount(target); const s = saved ? parseAmount(saved) : 0;
     if (!name.trim()) return setError("Dê um nome para a meta.");
     if (!Number.isFinite(t) || t <= 0) return setError("Informe quanto quer juntar.");
-    if (deadline && !/^\d{4}-\d{2}(-\d{2})?$/.test(deadline)) return setError("Use o prazo no formato AAAA-MM, por exemplo 2027-06.");
+    if (deadline && !/^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$/.test(deadline)) return setError("Use o prazo no formato AAAA-MM, por exemplo 2027-06.");
     onSave({ id: initial?.id || createId(), name: name.trim(), target: t, saved: Number.isFinite(s) ? s : 0, deadline: deadline.length === 7 ? `${deadline}-28` : deadline, ...(goalIcon ? { icon: goalIcon } : {}) });
   };
   return (

@@ -5,7 +5,7 @@ import Svg, { Circle } from "react-native-svg";
 import { Card, ChoiceChips, Header, IconButton, Page } from "@/components/app-ui";
 import { useAppData } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
-import { localDateKey, money } from "@/lib/format";
+import { localDateKey, localDayOf, money } from "@/lib/format";
 import { addMonths, monthKey, monthLabel, monthSummary } from "@/lib/finance-extra";
 
 const CAT_COLORS = [C.green, C.blue, C.amber, C.coral, C.greenDark, C.blueDark, C.muted];
@@ -38,7 +38,7 @@ export function InsightsScreen() {
   const weeks = useMemo(() => Array.from({ length: 6 }, (_, i) => {
     const end = new Date(); end.setDate(end.getDate() - 7 * (5 - i)); const start = new Date(end); start.setDate(end.getDate() - 6);
     const s = localDateKey(start); const e = localDateKey(end);
-    const n = data.tasks.filter((t) => t.status === "done" && t.updatedAt.slice(0, 10) >= s && t.updatedAt.slice(0, 10) <= e).length;
+    const n = data.tasks.filter((t) => t.status === "done" && localDayOf(t.updatedAt) >= s && localDayOf(t.updatedAt) <= e).length;
     return { label: `${start.getDate()}/${start.getMonth() + 1}`, n };
   }), [data.tasks]);
   const maxWeek = Math.max(1, ...weeks.map((w) => w.n));

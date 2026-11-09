@@ -1,5 +1,5 @@
 import type { AppData, CreditCard, RecurringBill, Transaction, TransactionKind } from "./app-data";
-import { createId, isValidDateKey, localDateKey } from "./format";
+import { createId, isValidDateKey, localDateKey, localDayOf } from "./format";
 
 export const monthKey = (date = new Date()) => localDateKey(date).slice(0, 7);
 
@@ -112,7 +112,8 @@ export function parsePhrase(text: string): ParsedPhrase | null {
   const raw = text.trim();
   if (!raw) return null;
   const lower = raw.toLocaleLowerCase("pt-BR");
-  const numberMatch = lower.match(/(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)/);
+  // Número seguido de º/ª (ex.: "13º") é ordinal, não valor.
+  const numberMatch = lower.match(/(?:^|[^\d.,])(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?!\d|\s*[º°ª])/);
   if (!numberMatch) return null;
   const amount = Number(numberMatch[1].replace(/\.(?=\d{3})/g, "").replace(",", "."));
   if (!Number.isFinite(amount) || amount <= 0) return null;
@@ -123,7 +124,9 @@ export function parsePhrase(text: string): ParsedPhrase | null {
   const table = income ? INCOME_WORDS : CATEGORY_WORDS;
   let category = income ? "Outras receitas" : "Outros";
   for (const [re, cat] of table) if (re.test(words)) { category = cat; break; }
-  const place = raw.match(/\b(?:no|na|em|de|do|da|com|pro|pra|para)\s+([^\d,]+?)(?:\s+(?:hoje|ontem|no cart[aã]o|no cr[eé]dito|no d[eé]bito|no pix|em dinheiro))?\s*$/i);
+  // Tira "hoje/ontem" e a forma de pagamento antes de achar o local ("no mercado ontem no cartão" → "mercado").
+  const placeText = raw.replace(/\s+(?:hoje|ontem|no cart[aã]o|no cr[eé]dito|no d[eé]bito|no pix|em dinheiro)(?=\s|$)/gi, " ").trim();
+  const place = placeText.match(/\b(?:no|na|em|de|do|da|com|pro|pra|para)\s+([^\d,]+?)\s*$/i);
   let merchant = place ? place[1].trim() : "";
   merchant = merchant.replace(/^(o|a|os|as)\s+/i, "");
   if (!merchant) merchant = category;
@@ -178,7 +181,19 @@ export function parseStatement(text: string): StatementRow[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim());
   if (!lines.length) return rows;
   const sep = (lines[0].match(/;/g)?.length ?? 0) > (lines[0].match(/,/g)?.length ?? 0) ? ";" : ",";
-  const split = (line: string) => line.split(sep).map((c) => c.replace(/^"|"$/g, "").trim());
+  // Respeita aspas: "-45,90" numa planilha separada por vírgula continua sendo um campo só.
+  const split = (line: string) => {
+    const cells: string[] = [];
+    let cell = ""; let quoted = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { if (quoted && line[i + 1] === '"') { cell += '"'; i++; } else quoted = !quoted; }
+      else if (ch === sep && !quoted) { cells.push(cell.trim()); cell = ""; }
+      else cell += ch;
+    }
+    cells.push(cell.trim());
+    return cells;
+  };
   const header = split(lines[0]).map((h) => h.toLocaleLowerCase("pt-BR"));
   const hasHeader = header.some((h) => /data|date|valor|amount|descri|title|hist/.test(h));
   const find = (re: RegExp, fallback: number) => { const i = header.findIndex((h) => re.test(h)); return i >= 0 ? i : fallback; };
@@ -216,6 +231,6 @@ export function monthSummary(data: AppData, month: string) {
     planned += habits.length;
     done += (data.completedByDate[key] ?? []).filter((id) => habits.some((h) => h.id === id)).length;
   }
-  const tasksDone = data.tasks.filter((t) => t.status === "done" && t.updatedAt.startsWith(month)).length;
+  const tasksDone = data.tasks.filter((t) => t.status === "done" && localDayOf(t.updatedAt).startsWith(month)).length;
   return { income, expense, balance: income - expense, categories: [...byCategory.entries()].sort((a, b) => b[1] - a[1]), habitRate: planned ? done / planned : null, tasksDone, count: inMonth.length };
 }
