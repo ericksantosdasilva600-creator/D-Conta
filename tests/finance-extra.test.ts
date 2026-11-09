@@ -55,4 +55,11 @@ describe("cartão de crédito", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].date).toBe("2026-11-05");
   });
+
+  it("frase rápida não classifica pelo valor e entende ontem", () => {
+    expect(parsePhrase("recebi 130 do pix")?.category).toBe("Pix recebido");
+    expect(parsePhrase("gastei 99 na farmácia")?.category).toBe("Saúde");
+    expect(parsePhrase("gastei 30 no mercado ontem")?.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(parsePhrase("gastei 30 no mercado")?.date).toBeUndefined();
+  });
 });

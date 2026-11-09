@@ -7,8 +7,8 @@ import { C, SANS } from "@/lib/design";
 import { createId, localDateKey, money, parseAmount } from "@/lib/format";
 import { parsePhrase } from "@/lib/finance-extra";
 
-function makeTransaction(kind: TransactionKind, amount: number, category: string, merchant: string, account: AccountId): Transaction {
-  return { id: createId(), kind, amount, merchant: merchant || category, category, date: localDateKey(), dueDate: "", paid: true, priority: "medium", notes: "", receiptUri: "", scope: "personal", account };
+function makeTransaction(kind: TransactionKind, amount: number, category: string, merchant: string, account: AccountId, date = localDateKey()): Transaction {
+  return { id: createId(), kind, amount, merchant: merchant || category, category, date, dueDate: "", paid: true, priority: "medium", notes: "", receiptUri: "", scope: "personal", account };
 }
 
 /** Campo "escreva como fala": "gastei 45 no mercado". Mostra a prévia antes de salvar. */
@@ -18,7 +18,7 @@ export function PhraseCapture({ onSaved }: { onSaved: (message: string) => void 
   const parsed = useMemo(() => parsePhrase(text), [text]);
   const save = () => {
     if (!parsed) return;
-    updateData((c) => ({ ...c, transactions: [makeTransaction(parsed.kind, parsed.amount, parsed.category, parsed.merchant, parsed.account), ...c.transactions] }));
+    updateData((c) => ({ ...c, transactions: [makeTransaction(parsed.kind, parsed.amount, parsed.category, parsed.merchant, parsed.account, parsed.date), ...c.transactions] }));
     onSaved(`${parsed.kind === "expense" ? "Despesa" : "Receita"} de ${money(parsed.amount, data.currency)} salva em ${parsed.category}.`);
     setText("");
   };

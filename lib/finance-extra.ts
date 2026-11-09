@@ -86,18 +86,18 @@ const CATEGORY_WORDS: [RegExp, string][] = [
   [/mercado|supermercado|atacad|feira|hortifruti|padaria|açougue|acougue/, "Mercado"],
   [/ifood|delivery|rappi|pizza|lanche|hamb[uú]rguer|restaurante|almo[cç]o|jantar|caf[eé]/, "Alimentação"],
   [/gasolina|combust[ií]vel|posto|etanol|diesel|[aá]lcool/, "Combustível"],
-  [/uber|99|[oô]nibus|metr[oô]|passagem|t[aá]xi|estacionamento|ped[aá]gio/, "Transporte"],
+  [/uber|\b99\b|[oô]nibus|metr[oô]|passagem|t[aá]xi|estacionamento|ped[aá]gio/, "Transporte"],
   [/aluguel|condom[ií]nio|iptu/, "Moradia"],
-  [/luz|energia|[aá]gua|internet|g[aá]s|telefone|celular|conta de/, "Contas da casa"],
+  [/luz|energia|[aá]gua|internet|\bg[aá]s\b|telefone|celular|conta de/, "Contas da casa"],
   [/farm[aá]cia|rem[eé]dio|m[eé]dico|consulta|dentista|exame|academia/, "Saúde"],
   [/faculdade|curso|mensalidade|livro|escola|apostila/, "Educação"],
   [/netflix|spotify|assinatura|prime|disney|youtube|icloud/, "Assinaturas"],
-  [/cinema|bar|show|festa|cerveja|lazer|jogo/, "Lazer"],
+  [/cinema|\bbar\b|show|festa|cerveja|lazer|jogo/, "Lazer"],
   [/roupa|loja|shopping|presente|amazon|shopee|mercado livre/, "Compras"],
 ];
 const INCOME_WORDS: [RegExp, string][] = [
   [/sal[aá]rio|pagamento do trabalho/, "Salário"],
-  [/13|d[eé]cimo/, "13º salário"],
+  [/13\s*º|d[eé]cimo/, "13º salário"],
   [/f[eé]rias/, "Férias"],
   [/pix/, "Pix recebido"],
   [/freela|bico|servi[cç]o/, "Freela"],
@@ -105,7 +105,7 @@ const INCOME_WORDS: [RegExp, string][] = [
   [/rendimento|dividendo|juros/, "Rendimentos"],
 ];
 
-export type ParsedPhrase = { kind: TransactionKind; amount: number; category: string; merchant: string; account: "main" | "card" | "cash" };
+export type ParsedPhrase = { kind: TransactionKind; amount: number; category: string; merchant: string; account: "main" | "card" | "cash"; date?: string };
 
 /** Entende frases como "gastei 45 no mercado" ou "recebi 2000 de salário". Tudo local, sem IA externa. */
 export function parsePhrase(text: string): ParsedPhrase | null {
@@ -116,18 +116,22 @@ export function parsePhrase(text: string): ParsedPhrase | null {
   if (!numberMatch) return null;
   const amount = Number(numberMatch[1].replace(/\.(?=\d{3})/g, "").replace(",", "."));
   if (!Number.isFinite(amount) || amount <= 0) return null;
+  // Classifica só pelas palavras: o valor digitado (ex.: 130, 99) não pode virar "13º salário" nem "Transporte".
+  const words = lower.replace(numberMatch[0], " ");
   const income = /\b(recebi|ganhei|entrou|caiu|recebido|ganho|sal[aá]rio)\b/.test(lower);
   const kind: TransactionKind = income ? "income" : "expense";
   const table = income ? INCOME_WORDS : CATEGORY_WORDS;
   let category = income ? "Outras receitas" : "Outros";
-  for (const [re, cat] of table) if (re.test(lower)) { category = cat; break; }
+  for (const [re, cat] of table) if (re.test(words)) { category = cat; break; }
   const place = raw.match(/\b(?:no|na|em|de|do|da|com|pro|pra|para)\s+([^\d,]+?)(?:\s+(?:hoje|ontem|no cart[aã]o|no cr[eé]dito|no d[eé]bito|no pix|em dinheiro))?\s*$/i);
   let merchant = place ? place[1].trim() : "";
   merchant = merchant.replace(/^(o|a|os|as)\s+/i, "");
   if (!merchant) merchant = category;
   merchant = merchant.charAt(0).toUpperCase() + merchant.slice(1);
   const account = /cart[aã]o|cr[eé]dito/.test(lower) ? "card" : /dinheiro|esp[eé]cie/.test(lower) ? "cash" : "main";
-  return { kind, amount, category, merchant, account };
+  let date: string | undefined;
+  if (/\bontem\b/.test(lower)) { const d = new Date(); d.setDate(d.getDate() - 1); date = localDateKey(d); }
+  return { kind, amount, category, merchant, account, ...(date ? { date } : {}) };
 }
 
 export function guessCategory(description: string, kind: TransactionKind) {
