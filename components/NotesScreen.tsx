@@ -51,7 +51,7 @@ export function NotesScreen({ autoCreate = false }: { autoCreate?: boolean } = {
 
   const save = () => {
     const content = draft.body.trim();
-    const nextErrors = draft.title.trim() || content ? {} : { body: "Escreva uma ideia ou dá um título à nota." };
+    const nextErrors = draft.title.trim() || content ? {} : { body: "Escreva uma ideia ou dê um título à nota." };
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
     const now = new Date().toISOString();

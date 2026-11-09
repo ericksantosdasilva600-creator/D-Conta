@@ -44,12 +44,13 @@ const FIRED_KEY = "nyvo.reminders.fired";
  * Relógio dos lembretes no site: a cada 15 s verifica o que deveria ter tocado.
  * Avisos perdidos enquanto o Dá Conta estava fechado (até 6 h) aparecem ao abrir.
  */
-export function useReminderScheduler(data: AppData, onFire: (title: string, body: string) => void) {
+export function useReminderScheduler(data: AppData, onFire: (title: string, body: string) => void, ready = true) {
   const dataRef = useRef(data);
   const fireRef = useRef(onFire);
   useEffect(() => { dataRef.current = data; fireRef.current = onFire; });
   useEffect(() => {
-    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    // Só começa depois de carregar os dados salvos; senão o primeiro tick grava "agora" e apaga a janela de avisos perdidos.
+    if (!ready || Platform.OS !== "web" || typeof window === "undefined") return;
     const read = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
     const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* sem armazenamento */ } };
     const tick = () => {
@@ -81,5 +82,5 @@ export function useReminderScheduler(data: AppData, onFire: (title: string, body
     const onVisible = () => { if (document.visibilityState === "visible") tick(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
-  }, []);
+  }, [ready]);
 }

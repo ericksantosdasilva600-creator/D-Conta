@@ -39,7 +39,7 @@ export default function TabLayout() {
   const [quickOpen, setQuickOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   useWebDarkMode(data.darkMode);
-  useReminderScheduler(data, (title, body) => toast(`${title} · ${body}`, "bell-ring-outline", 6000));
+  useReminderScheduler(data, (title, body) => toast(`${title} · ${body}`, "bell-ring-outline", 6000), !loading && storageReady);
   useEffect(() => {
     if (Platform.OS === "web" || loading) return;
     const id = setTimeout(() => { void refreshLocalNotifications(data); }, 1500);
@@ -126,7 +126,7 @@ function StorageRecoveryScreen({ message, onRetry }: { message: string | null; o
       <Header eyebrow="DÁ CONTA · RECUPERAÇÃO" title="Estamos protegendo seus dados." subtitle="A migração não foi aplicada." />
       <Card style={{ gap: 12 }}>
         <Text style={{ color: C.ink, fontFamily: SANS, fontSize: 13, lineHeight: 20 }}>{message ?? "Não foi possível ler os dados deste aparelho."}</Text>
-        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>A cópia original permanece intacta. A aplicação não vai substituir seus registros por uma estrutura vazia. Tente novamente; se o problema continuar, não apague os dados locais.</Text>
+        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>A cópia original permanece intacta. O app não vai substituir seus registros por uma estrutura vazia. Tente novamente; se o problema continuar, não apague os dados locais.</Text>
         <PrimaryButton title={retrying ? "Verificando os dados…" : "Tentar novamente"} icon="refresh" onPress={() => void retry()} disabled={retrying} />
       </Card>
     </Page>

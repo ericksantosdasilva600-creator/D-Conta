@@ -205,7 +205,7 @@ export function DashboardScreen() {
       <AppModal visible={captureOpen} title="O que você quer adicionar?" subtitle="Escolha um tipo de registro. Você pode completar os detalhes no formulário seguinte." onClose={() => setCaptureOpen(false)}>
         <CaptureOption icon="note-plus-outline" title="Nota rápida" detail="Uma ideia, anotação ou referência" onPress={() => openCapture("notes")} />
         <CaptureOption icon="cash-plus" title="Movimento financeiro" detail="Receita ou despesa pessoal ou de viagem" onPress={() => openCapture("finance")} />
-        <CaptureOption icon="checkbox-marked-circle-outline" title="Novo hábito" detail="Crie uma rotina semanal e define um lembrete" onPress={() => openCapture("habit")} />
+        <CaptureOption icon="checkbox-marked-circle-outline" title="Novo hábito" detail="Crie uma rotina semanal e defina um lembrete" onPress={() => openCapture("habit")} />
         <CaptureOption icon="heart-plus-outline" title="Registro de saúde" detail="Água, atividade física, leitura ou estudo" onPress={() => openCapture("health")} />
         <CaptureOption icon="playlist-plus" title="Tarefa" detail="Próximo passo, prioridade ou prazo" onPress={() => openCapture("tasks")} />
       </AppModal>

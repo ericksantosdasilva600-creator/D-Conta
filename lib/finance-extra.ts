@@ -1,5 +1,5 @@
 import type { AppData, CreditCard, RecurringBill, Transaction, TransactionKind } from "./app-data";
-import { createId, localDateKey } from "./format";
+import { createId, isValidDateKey, localDateKey } from "./format";
 
 export const monthKey = (date = new Date()) => localDateKey(date).slice(0, 7);
 
@@ -140,13 +140,13 @@ export type StatementRow = { date: string; amount: number; description: string; 
 
 function toDateKey(value: string) {
   const v = value.trim();
+  let key = "";
   let m = v.match(/^(\d{4})(\d{2})(\d{2})/);
-  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
-  m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
-  m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-  if (m) return `${m[3].length === 2 ? `20${m[3]}` : m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-  return "";
+  if (m) key = `${m[1]}-${m[2]}-${m[3]}`;
+  else if ((m = v.match(/^(\d{4})-(\d{2})-(\d{2})/))) key = `${m[1]}-${m[2]}-${m[3]}`;
+  else if ((m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))) key = `${m[3].length === 2 ? `20${m[3]}` : m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  // Data que não existe (31/02, mês 25...) é descartada: salvar assim travaria o app na próxima abertura.
+  return isValidDateKey(key) ? key : "";
 }
 
 function toNumber(value: string) {

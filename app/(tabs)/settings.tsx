@@ -64,7 +64,7 @@ export default function SettingsScreen() {
       await refreshLocalNotifications(updated);
       showToast("Notificações ativadas neste aparelho.");
     } else {
-      showToast("Sem autorização, os vencimentos e hábitos continuam visíveis na aplicação.");
+      showToast("Sem autorização, os vencimentos e hábitos continuam visíveis no app.");
     }
     setWorking(false);
   };

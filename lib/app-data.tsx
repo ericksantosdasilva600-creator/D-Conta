@@ -308,6 +308,8 @@ function normalizeTask(value: unknown): Task | null {
     project: stringValue(item.project),
     linkedBudgetId: stringValue(item.linkedBudgetId),
     remindAtDue: Boolean(item.remindAtDue),
+    ...optionalText(item, "icon"),
+    ...optionalText(item, "sound"),
     createdAt: stringValue(item.createdAt, timestamp),
     updatedAt: timestamp,
   };
@@ -345,7 +347,7 @@ export function normalizeStoredData(value: unknown): AppData {
   const saved = asRecord(value);
   if (!saved) throw new Error("Os dados salvos não têm um formato reconhecido.");
   const version = typeof saved.schemaVersion === "number" ? saved.schemaVersion : 1;
-  if (version > base.schemaVersion) throw new Error("Os dados foram criados por uma versão mais recente da aplicação.");
+  if (version > base.schemaVersion) throw new Error("Os dados foram criados por uma versão mais recente do app.");
 
   const completedByDate: Record<string, string[]> = {};
   const completions = asRecord(saved.completedByDate);
@@ -493,7 +495,7 @@ async function loadStoredData(): Promise<StoredLoadResult> {
       } catch {
         return { data: normalized, error: "Foram encontrados registros incompletos. A migração foi interrompida e a chave original permanece intacta, mas não foi possível criar outra cópia de recuperação.", canWrite: false };
       }
-      return { data: normalized, error: `A migração foi interrompida: alguns registros ou campos são inválidos (${issues.join(", ")}). A cópia original foi preservada e não será substituída. Tente novamente antes de continuares.`, canWrite: false };
+      return { data: normalized, error: `A migração foi interrompida: alguns registros ou campos são inválidos (${issues.join(", ")}). A cópia original foi preservada e não será substituída. Tente novamente antes de continuar.`, canWrite: false };
     }
   } catch (caught) {
     const backupKey = sourceKey === LEGACY_STORAGE_KEY ? STORAGE_MIGRATION_BACKUP_KEY : STORAGE_RECOVERY_BACKUP_KEY;

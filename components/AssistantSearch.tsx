@@ -8,6 +8,7 @@ import { localAnswer, searchApp } from "@/lib/assistant";
 import { askAssistant, type ChatMessage } from "@/lib/assistant-ai";
 import { C, SANS } from "@/lib/design";
 
+type Msg = ChatMessage & { local?: boolean };
 type Icon = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 const SUGGESTIONS = ["Quanto gastei este mês?", "Quais tarefas estão pendentes?", "Como importo o extrato do banco?"];
 const MAX_QUESTION = 500;
@@ -18,7 +19,7 @@ const LIMIT = "Você atingiu o limite de perguntas à IA por hoje. As buscas e o
 export function AssistantSearch({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { data } = useAppData();
   const [query, setQuery] = useState("");
-  const [chat, setChat] = useState<ChatMessage[]>([]);
+  const [chat, setChat] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const hits = useMemo(() => searchApp(data, query), [data, query]);
@@ -28,14 +29,15 @@ export function AssistantSearch({ visible, onClose }: { visible: boolean; onClos
     const question = text.trim().slice(0, MAX_QUESTION);
     if (!question || busyRef.current) return;
     setQuery("");
-    const history: ChatMessage[] = [...chat, { role: "user", content: question }];
-    setChat(history);
     const local = localAnswer(data, question);
-    if (local) { setChat([...history, { role: "assistant", content: local }]); return; }
+    // Respostas calculadas no aparelho (e a pergunta que as gerou) ficam marcadas e nunca vão para a IA.
+    const history: Msg[] = [...chat, { role: "user", content: question, local: Boolean(local) }];
+    setChat(history);
+    if (local) { setChat([...history, { role: "assistant", content: local, local: true }]); return; }
     busyRef.current = true; setBusy(true);
-    const result = await askAssistant(history);
+    const result = await askAssistant(history.filter((m) => !m.local).map(({ role, content }) => ({ role, content })));
     busyRef.current = false; setBusy(false);
-    setChat([...history, { role: "assistant", content: result.ok ? result.reply : result.reason === "limit" ? LIMIT : OFFLINE }]);
+    setChat([...history, { role: "assistant", local: !result.ok, content: result.ok ? result.reply : result.reason === "limit" ? LIMIT : OFFLINE }]);
   };
   const open = (path: string) => { onClose(); router.push(path as never); };
 

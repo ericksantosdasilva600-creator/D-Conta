@@ -213,4 +213,17 @@ describe("calculadoras 2026", () => {
     expect(C.custoKm({ km: 0, consumo: 12, preco: 6 })).toBeNull();
     expect(C.custoKm({ km: 100, consumo: 0, preco: 6 })).toBeNull();
   });
+
+  it("rescisão: aviso indenizado que atravessa o ano soma 13º e férias do período novo", () => {
+    // Saída em 10/12/2026, aviso de 48 dias vai até 27/01/2027: 12/12 de 2026 + 1/12 de 2027.
+    const r = C.rescisao({ salario: 3000, admissao: "2020-01-01", saida: "2026-12-10", tipo: "sem", avisoIndenizado: true });
+    expect(r.avos13).toBe(13);
+    expect(r.decimo).toBe(3250);
+    // Admissão 01/12/2025, saída 20/11/2026: o aviso completa o 1º período aquisitivo (12/12 + 1/12 de férias com 1/3).
+    const f = C.rescisao({ salario: 3000, admissao: "2025-12-01", saida: "2026-11-20", tipo: "sem", avisoIndenizado: true });
+    expect(f.proporcionais).toBe(4333.33);
+  });
+  it("dividir a conta limita o número de pessoas", () => {
+    expect(C.dividirConta({ total: 1000, pessoas: 1e8 }).pessoas).toBe(1000);
+  });
 });

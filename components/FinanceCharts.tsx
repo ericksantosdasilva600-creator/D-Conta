@@ -21,7 +21,7 @@ export function FinanceCharts({ transactions, currency }: { transactions: Transa
       const day = transactions.filter((item) => item.date === key);
       return {
         key,
-        label: new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(date).replace(".", "").slice(0, 2),
+        label: new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(date).replace(".", "").slice(0, 3),
         income: day.filter((item) => item.kind === "income").reduce((sum, item) => sum + item.amount, 0),
         expense: day.filter((item) => item.kind === "expense").reduce((sum, item) => sum + item.amount, 0),
       };

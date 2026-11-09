@@ -66,11 +66,15 @@
     return Date.UTC(y, m, Math.min(dia, ultimo));
   }
   function anosCompletos(adm, fim) { var k = 0; while (maisMeses(adm, 12 * (k + 1)) <= fim + DIA) k++; return k; }
-  function avosDecimo(adm, fim) {
-    var ano = new Date(fim).getUTCFullYear(), avos = 0;
-    for (var m = 0; m < 12; m++) {
-      var ini = Math.max(Date.UTC(ano, m, 1), adm), fimMes = Math.min(Date.UTC(ano, m + 1, 0), fim);
-      if (fimMes >= ini && (fimMes - ini) / DIA + 1 >= 15) avos++;
+  // Avos do 13º. Com `saida` (aviso indenizado que atravessa o fim do ano), soma os avos do ano da saída
+  // até dezembro e os do ano seguinte até a data projetada (Lei 4.090/1962; CLT, art. 487, §1º).
+  function avosDecimo(adm, fim, saida) {
+    var anoIni = new Date(saida == null ? fim : saida).getUTCFullYear(), anoFim = new Date(fim).getUTCFullYear(), avos = 0;
+    for (var ano = anoIni; ano <= anoFim; ano++) {
+      for (var m = 0; m < 12; m++) {
+        var ini = Math.max(Date.UTC(ano, m, 1), adm), fimMes = Math.min(Date.UTC(ano, m + 1, 0), fim);
+        if (fimMes >= ini && (fimMes - ini) / DIA + 1 >= 15) avos++;
+      }
     }
     return avos;
   }
@@ -96,8 +100,10 @@
       projetado = saida + diasAviso * DIA;
     }
     var justa = tipo === "justa";
-    var avos13 = justa ? 0 : avosDecimo(adm, projetado), avosF = justa ? 0 : avosFerias(adm, projetado);
-    var decimo = sal * avos13 / 12, vencidas = sal * (p.vencidas || 0) * 4 / 3, proporcionais = sal * avosF / 12 * 4 / 3;
+    var avos13 = justa ? 0 : avosDecimo(adm, projetado, saida), avosF = justa ? 0 : avosFerias(adm, projetado);
+    // Se o aviso projetado completa um novo período aquisitivo, ele entra como férias indenizadas inteiras.
+    var periodosExtra = justa ? 0 : anosCompletos(adm, projetado) - anos;
+    var decimo = sal * avos13 / 12, vencidas = sal * (p.vencidas || 0) * 4 / 3, proporcionais = sal * (avosF / 12 + periodosExtra) * 4 / 3;
     var saldo = dia * diasSaldo;
     var mult = tipo === "sem" ? 0.4 : tipo === "acordo" ? 0.2 : 0;
     var multa = mult && p.fgts > 0 ? (p.fgts + 0.08 * (saldo + aviso + decimo)) * mult : 0;
@@ -251,7 +257,7 @@
   // Dividir a conta: a taxa de serviço vale para tudo; os itens extras (bebidas, por exemplo) só para quem consumiu.
   // A conta é feita em centavos e a soma fecha exata: ninguém paga mais de 1 centavo acima da sua parte.
   function dividirConta(o) {
-    var pessoas = Math.max(1, Math.floor(o.pessoas || 1)), taxa = Math.max(0, o.taxa || 0) / 100;
+    var pessoas = Math.min(1000, Math.max(1, Math.floor(o.pessoas || 1))), taxa = Math.max(0, o.taxa || 0) / 100;
     var total = Math.max(0, o.total || 0), extra = Math.min(total, Math.max(0, o.extra || 0));
     var quem = extra > 0 ? Math.min(pessoas, Math.max(1, Math.floor(o.quemExtra || pessoas))) : 0;
     var totalCent = Math.round(total * (1 + taxa) * 100), extraCent = Math.round(extra * (1 + taxa) * 100);
@@ -293,13 +299,13 @@
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
-  var num = function (id) { var el = document.getElementById(id); return el ? Math.max(0, parseFloat(el.value) || 0) : 0; };
+  var num = function (id) { var el = document.getElementById(id); var v = el ? parseFloat(el.value) : 0; return isFinite(v) ? Math.min(1e12, Math.max(0, v)) : 0; };
   var linhas = function (itens) {
     return itens.map(function (x) { return '<div class="line' + (x[2] ? " total" : "") + '"><span>' + x[0] + "</span><b>" + brl(x[1]) + "</b></div>"; }).join("");
   };
   var telas = {
     decimo: function () {
-      var s = num("salario"), m = Math.min(12, Math.max(1, num("meses") || 12));
+      var s = num("salario"), m = Math.min(12, Math.max(1, Math.floor(num("meses")) || 12));
       if (!s) return null;
       var r = decimoTerceiro(s, m, num("media"), num("dependentes"));
       return linhas([["1ª parcela, sem descontos", r.primeira], ["2ª parcela, já com os descontos", r.segunda], ["INSS", r.inss], ["Imposto de Renda", r.irrf], ["Total líquido do 13º", r.liquido, 1]]);

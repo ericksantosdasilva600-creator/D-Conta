@@ -49,4 +49,10 @@ describe("cartão de crédito", () => {
     expect(invoiceDueDate("2026-11", card)).toBe("2026-11-10");
     expect(invoiceDueDate("2026-11", { closingDay: 25, dueDay: 5, limit: 0 })).toBe("2026-12-05");
   });
+
+  it("extrato ignora datas que não existem (não pode travar o app)", () => {
+    const rows = parseStatement("Data;Descrição;Valor\n31/02/2026;Compra X;-10,00\n11/25/2026;Compra Y;-20,00\n05/11/2026;Compra Z;-30,00");
+    expect(rows).toHaveLength(1);
+    expect(rows[0].date).toBe("2026-11-05");
+  });
 });

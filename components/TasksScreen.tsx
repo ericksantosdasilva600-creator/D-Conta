@@ -114,7 +114,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
       </View>
 
       <AppModal visible={formOpen} title={editing ? "Editar tarefa" : "Nova tarefa"} subtitle="Os detalhes ficam salvos neste aparelho." onClose={() => setFormOpen(false)} footer={<PrimaryButton title={editing ? "Salvar alterações" : "Criar tarefa"} onPress={saveTask} icon="check" />}>
-        <Field label="Título" value={draft.title} onChangeText={(value) => { patch("title", value); setError(""); }} placeholder="Ex.: Reservar alojamento" returnKeyType="next" error={error} />
+        <Field label="Título" value={draft.title} onChangeText={(value) => { patch("title", value); setError(""); }} placeholder="Ex.: Reservar hospedagem" returnKeyType="next" error={error} />
         <IconPicker text={draft.title} value={draft.icon ?? ""} onChange={(value) => patch("icon", value)} />
         <SoundPicker text={draft.title} value={draft.sound ?? ""} onChange={(value) => patch("sound", value)} />
         <Field label="Descrição (opcional)" value={draft.description} onChangeText={(value) => patch("description", value)} placeholder="Notas ou próximos passos" multiline />
