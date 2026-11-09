@@ -290,12 +290,30 @@
       desvalorizacaoMes: cents(depAno / 12), outrosMes: cents(mensais), totalMes: cents(mes), totalAno: cents(mes * 12),
       combustivelKm: Math.round(preco / consumo * 1000) / 1000, porKm: Math.round(mes / km * 1000) / 1000, cemKm: cents(mes / km * 100) };
   }
+  // Álcool ou gasolina: o etanol compensa quando o preço dele dividido pelo da gasolina fica abaixo do rendimento relativo.
+  // Sem o consumo do carro, usa a regra prática de 70% (o etanol rende cerca de 70% da gasolina).
+  function alcoolGasolina(o) {
+    var etanol = Math.max(0, o.etanol || 0), gasolina = Math.max(0, o.gasolina || 0);
+    if (!etanol || !gasolina) return null;
+    var cg = Math.max(0, o.consGasolina || 0), ce = Math.max(0, o.consEtanol || 0), doCarro = !!(cg && ce);
+    if (cg && !ce) ce = cg * 0.7;
+    var rend = doCarro ? ce / cg : 0.7, razao = etanol / gasolina;
+    var r4 = function (v) { return Math.round(v * 10000) / 10000; };
+    var melhor = r4(razao) < r4(rend) ? "etanol" : r4(razao) > r4(rend) ? "gasolina" : "empate";
+    var r = { razao: r4(razao), rendimento: r4(rend), doCarro: doCarro, limiteEtanol: cents(gasolina * rend), melhor: melhor };
+    if (cg) {
+      r.kmEtanol = Math.round(etanol / ce * 1000) / 1000; r.kmGasolina = Math.round(gasolina / cg * 1000) / 1000;
+      var km = Math.max(0, o.km || 0);
+      if (km) { r.mesEtanol = cents(km / ce * etanol); r.mesGasolina = cents(km / cg * gasolina); r.economiaMes = cents(Math.abs(r.mesEtanol - r.mesGasolina)); r.economiaAno = cents(r.economiaMes * 12); }
+    }
+    return r;
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -472,6 +490,27 @@
       "<h3>Quanto o carro custa por mês</h3>" + linhas(itens) +
       '<div class="line"><span>Custo por ano</span><b>' + brl(r.totalAno) + "</b></div>" +
       '<p class="note">É uma estimativa com os valores que você informou. O consumo real muda com o trânsito, a estrada e o jeito de dirigir.</p>';
+  };
+  telas.combustivel = function () {
+    var etanol = num("etanol"), gasolina = num("gasolina");
+    if (!etanol || !gasolina) return null;
+    var r = alcoolGasolina({ etanol: etanol, gasolina: gasolina, consEtanol: num("consEtanol"), consGasolina: num("consGasolina"), km: num("kmMes") });
+    var pct = function (v) { return (v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%"; };
+    var real = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 3 }); };
+    var titulo = r.melhor === "etanol" ? "Abasteça com etanol" : r.melhor === "gasolina" ? "Abasteça com gasolina" : "Tanto faz: os dois custam o mesmo por km";
+    var html = '<div class="line total"><span>' + titulo + "</span><b>" + pct(r.razao) + "</b></div>" +
+      '<p class="note">O etanol custa ' + pct(r.razao) + " do preço da gasolina. " + (r.doCarro ? "No seu carro, ele rende " + pct(r.rendimento) + " da gasolina." : "Pela regra dos 70%, ele compensa abaixo de 70%.") + "</p>" +
+      '<div class="line"><span>Preço máximo do etanol para compensar</span><b>' + brl(r.limiteEtanol) + "</b></div>";
+    if (r.kmEtanol) {
+      html += "<h3>Quanto custa cada km</h3>" +
+        '<div class="line"><span>Com etanol' + (r.doCarro ? "" : " (estimado)") + "</span><b>" + real(r.kmEtanol) + "</b></div>" +
+        '<div class="line"><span>Com gasolina</span><b>' + real(r.kmGasolina) + "</b></div>";
+      if (r.mesEtanol) {
+        html += "<h3>No mês</h3>" + linhas([["Gastando com etanol", r.mesEtanol], ["Gastando com gasolina", r.mesGasolina]]) +
+          (r.economiaMes ? linhas([["Economia escolhendo " + (r.melhor === "etanol" ? "o etanol" : "a gasolina") + ", por mês", r.economiaMes, 1], ["Em um ano", r.economiaAno]]) : "");
+      }
+    }
+    return html + '<p class="note">É uma estimativa. O rendimento real muda com o carro, o trânsito e o jeito de dirigir. Só use etanol se o carro for flex.</p>';
   };
   telas.cartao = function () {
     var fech = num("fechamento"), venc = num("vencimento");

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Álcool ou gasolina: qual compensa abastecer? | Dá Conta</title>
+<meta name="description" content="Calcule grátis se vale abastecer com etanol ou gasolina: regra dos 70%, consumo do seu carro e quanto você economiza no mês. Sem cadastro.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alcool-ou-gasolina.html">
+<meta property="og:title" content="Álcool ou gasolina: qual compensa abastecer? | Dá Conta">
+<meta property="og:description" content="Calcule grátis se vale abastecer com etanol ou gasolina: regra dos 70%, consumo do seu carro e quanto você economiza no mês. Sem cadastro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alcool-ou-gasolina.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Álcool ou gasolina: qual compensa", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alcool-ou-gasolina.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Como saber se o etanol compensa?", "acceptedAnswer": {"@type": "Answer", "text": "Divida o preço do litro do etanol pelo da gasolina. Se o resultado for menor que 0,70 (70%), o etanol costuma compensar. Com etanol a R$ 4,20 e gasolina a R$ 6,30, a conta dá 0,67: vale abastecer com etanol."}}, {"@type": "Question", "name": "De onde vem a regra dos 70%?", "acceptedAnswer": {"@type": "Answer", "text": "O etanol tem menos energia por litro, então o carro faz menos km com ele. Em média, rende perto de 70% do que rende com gasolina. Por isso ele só vale a pena quando custa menos de 70% do preço da gasolina."}}, {"@type": "Question", "name": "A regra dos 70% vale para todo carro?", "acceptedAnswer": {"@type": "Answer", "text": "Não exatamente. Alguns carros rendem um pouco mais ou um pouco menos com etanol. Se você sabe o consumo do seu carro com cada combustível, coloque nos campos opcionais e a conta usa os números dele."}}, {"@type": "Question", "name": "Posso abastecer qualquer carro com etanol?", "acceptedAnswer": {"@type": "Answer", "text": "Não. Só carros flex ou feitos para etanol. Em carro só a gasolina, o etanol pode causar problemas no motor. Na dúvida, veja o manual ou a tampa do tanque."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Álcool ou gasolina: qual compensa?</h1>
+<p class="lead">Coloque o preço do litro de cada um no posto e veja na hora qual sai mais barato. Se souber o consumo do seu carro, a conta fica ainda mais certa.</p>
+<form class="calc" data-calc="combustivel">
+<label for="etanol">Preço do litro do etanol (R$)<input id="etanol" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 4,20"></label>
+<label for="gasolina">Preço do litro da gasolina (R$)<input id="gasolina" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 6,30"></label>
+<details class="mais"><summary>Usar o consumo do meu carro</summary>
+<label for="consGasolina">Consumo com gasolina (km por litro)<small>Quantos km o carro faz com 1 litro de gasolina.</small><input id="consGasolina" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 12"></label>
+<label for="consEtanol">Consumo com etanol (km por litro)<small>Se deixar em branco, a conta estima 70% do consumo com gasolina.</small><input id="consEtanol" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 8,5"></label>
+<label for="kmMes">Quantos km você roda por mês<small>Opcional. Mostra quanto você economiza no mês.</small><input id="kmMes" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1000"></label>
+</details>
+<button type="submit">Ver qual compensa</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Descobri%20se%20vale%20mais%20abastecer%20com%20etanol%20ou%20gasolina%2C%20faz%20a%20conta%20aqui%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alcool-ou-gasolina.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Anotar o combustível no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como fazer a conta no posto</h2>
+<p>Divida o preço do etanol pelo preço da gasolina. Se der menos de 0,70, abasteça com etanol. Se der mais, a gasolina sai mais barata por km. Exemplo: etanol a R$ 4,20 e gasolina a R$ 6,30 dá 0,67, então o etanol compensa. Com etanol a R$ 4,60 e gasolina a R$ 6,20, dá 0,74 e a gasolina compensa.</p>
+<h2>Por que 70%?</h2>
+<p>Um litro de etanol leva o carro menos longe que um litro de gasolina. Em média, ele rende perto de 70% da gasolina. Então o etanol só é vantagem quando o preço dele também fica abaixo de 70% do preço da gasolina. É uma regra prática: cada carro tem o seu número, e você pode usar o do seu nos campos opcionais.</p>
+<h2>Descubra o consumo do seu carro</h2>
+<p>Encha o tanque e zere o hodômetro parcial. Na próxima vez, encha de novo e divida os km rodados pelos litros que couberam. Faça isso uma vez com cada combustível e você terá a sua própria regra. Para saber o custo total do carro, com IPVA, seguro e manutenção, use a calculadora de <a href="custo-por-km.html">custo por km</a>.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Como saber se o etanol compensa?</h3>
+<p>Divida o preço do litro do etanol pelo da gasolina. Se o resultado for menor que 0,70 (70%), o etanol costuma compensar. Com etanol a R$ 4,20 e gasolina a R$ 6,30, a conta dá 0,67: vale abastecer com etanol.</p>
+<h3>De onde vem a regra dos 70%?</h3>
+<p>O etanol tem menos energia por litro, então o carro faz menos km com ele. Em média, rende perto de 70% do que rende com gasolina. Por isso ele só vale a pena quando custa menos de 70% do preço da gasolina.</p>
+<h3>A regra dos 70% vale para todo carro?</h3>
+<p>Não exatamente. Alguns carros rendem um pouco mais ou um pouco menos com etanol. Se você sabe o consumo do seu carro com cada combustível, coloque nos campos opcionais e a conta usa os números dele.</p>
+<h3>Posso abastecer qualquer carro com etanol?</h3>
+<p>Não. Só carros flex ou feitos para etanol. Em carro só a gasolina, o etanol pode causar problemas no motor. Na dúvida, veja o manual ou a tampa do tanque.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="custo-por-km.html">Custo por km do carro</a><a href="dividir-conta.html">Dividir a conta entre amigos</a><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>

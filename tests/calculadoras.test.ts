@@ -226,4 +226,15 @@ describe("calculadoras 2026", () => {
   it("dividir a conta limita o número de pessoas", () => {
     expect(C.dividirConta({ total: 1000, pessoas: 1e8 }).pessoas).toBe(1000);
   });
+  it("compara álcool e gasolina pela regra dos 70% e pelo consumo do carro", () => {
+    expect(C.alcoolGasolina({ etanol: 4.2, gasolina: 6.3 })).toMatchObject({ razao: 0.6667, rendimento: 0.7, doCarro: false, limiteEtanol: 4.41, melhor: "etanol" });
+    expect(C.alcoolGasolina({ etanol: 4.6, gasolina: 6.2 })).toMatchObject({ razao: 0.7419, limiteEtanol: 4.34, melhor: "gasolina" });
+    expect(C.alcoolGasolina({ etanol: 4.2, gasolina: 6 }).melhor).toBe("empate");
+    const carro = C.alcoolGasolina({ etanol: 4.2, gasolina: 6.3, consGasolina: 12, consEtanol: 8.5, km: 1000 });
+    expect(carro).toMatchObject({ doCarro: true, rendimento: 0.7083, kmEtanol: 0.494, kmGasolina: 0.525, mesEtanol: 494.12, mesGasolina: 525, economiaMes: 30.88, economiaAno: 370.56, melhor: "etanol" });
+    const est = C.alcoolGasolina({ etanol: 4.6, gasolina: 6.2, consGasolina: 12 });
+    expect(est).toMatchObject({ doCarro: false, kmEtanol: 0.548, kmGasolina: 0.517, melhor: "gasolina" });
+    expect(est.mesEtanol).toBeUndefined();
+    expect(C.alcoolGasolina({ etanol: 0, gasolina: 6 })).toBeNull();
+  });
 });
