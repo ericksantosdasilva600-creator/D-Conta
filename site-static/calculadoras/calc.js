@@ -308,12 +308,44 @@
     }
     return r;
   }
+  // Alugar ou financiar: compara o patrimônio no fim do prazo do financiamento.
+  // Quem paga menos por mês investe a diferença, para os dois lados gastarem o mesmo. Quem aluga investe a entrada e os custos da compra.
+  // Taxas anuais viram mensais por juros compostos. O aluguel é reajustado a cada 12 meses. Não inclui seguros nem taxas do banco.
+  function alugarFinanciar(o) {
+    var valor = Math.max(0, o.valor || 0), entrada = Math.max(0, o.entrada || 0), aluguel = Math.max(0, o.aluguel || 0);
+    var n = Math.round(Math.max(0, o.anos || 0) * 12);
+    if (!valor || !aluguel || !n || entrada >= valor) return null;
+    var mensal = function (a) { return Math.pow(1 + Math.max(-0.99, a || 0) / 100, 1 / 12) - 1; };
+    var i = mensal(o.jurosAno), r = mensal(o.rendAno), reaj = Math.max(-99, o.reajAno || 0) / 100, custos = Math.max(0, o.custos || 0);
+    var financiado = valor - entrada, price = o.sistema === "price";
+    var pmt = i > 0 ? financiado * i / (1 - Math.pow(1 + i, -n)) : financiado / n, amort = financiado / n;
+    var saldo = financiado, invCompra = 0, invAluga = entrada + custos, totalParcelas = 0, totalAluguel = 0, primeira = 0, ultima = 0, aluguelFinal = 0;
+    for (var k = 1; k <= n; k++) {
+      var juros = saldo * i, parcela = price ? pmt : amort + juros;
+      saldo = Math.max(0, saldo - (parcela - juros));
+      var alug = aluguel * Math.pow(1 + reaj, Math.floor((k - 1) / 12));
+      invCompra *= 1 + r; invAluga *= 1 + r;
+      if (parcela > alug) invAluga += parcela - alug; else invCompra += alug - parcela;
+      totalParcelas += parcela; totalAluguel += alug;
+      if (k === 1) primeira = parcela;
+      ultima = parcela; aluguelFinal = alug;
+    }
+    var imovelFinal = valor * Math.pow(1 + Math.max(-99, o.valAno || 0) / 100, n / 12);
+    var patCompra = cents(imovelFinal + invCompra), patAluga = cents(invAluga);
+    return {
+      meses: n, financiado: cents(financiado), primeiraParcela: cents(primeira), ultimaParcela: cents(ultima),
+      totalParcelas: cents(totalParcelas), totalJuros: cents(totalParcelas - financiado), totalAluguel: cents(totalAluguel), aluguelFinal: cents(aluguelFinal),
+      imovelFinal: cents(imovelFinal), investidoCompra: cents(invCompra), patrimonioFinanciar: patCompra, patrimonioAlugar: patAluga,
+      diferenca: cents(Math.abs(patCompra - patAluga)), melhor: patCompra > patAluga ? "financiar" : patCompra < patAluga ? "alugar" : "empate",
+      aluguelAno: Math.round(aluguel * 12 / valor * 10000) / 100
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -490,6 +522,20 @@
       "<h3>Quanto o carro custa por mês</h3>" + linhas(itens) +
       '<div class="line"><span>Custo por ano</span><b>' + brl(r.totalAno) + "</b></div>" +
       '<p class="note">É uma estimativa com os valores que você informou. O consumo real muda com o trânsito, a estrada e o jeito de dirigir.</p>';
+  };
+  telas.imovel = function () {
+    var opt = function (id, d) { var el = document.getElementById(id); var v = el && el.value !== "" ? parseFloat(el.value) : NaN; return isFinite(v) ? Math.min(1000, Math.max(0, v)) : d; };
+    var sistema = document.getElementById("sistema");
+    var r = alugarFinanciar({ valor: num("valor"), entrada: num("entrada"), aluguel: num("aluguel"), jurosAno: Math.min(1000, num("juros")), anos: Math.min(50, num("anos")),
+      sistema: sistema ? sistema.value : "sac", custos: num("custos"), rendAno: opt("rendimento", 7), valAno: opt("valorizacao", 4), reajAno: opt("reajuste", 4) });
+    if (!r) return null;
+    var titulo = r.melhor === "financiar" ? "Financiar deixa você com mais patrimônio" : r.melhor === "alugar" ? "Alugar e investir deixa você com mais patrimônio" : "Empate: os dois caminhos dão no mesmo";
+    var anos = (r.meses / 12).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+    return '<div class="line total"><span>' + titulo + "</span><b>" + brl(r.diferenca) + "</b></div>" +
+      '<p class="note">Diferença de patrimônio depois de ' + anos + " anos, se quem paga menos por mês investir a diferença.</p>" +
+      "<h3>Financiando</h3>" + linhas([["Valor financiado", r.financiado], ["Primeira parcela", r.primeiraParcela], ["Última parcela", r.ultimaParcela], ["Total pago em parcelas", r.totalParcelas], ["Só de juros", r.totalJuros], ["Imóvel valorizado no fim", r.imovelFinal], ["Dinheiro investido no fim", r.investidoCompra], ["Patrimônio no fim", r.patrimonioFinanciar, 1]]) +
+      "<h3>Alugando e investindo</h3>" + linhas([["Total pago de aluguel", r.totalAluguel], ["Aluguel no último ano", r.aluguelFinal], ["Patrimônio no fim", r.patrimonioAlugar, 1]]) +
+      '<p class="note">O aluguel equivale a ' + r.aluguelAno.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "% do valor do imóvel por ano. É uma estimativa: não inclui seguros obrigatórios do financiamento, taxas do banco, condomínio, IPTU nem manutenção. Valorização, rendimento e reajuste mudam com o tempo. Antes de assinar, peça a simulação oficial ao banco com o CET.</p>";
   };
   telas.combustivel = function () {
     var etanol = num("etanol"), gasolina = num("gasolina");

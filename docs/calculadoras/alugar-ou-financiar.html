@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alugar ou financiar imóvel: qual compensa? | Dá Conta</title>
+<meta name="description" content="Compare grátis alugar e investir com financiar um imóvel: parcelas SAC ou Price, juros totais e patrimônio no fim do prazo. Sem cadastro.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alugar-ou-financiar.html">
+<meta property="og:title" content="Alugar ou financiar imóvel: qual compensa? | Dá Conta">
+<meta property="og:description" content="Compare grátis alugar e investir com financiar um imóvel: parcelas SAC ou Price, juros totais e patrimônio no fim do prazo. Sem cadastro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alugar-ou-financiar.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Alugar ou financiar imóvel", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alugar-ou-financiar.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "O que é melhor: alugar ou financiar?", "acceptedAnswer": {"@type": "Answer", "text": "Depende dos números. Financiar faz sentido quando o aluguel é caro perto do valor do imóvel e os juros do financiamento são baixos. Alugar e investir tende a ganhar quando o aluguel é barato e o dinheiro rende bem. A calculadora compara o patrimônio dos dois caminhos no fim do prazo."}}, {"@type": "Question", "name": "Qual a diferença entre SAC e Price?", "acceptedAnswer": {"@type": "Answer", "text": "No SAC você paga sempre a mesma parte da dívida, então a parcela começa mais alta e vai caindo. Na Price a parcela é igual do começo ao fim, mas você paga mais juros no total, porque a dívida cai mais devagar no início."}}, {"@type": "Question", "name": "Por que a conta investe a diferença?", "acceptedAnswer": {"@type": "Answer", "text": "Para comparar de forma justa. Se a parcela é maior que o aluguel, quem aluga guarda a diferença todo mês. Se o aluguel fica maior, quem financiou guarda a diferença. Assim os dois gastam o mesmo por mês."}}, {"@type": "Question", "name": "O resultado é a parcela que o banco vai cobrar?", "acceptedAnswer": {"@type": "Answer", "text": "Não. É uma estimativa. O banco soma seguros obrigatórios e taxas, que entram no Custo Efetivo Total (CET). Peça sempre a simulação oficial antes de fechar."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Alugar ou financiar: qual compensa?</h1>
+<p class="lead">Coloque o valor do imóvel, o aluguel e as condições do financiamento. A conta mostra as parcelas, quanto vai de juros e com quanto de patrimônio você termina em cada caminho.</p>
+<form class="calc" data-calc="imovel">
+<label for="valor">Valor do imóvel (R$)<input id="valor" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 400000"></label>
+<label for="aluguel">Aluguel de um imóvel parecido, por mês (R$)<input id="aluguel" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1600"></label>
+<label for="entrada">Entrada (R$)<small>O dinheiro que você daria na compra.</small><input id="entrada" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 80000"></label>
+<label for="juros">Juros do financiamento (% ao ano)<small>Use a taxa da simulação do banco.</small><input id="juros" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 11"></label>
+<label for="anos">Prazo do financiamento (anos)<input id="anos" type="number" inputmode="decimal" min="0" max="50" step="any" placeholder="Ex.: 30"></label>
+<label for="sistema">Tipo de parcela<select id="sistema"><option value="sac" selected>SAC (começa alta e cai)</option><option value="price">Price (parcela igual)</option></select></label>
+<details class="mais"><summary>Ajustar as outras premissas</summary>
+<label for="custos">Custos da compra (R$)<small>ITBI, cartório e registro. Varia por cidade. Deixe em branco se não souber.</small><input id="custos" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 16000"></label>
+<label for="rendimento">Quanto o dinheiro investido rende (% ao ano, já sem imposto)<small>Se deixar em branco, usamos 7%.</small><input id="rendimento" type="number" inputmode="decimal" min="0" step="any" placeholder="7"></label>
+<label for="valorizacao">Valorização do imóvel (% ao ano)<small>Se deixar em branco, usamos 4%.</small><input id="valorizacao" type="number" inputmode="decimal" min="0" step="any" placeholder="4"></label>
+<label for="reajuste">Reajuste do aluguel (% ao ano)<small>Se deixar em branco, usamos 4%.</small><input id="reajuste" type="number" inputmode="decimal" min="0" step="any" placeholder="4"></label>
+</details>
+<button type="submit">Comparar</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Fiz%20a%20conta%20de%20alugar%20ou%20financiar%20um%20im%C3%B3vel%2C%20faz%20a%20sua%20aqui%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/alugar-ou-financiar.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Organizar meus gastos no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como a comparação funciona</h2>
+<p>A conta olha os dois caminhos durante todo o prazo do financiamento. Quem compra paga a entrada, os custos da compra e as parcelas, e no fim tem o imóvel valorizado. Quem aluga investe a entrada e os custos que não gastou e paga o aluguel. Todo mês, quem gasta menos investe a diferença. No fim, a calculadora compara o patrimônio de cada um.</p>
+<h2>Uma regra rápida</h2>
+<p>Veja quanto o aluguel de um ano representa do valor do imóvel. Exemplo: aluguel de R$ 1.600 num imóvel de R$ 400.000 dá R$ 19.200 por ano, ou 4,8%. Se o seu dinheiro investido rende mais que isso e os juros do financiamento são altos, alugar costuma ganhar. Se o aluguel é caro perto do valor do imóvel, comprar tende a compensar.</p>
+<h2>O que a conta não mostra</h2>
+<p>Comprar dá segurança de não precisar mudar e liberdade para reformar. Alugar dá liberdade para mudar de bairro ou de cidade. Esses pontos não cabem em número, mas pesam na decisão. Também não estão na conta os seguros do financiamento, as taxas do banco, o condomínio, o IPTU e a manutenção.</p>
+<h2>Perguntas frequentes</h2>
+<h3>O que é melhor: alugar ou financiar?</h3>
+<p>Depende dos números. Financiar faz sentido quando o aluguel é caro perto do valor do imóvel e os juros do financiamento são baixos. Alugar e investir tende a ganhar quando o aluguel é barato e o dinheiro rende bem. A calculadora compara o patrimônio dos dois caminhos no fim do prazo.</p>
+<h3>Qual a diferença entre SAC e Price?</h3>
+<p>No SAC você paga sempre a mesma parte da dívida, então a parcela começa mais alta e vai caindo. Na Price a parcela é igual do começo ao fim, mas você paga mais juros no total, porque a dívida cai mais devagar no início.</p>
+<h3>Por que a conta investe a diferença?</h3>
+<p>Para comparar de forma justa. Se a parcela é maior que o aluguel, quem aluga guarda a diferença todo mês. Se o aluguel fica maior, quem financiou guarda a diferença. Assim os dois gastam o mesmo por mês.</p>
+<h3>O resultado é a parcela que o banco vai cobrar?</h3>
+<p>Não. É uma estimativa. O banco soma seguros obrigatórios e taxas, que entram no Custo Efetivo Total (CET). Peça sempre a simulação oficial antes de fechar.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="alcool-ou-gasolina.html">Álcool ou gasolina</a><a href="custo-por-km.html">Custo por km do carro</a><a href="dividir-conta.html">Dividir a conta entre amigos</a><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>

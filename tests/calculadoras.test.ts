@@ -226,6 +226,15 @@ describe("calculadoras 2026", () => {
   it("dividir a conta limita o número de pessoas", () => {
     expect(C.dividirConta({ total: 1000, pessoas: 1e8 }).pessoas).toBe(1000);
   });
+  it("compara alugar e financiar um imóvel pelo patrimônio no fim do prazo", () => {
+    const base = { valor: 400000, entrada: 80000, aluguel: 2000, jurosAno: 11, anos: 30, rendAno: 7, valAno: 4, reajAno: 4 };
+    expect(C.alugarFinanciar({ ...base, sistema: "sac" })).toMatchObject({ meses: 360, financiado: 320000, primeiraParcela: 3683.96, ultimaParcela: 896.65, totalParcelas: 824510.14, totalJuros: 504510.14, totalAluguel: 1346038.51, aluguelFinal: 6237.3, imovelFinal: 1297359, patrimonioFinanciar: 2320671.13, patrimonioAlugar: 1223144.32, melhor: "financiar", aluguelAno: 6 });
+    expect(C.alugarFinanciar({ ...base, sistema: "price" })).toMatchObject({ primeiraParcela: 2922.74, ultimaParcela: 2922.74, totalParcelas: 1052187.73, patrimonioFinanciar: 1864699.36, patrimonioAlugar: 988480.7 });
+    expect(C.alugarFinanciar({ valor: 120000, entrada: 0, aluguel: 1000, jurosAno: 0, anos: 1, sistema: "price" })).toMatchObject({ primeiraParcela: 10000, totalJuros: 0, totalAluguel: 12000, patrimonioFinanciar: 120000, patrimonioAlugar: 108000, diferenca: 12000, melhor: "financiar" });
+    expect(C.alugarFinanciar({ valor: 300000, entrada: 60000, aluguel: 800, jurosAno: 12, anos: 30, rendAno: 10, valAno: 0, reajAno: 0, custos: 15000 }).melhor).toBe("alugar");
+    expect(C.alugarFinanciar({ valor: 100, entrada: 100, aluguel: 1, anos: 1 })).toBeNull();
+    expect(C.alugarFinanciar({ valor: 100, aluguel: 0, anos: 1 })).toBeNull();
+  });
   it("compara álcool e gasolina pela regra dos 70% e pelo consumo do carro", () => {
     expect(C.alcoolGasolina({ etanol: 4.2, gasolina: 6.3 })).toMatchObject({ razao: 0.6667, rendimento: 0.7, doCarro: false, limiteEtanol: 4.41, melhor: "etanol" });
     expect(C.alcoolGasolina({ etanol: 4.6, gasolina: 6.2 })).toMatchObject({ razao: 0.7419, limiteEtanol: 4.34, melhor: "gasolina" });
