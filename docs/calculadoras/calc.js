@@ -341,12 +341,35 @@
       aluguelAno: Math.round(aluguel * 12 / valor * 10000) / 100
     };
   }
+  // Quanto cobrar por hora como autônomo: o que a pessoa quer ganhar no ano mais os custos, dividido pelas horas que dá para cobrar.
+  // 13º e férias opcionais: soma 1 mês (13º) e 1/3 de mês (adicional de férias); as semanas de folga já cobrem o mês de descanso.
+  // Imposto informado pela pessoa, como % do que ela recebe. Margem extra opcional sobre o valor final.
+  function valorHora(o) {
+    var ganho = Math.max(0, o.ganho || 0);
+    if (!ganho) return null;
+    var custos = Math.max(0, o.custos || 0);
+    var horasDia = Math.min(24, Math.max(0, o.horasDia || 0)), dias = Math.min(7, Math.max(0, o.diasSemana || 0));
+    var folga = Math.min(51, Math.max(0, o.semanasFolga || 0)), parado = Math.min(90, Math.max(0, o.naoCobrado || 0)) / 100;
+    var imposto = Math.min(90, Math.max(0, o.imposto || 0)) / 100, margem = Math.min(500, Math.max(0, o.margem || 0)) / 100;
+    var horasAno = horasDia * dias * (52 - folga) * (1 - parado);
+    if (!(horasAno > 0)) return null;
+    var extras = o.extras ? ganho * (1 + 1 / 3) : 0;
+    var paraVoce = ganho * 12 + extras, custosAno = custos * 12;
+    var semImposto = (paraVoce + custosAno) * (1 + margem);
+    var bruto = semImposto / (1 - imposto);
+    var hora = bruto / horasAno;
+    return {
+      hora: cents(hora), dia: cents(hora * horasDia), faturarMes: cents(bruto / 12), faturarAno: cents(bruto),
+      horasMes: Math.round(horasAno / 12 * 10) / 10, horasAno: Math.round(horasAno),
+      horaVoce: cents(paraVoce / horasAno), horaCustos: cents(custosAno / horasAno), horaMargem: cents((semImposto - paraVoce - custosAno) / horasAno), horaImposto: cents((bruto - semImposto) / horasAno)
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -523,6 +546,22 @@
       "<h3>Quanto o carro custa por mês</h3>" + linhas(itens) +
       '<div class="line"><span>Custo por ano</span><b>' + brl(r.totalAno) + "</b></div>" +
       '<p class="note">É uma estimativa com os valores que você informou. O consumo real muda com o trânsito, a estrada e o jeito de dirigir.</p>';
+  };
+  telas.hora = function () {
+    var opt = function (id, d) { var el = document.getElementById(id); var v = el && el.value !== "" ? parseFloat(el.value) : NaN; return isFinite(v) ? Math.max(0, v) : d; };
+    var ex = document.getElementById("extras");
+    var r = valorHora({ ganho: num("ganho"), custos: num("custos"), horasDia: opt("horasDia", 8), diasSemana: opt("diasSemana", 5), semanasFolga: opt("folga", 4),
+      naoCobrado: opt("naoCobrado", 25), imposto: num("imposto"), margem: num("margem"), extras: ex ? ex.checked : true });
+    if (!r) return null;
+    var h = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 1 }); };
+    var partes = [["Para você", r.horaVoce], ["Custos do trabalho", r.horaCustos]];
+    if (r.horaMargem) partes.push(["Margem de segurança", r.horaMargem]);
+    if (r.horaImposto) partes.push(["Impostos", r.horaImposto]);
+    return '<div class="line total"><span>Cobre no mínimo por hora</span><b>' + brl(r.hora) + "</b></div>" +
+      linhas([["Valor de um dia de trabalho", r.dia], ["Quanto faturar por mês", r.faturarMes], ["Quanto faturar por ano", r.faturarAno]]) +
+      '<p class="note">Isso considera cerca de ' + h(r.horasMes) + " horas cobradas por mês (" + h(r.horasAno) + " no ano). O resto do tempo vai para folgas e tarefas que ninguém paga.</p>" +
+      "<h3>Para onde vai cada hora cobrada</h3>" + linhas(partes) +
+      '<p class="note">É uma estimativa com os números que você informou. Ela mostra o mínimo para fechar a sua conta, não o preço do mercado: pesquise quanto outros profissionais da sua área cobram. O imposto muda conforme o regime (MEI, Simples, autônomo): confirme com um contador.</p>';
   };
   telas.imovel = function () {
     var opt = function (id, d) { var el = document.getElementById(id); var v = el && el.value !== "" ? parseFloat(el.value) : NaN; return isFinite(v) ? Math.min(1000, Math.max(0, v)) : d; };

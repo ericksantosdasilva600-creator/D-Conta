@@ -228,6 +228,14 @@ describe("calculadoras 2026", () => {
   it("dividir a conta limita o número de pessoas", () => {
     expect(C.dividirConta({ total: 1000, pessoas: 1e8 }).pessoas).toBe(1000);
   });
+  it("calcula quanto cobrar por hora como autônomo", () => {
+    expect(C.valorHora({ ganho: 4000, custos: 500, horasDia: 8, diasSemana: 5, semanasFolga: 4, naoCobrado: 25, imposto: 6, extras: true })).toMatchObject({ hora: 43.83, dia: 350.67, faturarMes: 5260.05, faturarAno: 63120.57, horasMes: 120, horasAno: 1440, horaVoce: 37.04, horaCustos: 4.17, horaMargem: 0, horaImposto: 2.63 });
+    expect(C.valorHora({ ganho: 3000, horasDia: 6, diasSemana: 5, semanasFolga: 2, naoCobrado: 0 })).toMatchObject({ hora: 24, faturarMes: 3000, horasAno: 1500 });
+    expect(C.valorHora({ ganho: 3000, horasDia: 8, diasSemana: 5, semanasFolga: 4, naoCobrado: 25, margem: 10, imposto: 10 })).toMatchObject({ hora: 30.56, faturarAno: 44000, horaVoce: 25, horaMargem: 2.5, horaImposto: 3.06 });
+    expect(C.valorHora({ ganho: 0, horasDia: 8, diasSemana: 5 })).toBeNull();
+    expect(C.valorHora({ ganho: 100, horasDia: 0, diasSemana: 5 })).toBeNull();
+    expect(C.valorHora({ ganho: 100, horasDia: 8, diasSemana: 5, imposto: 500 }).hora).toBeLessThan(Infinity);
+  });
   it("compara alugar e financiar um imóvel pelo patrimônio no fim do prazo", () => {
     const base = { valor: 400000, entrada: 80000, aluguel: 2000, jurosAno: 11, anos: 30, rendAno: 7, valAno: 4, reajAno: 4 };
     expect(C.alugarFinanciar({ ...base, sistema: "sac" })).toMatchObject({ meses: 360, financiado: 320000, primeiraParcela: 3683.96, ultimaParcela: 896.65, totalParcelas: 824510.14, totalJuros: 504510.14, totalAluguel: 1346038.51, aluguelFinal: 6237.3, imovelFinal: 1297359, patrimonioFinanciar: 2320671.13, patrimonioAlugar: 1223144.32, melhor: "financiar", aluguelAno: 6 });

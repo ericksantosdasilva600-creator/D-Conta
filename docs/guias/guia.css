@@ -29,6 +29,8 @@ ol li, ul li { margin-bottom:8px; }
 .calc label { display:grid; gap:6px; font-weight:700; font-size:16px; }
 .calc small { font-weight:400; color:var(--muted); font-size:15px; }
 .calc input, .calc select { font:inherit; color:var(--ink); background:var(--paper); border:1.5px solid var(--line); border-radius:12px; min-height:52px; padding:0 14px; width:100%; }
+.calc label.check { display:flex; align-items:center; gap:10px; font-weight:400; }
+.calc label.check input { width:22px; min-height:22px; height:22px; padding:0; accent-color:var(--green); flex:none; }
 .calc button { font:700 18px var(--body); border:0; border-radius:15px; min-height:54px; background:var(--green); color:#fff; cursor:pointer; }
 .calc button:hover { background:#136852; }
 #resultado { background:var(--mint); border-radius:22px; padding:12px 22px; margin:0 0 20px; }
