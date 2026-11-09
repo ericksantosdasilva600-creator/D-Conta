@@ -270,12 +270,26 @@
     return { conta: total, taxa: cents((totalCent - Math.round(total * 100)) / 100), total: totalCent / 100, pessoas: pessoas, quemExtra: quem,
       media: cents(totalCent / pessoas / 100), grupos: grupos, soma: soma / 100 };
   }
+  // Custo por km do carro: combustível pelo consumo, mais os gastos fixos do ano e do mês divididos pelos km rodados.
+  // A desvalorização só entra se a pessoa informar o valor do carro e a porcentagem.
+  function custoKm(o) {
+    var km = Math.max(0, o.km || 0), consumo = Math.max(0, o.consumo || 0), preco = Math.max(0, o.preco || 0);
+    if (!km || !consumo) return null;
+    var litros = km / consumo, combustivel = litros * preco;
+    var depAno = Math.max(0, o.valorCarro || 0) * Math.min(100, Math.max(0, o.desvalorizacao || 0)) / 100;
+    var anuais = Math.max(0, o.anuais || 0), manutencao = Math.max(0, o.manutencao || 0), mensais = Math.max(0, o.mensais || 0);
+    var fixos = anuais / 12 + manutencao / 12 + depAno / 12 + mensais;
+    var mes = combustivel + fixos;
+    return { litros: Math.round(litros * 10) / 10, combustivelMes: cents(combustivel), documentosMes: cents(anuais / 12), manutencaoMes: cents(manutencao / 12),
+      desvalorizacaoMes: cents(depAno / 12), outrosMes: cents(mensais), totalMes: cents(mes), totalAno: cents(mes * 12),
+      combustivelKm: Math.round(preco / consumo * 1000) / 1000, porKm: Math.round(mes / km * 1000) / 1000, cemKm: cents(mes / km * 100) };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -434,6 +448,24 @@
     return linhas([["Valor da conta", r.conta], ["Taxa de serviço (" + pct(taxa) + "%)", r.taxa], ["Total a pagar", r.total, 1]]) +
       "<h3>Quanto cada um paga</h3>" + partes + centavos +
       '<p class="note">A taxa de serviço foi dividida na mesma proporção do que cada um consumiu. Confira o total com o valor impresso na conta antes de pagar.</p>';
+  };
+  telas.km = function () {
+    var km = num("km"), consumo = num("consumo"), preco = num("preco");
+    if (!km || !consumo || !preco) return null;
+    var r = custoKm({ km: km, consumo: consumo, preco: preco, anuais: num("anuais"), manutencao: num("manutencao"), mensais: num("mensais"), valorCarro: num("valorCarro"), desvalorizacao: num("desvalorizacao") });
+    var real = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 3 }); };
+    var itens = [["Combustível (" + r.litros.toLocaleString("pt-BR") + " litros)", r.combustivelMes]];
+    if (r.documentosMes) itens.push(["IPVA, seguro e licenciamento", r.documentosMes]);
+    if (r.manutencaoMes) itens.push(["Manutenção", r.manutencaoMes]);
+    if (r.desvalorizacaoMes) itens.push(["Desvalorização do carro", r.desvalorizacaoMes]);
+    if (r.outrosMes) itens.push(["Estacionamento, pedágio e outros", r.outrosMes]);
+    itens.push(["Custo total por mês", r.totalMes, 1]);
+    return '<div class="line total"><span>Custo por km</span><b>' + real(r.porKm) + "</b></div>" +
+      '<div class="line"><span>Só o combustível, por km</span><b>' + real(r.combustivelKm) + "</b></div>" +
+      '<div class="line"><span>Cada 100 km rodados</span><b>' + brl(r.cemKm) + "</b></div>" +
+      "<h3>Quanto o carro custa por mês</h3>" + linhas(itens) +
+      '<div class="line"><span>Custo por ano</span><b>' + brl(r.totalAno) + "</b></div>" +
+      '<p class="note">É uma estimativa com os valores que você informou. O consumo real muda com o trânsito, a estrada e o jeito de dirigir.</p>';
   };
   telas.cartao = function () {
     var fech = num("fechamento"), venc = num("vencimento");

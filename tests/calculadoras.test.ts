@@ -203,4 +203,14 @@ describe("calculadoras 2026", () => {
     expect(q.soma).toBe(112.99);
     expect(q.grupos).toEqual([{ extra: true, valor: 23.32, qtd: 2 }, { extra: true, valor: 23.31, qtd: 1 }, { extra: false, valor: 10.76, qtd: 4 }]);
   });
+  it("calcula o custo por km do carro com combustível e gastos fixos", () => {
+    const so = C.custoKm({ km: 1000, consumo: 12, preco: 6.2 });
+    expect(so).toMatchObject({ litros: 83.3, combustivelMes: 516.67, totalMes: 516.67, combustivelKm: 0.517, porKm: 0.517, cemKm: 51.67 });
+    const r = C.custoKm({ km: 1000, consumo: 12, preco: 6.2, anuais: 3000, manutencao: 1800, mensais: 100 });
+    expect(r).toMatchObject({ documentosMes: 250, manutencaoMes: 150, outrosMes: 100, desvalorizacaoMes: 0, totalMes: 1016.67, totalAno: 12200, porKm: 1.017, cemKm: 101.67 });
+    const d = C.custoKm({ km: 500, consumo: 10, preco: 5, valorCarro: 60000, desvalorizacao: 10 });
+    expect(d).toMatchObject({ combustivelMes: 250, desvalorizacaoMes: 500, totalMes: 750, porKm: 1.5 });
+    expect(C.custoKm({ km: 0, consumo: 12, preco: 6 })).toBeNull();
+    expect(C.custoKm({ km: 100, consumo: 0, preco: 6 })).toBeNull();
+  });
 });

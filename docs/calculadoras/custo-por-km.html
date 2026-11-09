@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custo por km do carro: quanto custa rodar por mês | Dá Conta</title>
+<meta name="description" content="Calcule grátis quanto seu carro custa por km e por mês: combustível, IPVA, seguro, manutenção e desvalorização. Sem cadastro.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/custo-por-km.html">
+<meta property="og:title" content="Custo por km do carro: quanto custa rodar por mês | Dá Conta">
+<meta property="og:description" content="Calcule grátis quanto seu carro custa por km e por mês: combustível, IPVA, seguro, manutenção e desvalorização. Sem cadastro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/custo-por-km.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Custo por km do carro", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/custo-por-km.html", "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Como calcular o custo do combustível por km?", "acceptedAnswer": {"@type": "Answer", "text": "Divida o preço do litro pelo consumo do carro. Com gasolina a R$ 6,20 e um carro que faz 12 km por litro, cada km custa cerca de R$ 0,52 só de combustível."}}, {"@type": "Question", "name": "Por que o custo total por km é maior que o do combustível?", "acceptedAnswer": {"@type": "Answer", "text": "Porque o carro tem gastos mesmo parado: IPVA, seguro, licenciamento, revisões e a perda de valor. Quando você divide esses gastos pelos km rodados, o custo de cada km sobe."}}, {"@type": "Question", "name": "Quem roda pouco paga mais por km?", "acceptedAnswer": {"@type": "Answer", "text": "Sim. Os gastos fixos são quase os mesmos rodando 300 ou 1.500 km por mês. Quem roda pouco divide esses gastos por menos km, e cada km fica mais caro."}}, {"@type": "Question", "name": "Preciso colocar a desvalorização?", "acceptedAnswer": {"@type": "Answer", "text": "Não é obrigatório. Ela não sai do bolso todo mês, mas é dinheiro perdido quando você vende o carro. Se deixar em branco, a calculadora não conta."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Custo por km do carro</h1>
+<p class="lead">Descubra quanto cada km rodado custa de verdade. Coloque quanto você roda, o consumo e o preço do combustível. Se quiser a conta completa, inclua IPVA, seguro e manutenção.</p>
+<form class="calc" data-calc="km">
+<label for="km">Quantos km você roda por mês<small>Olhe no painel do carro ou estime pelo seu trajeto.</small><input id="km" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1000"></label>
+<label for="consumo">Consumo do carro (km por litro)<small>Quantos km o carro faz com 1 litro.</small><input id="consumo" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 12"></label>
+<label for="preco">Preço do litro do combustível (R$)<input id="preco" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 6,20"></label>
+<details class="mais"><summary>Incluir os outros gastos do carro</summary>
+<label for="anuais">IPVA, seguro e licenciamento por ano (R$)<small>Some tudo o que você paga no ano.</small><input id="anuais" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 3000"></label>
+<label for="manutencao">Manutenção por ano (R$)<small>Revisões, troca de óleo, pneus e consertos.</small><input id="manutencao" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 1800"></label>
+<label for="mensais">Outros gastos por mês (R$)<small>Estacionamento, pedágio, lavagem, parcela de garagem.</small><input id="mensais" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 100"></label>
+<label for="valorCarro">Valor do carro hoje (R$)<small>Opcional. Serve para contar a desvalorização.</small><input id="valorCarro" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 50000"></label>
+<label for="desvalorizacao">Quanto o carro perde de valor por ano (%)<small>Opcional. Se deixar em branco, não conta.</small><input id="desvalorizacao" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="Ex.: 10"></label>
+</details>
+<button type="submit">Calcular o custo por km</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Descobri%20quanto%20meu%20carro%20custa%20por%20km%2C%20calcula%20o%20seu%20aqui%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/custo-por-km.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Anotar os gastos do carro no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como calcular o custo por km</h2>
+<p>O combustível é a parte mais fácil: divida o preço do litro pelo consumo. Com gasolina a R$ 6,20 e um carro que faz 12 km por litro, cada km custa cerca de R$ 0,52. Rodando 1.000 km no mês, são uns R$ 517 de combustível.</p>
+<h2>Os gastos que ninguém lembra</h2>
+<p>O carro custa dinheiro mesmo na garagem. IPVA, seguro, licenciamento e revisões chegam todo ano. No exemplo acima, com R$ 3.000 de IPVA e seguro, R$ 1.800 de manutenção e R$ 100 por mês de estacionamento, o custo sobe para cerca de R$ 1.017 por mês. Cada km passa a custar perto de R$ 1,02, quase o dobro do combustível.</p>
+<h2>Vale a pena ter carro?</h2>
+<p>Com o custo por km em mãos, compare com ônibus, aplicativo ou bicicleta para os trajetos do dia a dia. Se o carro pesa no mês, veja onde ele entra no <a href="orcamento-50-30-20.html">orçamento 50-30-20</a> e guarde para as contas do ano, como o IPVA, com a <a href="reserva-de-emergencia.html">reserva de emergência</a>.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Como calcular o custo do combustível por km?</h3>
+<p>Divida o preço do litro pelo consumo do carro. Com gasolina a R$ 6,20 e um carro que faz 12 km por litro, cada km custa cerca de R$ 0,52 só de combustível.</p>
+<h3>Por que o custo total por km é maior que o do combustível?</h3>
+<p>Porque o carro tem gastos mesmo parado: IPVA, seguro, licenciamento, revisões e a perda de valor. Quando você divide esses gastos pelos km rodados, o custo de cada km sobe.</p>
+<h3>Quem roda pouco paga mais por km?</h3>
+<p>Sim. Os gastos fixos são quase os mesmos rodando 300 ou 1.500 km por mês. Quem roda pouco divide esses gastos por menos km, e cada km fica mais caro.</p>
+<h3>Preciso colocar a desvalorização?</h3>
+<p>Não é obrigatório. Ela não sai do bolso todo mês, mas é dinheiro perdido quando você vende o carro. Se deixar em branco, a calculadora não conta.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="dividir-conta.html">Dividir a conta entre amigos</a><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a><a href="pomodoro-online.html">Pomodoro online</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>
