@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de média de notas da faculdade: quanto preciso tirar | Dá Conta</title>
+<meta name="description" content="Calcule grátis a média ponderada das suas notas da faculdade e quanto precisa tirar na próxima prova ou no exame final para passar. Sem cadastro.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/media-de-notas.html">
+<meta property="og:title" content="Calculadora de média de notas da faculdade: quanto preciso tirar | Dá Conta">
+<meta property="og:description" content="Calcule grátis a média ponderada das suas notas da faculdade e quanto precisa tirar na próxima prova ou no exame final para passar. Sem cadastro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/media-de-notas.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Calculadora de média de notas da faculdade", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/media-de-notas.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Como calcular a média ponderada das notas?", "acceptedAnswer": {"@type": "Answer", "text": "Multiplique cada nota pelo peso dela, some tudo e divida pela soma dos pesos. Exemplo: prova de peso 2 com nota 6 e trabalho de peso 1 com nota 9 dão (6 × 2 + 9 × 1) ÷ 3 = 7."}}, {"@type": "Question", "name": "Quanto preciso tirar na última prova para passar?", "acceptedAnswer": {"@type": "Answer", "text": "Multiplique a média para passar pela soma de todos os pesos, tire o que você já somou com as notas tiradas e divida pelo peso da prova que falta. A calculadora faz essa conta e avisa se ainda dá para chegar à média."}}, {"@type": "Question", "name": "Qual é a média para passar na faculdade?", "acceptedAnswer": {"@type": "Answer", "text": "Depende da instituição. Muitas usam 7, outras 6 ou 5, e algumas usam notas de 0 a 100. Confira no regimento da faculdade ou no plano de ensino da disciplina e mude o campo da média na calculadora."}}, {"@type": "Question", "name": "Como funciona a nota do exame final?", "acceptedAnswer": {"@type": "Answer", "text": "Cada faculdade tem a sua regra. Uma regra comum é somar a média do semestre com a nota do exame e dividir por 2, precisando chegar a 5. Abra a parte do exame final, informe a média que precisa alcançar e quanto o exame pesa, e a calculadora mostra a nota necessária."}}, {"@type": "Question", "name": "A calculadora guarda minhas notas?", "acceptedAnswer": {"@type": "Answer", "text": "Não. A conta é feita no seu navegador e nada do que você digita é enviado ou salvo."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Calculadora de média de notas da faculdade</h1>
+<p class="lead">Coloque as notas que você já tirou e o peso de cada avaliação. Veja sua média e quanto precisa tirar no que falta, ou no exame final, para passar.</p>
+<form class="calc" data-calc="notas">
+<p class="note" style="margin:0">Ainda não fez uma avaliação? Deixe a nota em branco e preencha só o peso. Peso em branco vale 1.</p>
+<fieldset class="divida"><legend>Avaliação 1</legend><label for="nota1">Nota<input id="nota1" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 6"></label><label for="peso1">Peso<input id="peso1" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<fieldset class="divida"><legend>Avaliação 2</legend><label for="nota2">Nota<input id="nota2" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 8"></label><label for="peso2">Peso<input id="peso2" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<fieldset class="divida"><legend>Avaliação 3</legend><label for="nota3">Nota<input id="nota3" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 9"></label><label for="peso3">Peso<input id="peso3" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<fieldset class="divida"><legend>Avaliação 4</legend><label for="nota4">Nota<input id="nota4" type="number" inputmode="decimal" min="0" step="any" placeholder="Em branco se ainda não fez"></label><label for="peso4">Peso<input id="peso4" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<details class="mais"><summary>Tenho mais avaliações</summary>
+<fieldset class="divida"><legend>Avaliação 5</legend><label for="nota5">Nota<input id="nota5" type="number" inputmode="decimal" min="0" step="any"></label><label for="peso5">Peso<input id="peso5" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<fieldset class="divida"><legend>Avaliação 6</legend><label for="nota6">Nota<input id="nota6" type="number" inputmode="decimal" min="0" step="any"></label><label for="peso6">Peso<input id="peso6" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<fieldset class="divida"><legend>Avaliação 7</legend><label for="nota7">Nota<input id="nota7" type="number" inputmode="decimal" min="0" step="any"></label><label for="peso7">Peso<input id="peso7" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+<fieldset class="divida"><legend>Avaliação 8</legend><label for="nota8">Nota<input id="nota8" type="number" inputmode="decimal" min="0" step="any"></label><label for="peso8">Peso<input id="peso8" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label></fieldset>
+</details>
+<label for="aprovacao">Média para passar<small>Muitas faculdades usam 7. Confira no regimento ou no plano de ensino.</small><input id="aprovacao" type="number" inputmode="decimal" min="0" step="any" placeholder="7"></label>
+<details class="mais"><summary>Minha faculdade tem exame final</summary>
+<label for="exameMinima">Média final que precisa alcançar depois do exame<small>Ex.: 5. Deixe em branco se não houver exame.</small><input id="exameMinima" type="number" inputmode="decimal" min="0" step="any" placeholder="Ex.: 5"></label>
+<label for="pesoExame">Quanto o exame vale na média final (%)<small>Se a regra é (média + exame) ÷ 2, são 50%. Se deixar em branco, usa 50%.</small><input id="pesoExame" type="number" inputmode="decimal" min="1" max="100" step="any" placeholder="50"></label>
+</details>
+<details class="mais"><summary>Minhas notas não vão de 0 a 10</summary>
+<label for="maxima">Nota máxima<small>Ex.: 100, se a faculdade usa notas de 0 a 100.</small><input id="maxima" type="number" inputmode="decimal" min="1" step="any" placeholder="10"></label>
+</details>
+<button type="submit">Calcular minha média</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Descobri%20quanto%20preciso%20tirar%20para%20passar%20na%20mat%C3%A9ria%2C%20calcula%20a%20sua%20aqui%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/media-de-notas.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Anotar as datas das provas no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como a conta é feita</h2>
+<p>A calculadora multiplica cada nota pelo peso, soma tudo e divide pela soma dos pesos das avaliações que você já fez. Para as que faltam, ela vê quantos pontos ainda faltam para chegar à média e divide pelo peso que sobra.</p>
+<p>Exemplo: Prova 1 com nota 6 e peso 2, Prova 2 com nota 8 e peso 2 e um trabalho com nota 9 e peso 1 dão média 7,4 até agora. Se ainda falta a Prova 3, de peso 3, e a média para passar é 7, você precisa tirar pelo menos 6,33 nela.</p>
+<h2>Média simples ou ponderada?</h2>
+<p>Na média simples, todas as notas valem o mesmo: some e divida pela quantidade. Na ponderada, uma prova pode valer o dobro de um trabalho. Se o professor não falou em peso, deixe todos os pesos em branco e a calculadora faz a média simples.</p>
+<h2>Depois de saber a nota que falta</h2>
+<p>Separe o tempo de estudo pelo peso de cada avaliação: a prova que vale mais merece mais horas. Para estudar em blocos curtos e sem distração, use o <a href="pomodoro-online.html">Pomodoro online</a>. No app do Dá Conta você anota as datas das provas e recebe um aviso antes.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Como calcular a média ponderada das notas?</h3>
+<p>Multiplique cada nota pelo peso dela, some tudo e divida pela soma dos pesos. Exemplo: prova de peso 2 com nota 6 e trabalho de peso 1 com nota 9 dão (6 × 2 + 9 × 1) ÷ 3 = 7.</p>
+<h3>Quanto preciso tirar na última prova para passar?</h3>
+<p>Multiplique a média para passar pela soma de todos os pesos, tire o que você já somou com as notas tiradas e divida pelo peso da prova que falta. A calculadora faz essa conta e avisa se ainda dá para chegar à média.</p>
+<h3>Qual é a média para passar na faculdade?</h3>
+<p>Depende da instituição. Muitas usam 7, outras 6 ou 5, e algumas usam notas de 0 a 100. Confira no regimento da faculdade ou no plano de ensino da disciplina e mude o campo da média na calculadora.</p>
+<h3>Como funciona a nota do exame final?</h3>
+<p>Cada faculdade tem a sua regra. Uma regra comum é somar a média do semestre com a nota do exame e dividir por 2, precisando chegar a 5. Abra a parte do exame final, informe a média que precisa alcançar e quanto o exame pesa, e a calculadora mostra a nota necessária.</p>
+<h3>A calculadora guarda minhas notas?</h3>
+<p>Não. A conta é feita no seu navegador e nada do que você digita é enviado ou salvo.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="pomodoro-online.html">Pomodoro online</a><a href="calculadora-mei.html">Calculadora de MEI 2026</a><a href="quanto-cobrar-por-hora.html">Quanto cobrar por hora</a><a href="alcool-ou-gasolina.html">Álcool ou gasolina</a><a href="alugar-ou-financiar.html">Alugar ou financiar imóvel</a><a href="custo-por-km.html">Custo por km do carro</a><a href="dividir-conta.html">Dividir a conta entre amigos</a><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>

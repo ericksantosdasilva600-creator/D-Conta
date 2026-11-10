@@ -390,12 +390,45 @@
       agora: situacao(faturado), situacao: situacao(projecao)
     };
   }
+  // Média de notas da faculdade: média ponderada das notas já tiradas e a nota que falta tirar nas avaliações seguintes.
+  // Avaliação sem nota (só com peso) conta como ainda por fazer. Peso em branco vale 1.
+  // Exame final opcional: média final = média × (100 − peso do exame)% + exame × peso do exame%. Cada faculdade tem a sua regra.
+  function mediaNotas(o) {
+    var maxima = o.maxima > 0 ? Math.min(1000, o.maxima) : 10;
+    var aprovacao = Math.min(maxima, Math.max(0, typeof o.aprovacao === "number" && isFinite(o.aprovacao) ? o.aprovacao : 7));
+    var itens = (o.notas || []).filter(function (x) { return x && (typeof x.nota === "number" || typeof x.peso === "number"); }).map(function (x) {
+      var peso = typeof x.peso === "number" && isFinite(x.peso) ? Math.min(1000, Math.max(0, x.peso)) : 1;
+      var nota = typeof x.nota === "number" && isFinite(x.nota) ? Math.min(maxima, Math.max(0, x.nota)) : null;
+      return { nota: nota, peso: peso };
+    }).filter(function (x) { return x.peso > 0; });
+    if (!itens.length) return null;
+    var soma = 0, pesoFeito = 0, pesoFalta = 0, feitas = 0;
+    itens.forEach(function (x) { if (x.nota === null) pesoFalta += x.peso; else { soma += x.nota * x.peso; pesoFeito += x.peso; feitas++; } });
+    var pesoTotal = pesoFeito + pesoFalta, r = { maxima: maxima, aprovacao: aprovacao, feitas: feitas, faltam: itens.length - feitas, media: pesoFeito ? cents(soma / pesoFeito) : null };
+    if (pesoFalta > 0) {
+      var precisa = (aprovacao * pesoTotal - soma) / pesoFalta;
+      r.precisa = cents(Math.max(0, precisa));
+      r.melhorPossivel = cents((soma + maxima * pesoFalta) / pesoTotal);
+      r.situacao = precisa <= 1e-9 ? "garantido" : precisa > maxima + 1e-9 ? "impossivel" : "falta";
+      return r;
+    }
+    r.situacao = soma / pesoTotal >= aprovacao - 1e-9 ? "aprovado" : "abaixo";
+    if (r.situacao === "abaixo" && typeof o.exameMinima === "number" && o.exameMinima > 0) {
+      var pe = Math.min(100, Math.max(1, typeof o.pesoExame === "number" && o.pesoExame > 0 ? o.pesoExame : 50)) / 100;
+      var exameMinima = Math.min(maxima, o.exameMinima);
+      var exame = (exameMinima - (soma / pesoTotal) * (1 - pe)) / pe;
+      r.exameMinima = exameMinima; r.pesoExame = Math.round(pe * 100);
+      r.exame = cents(Math.max(0, exame));
+      r.exameSituacao = exame > maxima + 1e-9 ? "impossivel" : "possivel";
+    }
+    return r;
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -588,6 +621,31 @@
       '<p class="note">Isso considera cerca de ' + h(r.horasMes) + " horas cobradas por mês (" + h(r.horasAno) + " no ano). O resto do tempo vai para folgas e tarefas que ninguém paga.</p>" +
       "<h3>Para onde vai cada hora cobrada</h3>" + linhas(partes) +
       '<p class="note">É uma estimativa com os números que você informou. Ela mostra o mínimo para fechar a sua conta, não o preço do mercado: pesquise quanto outros profissionais da sua área cobram. O imposto muda conforme o regime (MEI, Simples, autônomo): confirme com um contador.</p>';
+  };
+  telas.notas = function () {
+    var raw = function (id) { var el = document.getElementById(id); if (!el || el.value.trim() === "") return undefined; var v = parseFloat(el.value.replace(",", ".")); return isFinite(v) ? v : undefined; };
+    var notas = [];
+    for (var i = 1; i <= 8; i++) notas.push({ nota: raw("nota" + i), peso: raw("peso" + i) });
+    var r = mediaNotas({ notas: notas, aprovacao: raw("aprovacao"), maxima: raw("maxima"), exameMinima: raw("exameMinima"), pesoExame: raw("pesoExame") });
+    if (!r) return null;
+    var n = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
+    var linha = function (rot, val, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + val + "</b></div>"; };
+    var aval = function (k) { return k === 1 ? "1 avaliação" : k + " avaliações"; };
+    var html = r.media !== null ? linha(r.faltam ? "Sua média até agora" : "Sua média", n(r.media), r.faltam === 0) : "";
+    if (r.faltam) {
+      html += linha(r.faltam === 1 ? "Nota que você precisa na avaliação que falta" : "Média que você precisa nas " + aval(r.faltam) + " que faltam", r.situacao === "impossivel" ? "acima de " + n(r.maxima) : n(r.precisa), 1);
+      html += '<p class="note">' + (r.situacao === "garantido" ? "Boa notícia: mesmo tirando zero no que falta, você já chega à média " + n(r.aprovacao) + ". Continue estudando para garantir uma nota melhor." :
+        r.situacao === "impossivel" ? "Mesmo tirando " + n(r.maxima) + " em tudo, a média chega a " + n(r.melhorPossivel) + ", abaixo de " + n(r.aprovacao) + ". Veja se a sua faculdade tem exame final, recuperação ou trabalho extra e converse com o professor." :
+        "Para fechar com média " + n(r.aprovacao) + ", tire pelo menos " + n(r.precisa) + (r.faltam === 1 ? " na avaliação que falta." : " de média, levando em conta o peso de cada uma.")) + "</p>";
+    } else if (r.situacao === "aprovado") {
+      html += '<p class="note">Você passou da média ' + n(r.aprovacao) + ". Parabéns! Confira também as faltas: em muitas faculdades elas reprovam mesmo com nota boa.</p>";
+    } else {
+      html += '<p class="note">A média ficou abaixo de ' + n(r.aprovacao) + ".</p>";
+      if (r.exame !== undefined) html += linha("Nota que você precisa no exame final", r.exameSituacao === "impossivel" ? "acima de " + n(r.maxima) : n(r.exame), 1) +
+        '<p class="note">Pela regra que você informou: o exame vale ' + r.pesoExame + "% e a média final precisa chegar a " + n(r.exameMinima) + "." + (r.exameSituacao === "impossivel" ? " Mesmo com nota máxima no exame não dá; converse com a coordenação sobre as opções." : "") + "</p>";
+      else html += '<p class="note">Se a sua faculdade tem exame final, abra "Minha faculdade tem exame final" e calcule de novo para ver a nota que você precisa.</p>';
+    }
+    return html + '<p class="note">É uma estimativa. Arredondamento, provas substitutivas e a regra do exame mudam de faculdade para faculdade: confira no regimento ou no plano de ensino.</p>';
   };
   telas.mei = function () {
     var val = function (id, d) { var el = document.getElementById(id); return el ? el.value : d; };

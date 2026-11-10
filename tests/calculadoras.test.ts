@@ -228,6 +228,19 @@ describe("calculadoras 2026", () => {
   it("dividir a conta limita o número de pessoas", () => {
     expect(C.dividirConta({ total: 1000, pessoas: 1e8 }).pessoas).toBe(1000);
   });
+  it("calcula a média de notas e quanto falta tirar", () => {
+    expect(C.mediaNotas({ notas: [{ nota: 6, peso: 1 }, { nota: 8, peso: 1 }, { peso: 2 }] })).toMatchObject({ media: 7, precisa: 7, melhorPossivel: 8.5, situacao: "falta", faltam: 1 });
+    expect(C.mediaNotas({ notas: [{ nota: 5, peso: 4 }, { nota: 6, peso: 6 }], aprovacao: 7, exameMinima: 5 })).toMatchObject({ media: 5.6, situacao: "abaixo", exame: 4.4, pesoExame: 50, exameSituacao: "possivel" });
+    expect(C.mediaNotas({ notas: [{ nota: 2 }, { nota: 1 }], exameMinima: 6, pesoExame: 40 })).toMatchObject({ media: 1.5, exame: 12.75, exameSituacao: "impossivel" });
+    expect(C.mediaNotas({ notas: [{ nota: 10 }, { nota: 10 }, {}, { peso: 1 }] })).toMatchObject({ precisa: 1, situacao: "falta" });
+    expect(C.mediaNotas({ notas: [{ nota: 9, peso: 3 }, { peso: 1 }], aprovacao: 6 })).toMatchObject({ precisa: 0, situacao: "garantido" });
+    expect(C.mediaNotas({ notas: [{ nota: 0 }, { nota: 1 }, { peso: 1 }] })).toMatchObject({ precisa: 20, melhorPossivel: 3.67, situacao: "impossivel" });
+    expect(C.mediaNotas({ notas: [{ peso: 1 }, { peso: 1 }], aprovacao: 6 })).toMatchObject({ media: null, precisa: 6 });
+    expect(C.mediaNotas({ notas: [{ nota: 7 }, { nota: 7 }] })).toMatchObject({ media: 7, situacao: "aprovado" });
+    expect(C.mediaNotas({ notas: [{ nota: 70 }, { nota: 50 }], maxima: 100, aprovacao: 60 })).toMatchObject({ media: 60, situacao: "aprovado" });
+    expect(C.mediaNotas({ notas: [{ nota: 15, peso: 0 }, { nota: 12 }] })).toMatchObject({ media: 10, feitas: 1 });
+    expect(C.mediaNotas({ notas: [{}, {}] })).toBeNull();
+  });
   it("calcula DAS e limite do MEI em 2026", () => {
     expect(C.mei({ atividade: "comercio", faturado: 0, ate: 1 })).toMatchObject({ das: 82.05, dasAno: 984.6, limite: 81000, limite20: 97200 });
     expect(C.mei({ atividade: "servicos", faturado: 60000, ate: 10 })).toMatchObject({ das: 86.05, resta: 21000, porMes: 10500, media: 6000, projecao: 72000, situacao: "dentro", agora: "dentro", usado: 74.1 });
