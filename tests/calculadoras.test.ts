@@ -241,6 +241,16 @@ describe("calculadoras 2026", () => {
     expect(C.mediaNotas({ notas: [{ nota: 15, peso: 0 }, { nota: 12 }] })).toMatchObject({ media: 10, feitas: 1 });
     expect(C.mediaNotas({ notas: [{}, {}] })).toBeNull();
   });
+  it("calcula as faltas permitidas com 75% de frequência", () => {
+    expect(C.faltas({ total: 72, porDia: 2, faltas: 10 })).toMatchObject({ limite: 18, limiteDias: 9, resta: 8, restaDias: 4, frequencia: 86.11, situacao: "ok" });
+    expect(C.faltas({ total: 60 })).toMatchObject({ limite: 15, limiteDias: 15, resta: 15, faltas: 0, frequencia: 100, usado: 0, situacao: "ok" });
+    expect(C.faltas({ total: 50, faltas: 12 })).toMatchObject({ limite: 12, resta: 0, frequencia: 76, situacao: "limite" });
+    expect(C.faltas({ total: 50, faltas: 13 })).toMatchObject({ resta: 0, frequencia: 74, situacao: "reprovado", usado: 100 });
+    expect(C.faltas({ total: 80, porDia: 4, faltas: 18 })).toMatchObject({ limite: 20, resta: 2, restaDias: 0, situacao: "quase" });
+    expect(C.faltas({ total: 100, minimo: 80, faltas: 5 })).toMatchObject({ limite: 20, resta: 15 });
+    expect(C.faltas({ total: 40, faltas: 999 })).toMatchObject({ faltas: 40, frequencia: 0, situacao: "reprovado" });
+    expect(C.faltas({ total: 0 })).toBeNull();
+  });
   it("calcula DAS e limite do MEI em 2026", () => {
     expect(C.mei({ atividade: "comercio", faturado: 0, ate: 1 })).toMatchObject({ das: 82.05, dasAno: 984.6, limite: 81000, limite20: 97200 });
     expect(C.mei({ atividade: "servicos", faturado: 60000, ate: 10 })).toMatchObject({ das: 86.05, resta: 21000, porMes: 10500, media: 6000, projecao: 72000, situacao: "dentro", agora: "dentro", usado: 74.1 });

@@ -423,12 +423,30 @@
     }
     return r;
   }
+  // Faltas permitidas: a LDB exige frequência mínima de 75% do total de horas letivas (art. 24, VI, educação básica)
+  // e a Resolução CFE 4/1986 aplica os 75% ao ensino superior. Faltas contadas em aulas (horas-aula), como no diário.
+  // Limite = parte inteira de total × (100 − mínimo)%. Cada dia de aula pode contar mais de uma falta.
+  function faltas(o) {
+    var total = Math.floor(o.total > 0 ? Math.min(10000, o.total) : 0);
+    if (!total) return null;
+    var minimo = Math.min(100, Math.max(0, typeof o.minimo === "number" && isFinite(o.minimo) ? o.minimo : 75));
+    var porDia = Math.max(1, Math.min(total, Math.floor(o.porDia > 0 ? o.porDia : 1)));
+    var tem = Math.max(0, Math.min(total, Math.floor(o.faltas > 0 ? o.faltas : 0)));
+    var limite = Math.floor(total * (100 - minimo) / 100 + 1e-9);
+    var resta = limite - tem;
+    return {
+      total: total, minimo: minimo, porDia: porDia, faltas: tem, limite: limite, limiteDias: Math.floor(limite / porDia),
+      resta: Math.max(0, resta), restaDias: Math.max(0, Math.floor(resta / porDia)),
+      frequencia: cents((total - tem) / total * 100), usado: limite ? Math.round(Math.min(tem, limite) / limite * 100) : (tem ? 100 : 0),
+      situacao: resta < 0 ? "reprovado" : resta === 0 ? "limite" : resta < porDia ? "quase" : "ok"
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -646,6 +664,24 @@
       else html += '<p class="note">Se a sua faculdade tem exame final, abra "Minha faculdade tem exame final" e calcule de novo para ver a nota que você precisa.</p>';
     }
     return html + '<p class="note">É uma estimativa. Arredondamento, provas substitutivas e a regra do exame mudam de faculdade para faculdade: confira no regimento ou no plano de ensino.</p>';
+  };
+  telas.faltas = function () {
+    var raw = function (id) { var el = document.getElementById(id); if (!el || el.value.trim() === "") return undefined; var v = parseFloat(el.value.replace(",", ".")); return isFinite(v) ? v : undefined; };
+    var r = faltas({ total: raw("total"), porDia: raw("porDia"), faltas: raw("jaTenho"), minimo: raw("minimo") });
+    if (!r) return null;
+    var n = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
+    var linha = function (rot, val, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + val + "</b></div>"; };
+    var f = function (k) { return k === 1 ? "1 falta" : k + " faltas"; };
+    var d = function (k) { return k === 1 ? "1 dia" : k + " dias"; };
+    var html = linha("Máximo de faltas na disciplina", f(r.limite) + (r.porDia > 1 ? " (" + d(r.limiteDias) + " de aula)" : "")) +
+      linha("Faltas que você já tem", f(r.faltas)) +
+      linha("Faltas que ainda pode ter", r.situacao === "reprovado" ? "nenhuma" : f(r.resta) + (r.porDia > 1 ? " (" + d(r.restaDias) + " inteiros)" : ""), 1) +
+      linha("Sua frequência se não faltar mais", n(r.frequencia) + "%");
+    html += '<p class="note">' + (r.situacao === "reprovado" ? "Você passou do limite: com " + f(r.faltas) + " a frequência fica abaixo de " + n(r.minimo) + "%, e isso reprova mesmo com nota boa. Procure a secretaria ou a coordenação para saber se há como compensar alguma ausência, como os exercícios domiciliares em caso de doença." :
+      r.situacao === "limite" ? "Atenção: você está exatamente no limite. Mais uma falta e a frequência fica abaixo de " + n(r.minimo) + "%." :
+      r.situacao === "quase" ? "Cuidado: as faltas que sobram não chegam a um dia inteiro de aula (cada dia conta " + f(r.porDia) + "). Faltar mais um dia já passa do limite." :
+      "Você já usou " + r.usado + "% das faltas permitidas. Guarde as que sobram para imprevistos, como uma doença.") + "</p>";
+    return html + '<p class="note">É uma estimativa. A conta usa a parte inteira de ' + n(100 - r.minimo) + '% das aulas. Confira no plano de ensino o total de aulas e como a sua faculdade conta as faltas (por aula ou por dia).</p>';
   };
   telas.mei = function () {
     var val = function (id, d) { var el = document.getElementById(id); return el ? el.value : d; };

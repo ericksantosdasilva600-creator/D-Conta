@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de faltas da faculdade: quantas ainda posso ter | Dá Conta</title>
+<meta name="description" content="Calcule grátis quantas faltas você pode ter na faculdade ou na escola com a regra dos 75% de frequência, quantas já usou e quantas ainda sobram. Sem cadastro.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/faltas-permitidas.html">
+<meta property="og:title" content="Calculadora de faltas da faculdade: quantas ainda posso ter | Dá Conta">
+<meta property="og:description" content="Calcule grátis quantas faltas você pode ter na faculdade ou na escola com a regra dos 75% de frequência, quantas já usou e quantas ainda sobram. Sem cadastro.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/faltas-permitidas.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Calculadora de faltas da faculdade", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/faltas-permitidas.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Quantas faltas posso ter na faculdade?", "acceptedAnswer": {"@type": "Answer", "text": "Até 25% das aulas da disciplina, porque a frequência mínima é de 75%. Numa matéria de 60 aulas, são 15 faltas; numa de 72 aulas, 18 faltas. A calculadora faz a conta com o total de aulas da sua disciplina."}}, {"@type": "Question", "name": "De onde vem a regra dos 75% de frequência?", "acceptedAnswer": {"@type": "Answer", "text": "A Lei de Diretrizes e Bases da Educação (Lei 9.394/1996) torna a frequência obrigatória e exige 75% das horas letivas na educação básica. No ensino superior, os 75% vêm da Resolução nº 4/1986 do antigo Conselho Federal de Educação, seguida pelas faculdades nos seus regimentos."}}, {"@type": "Question", "name": "Atestado médico abona falta na faculdade?", "acceptedAnswer": {"@type": "Answer", "text": "Pela regra geral, não existe abono de faltas no ensino superior: o atestado não apaga a falta. Em casos previstos em lei, como doença que impede de ir às aulas por um período ou gestação, o aluno pode pedir exercícios domiciliares, que compensam a ausência. Confira as regras na secretaria da sua faculdade."}}, {"@type": "Question", "name": "Uma aula de duas horas conta como uma ou duas faltas?", "acceptedAnswer": {"@type": "Answer", "text": "Depende de como a faculdade registra a presença. Em muitas, cada hora-aula é uma falta, então faltar num dia com duas aulas seguidas conta duas faltas. Informe na calculadora quantas faltas cada dia de aula conta."}}, {"@type": "Question", "name": "Reprovar por falta é diferente de reprovar por nota?", "acceptedAnswer": {"@type": "Answer", "text": "Sim. Mesmo com média alta, quem fica abaixo de 75% de frequência é reprovado na disciplina. Por isso vale acompanhar as faltas desde o começo do semestre."}}]}]}</script>
+</head>
+<body>
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Calculadora de faltas da faculdade</h1>
+<p class="lead">Descubra quantas faltas você pode ter numa disciplina com a regra dos 75% de frequência, quantas já usou e quantas ainda sobram.</p>
+<form class="calc" data-calc="faltas">
+<label for="total">Total de aulas da disciplina<small>No plano de ensino ou no sistema da faculdade. Ex.: 60 ou 72 horas-aula.</small><input id="total" type="number" inputmode="numeric" min="1" step="1" placeholder="Ex.: 72" required></label>
+<label for="porDia">Quantas faltas conta cada dia de aula<small>Se o professor dá duas aulas seguidas no mesmo dia, são 2.</small><input id="porDia" type="number" inputmode="numeric" min="1" step="1" placeholder="1"></label>
+<label for="jaTenho">Faltas que você já tem<small>Em aulas, como aparece no sistema. Deixe em branco se ainda não faltou.</small><input id="jaTenho" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></label>
+<details class="mais"><summary>Minha faculdade exige outra frequência</summary>
+<label for="minimo">Frequência mínima (%)<small>A regra geral é 75%. Mude só se o regimento da sua instituição pedir mais.</small><input id="minimo" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="75"></label>
+</details>
+<button type="submit">Calcular minhas faltas</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Descobri%20quantas%20faltas%20ainda%20posso%20ter%20na%20mat%C3%A9ria%2C%20calcula%20as%20suas%20aqui%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/faltas-permitidas.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Organizar aulas e provas no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como a conta é feita</h2>
+<p>A frequência mínima é de 75%, então você pode faltar em até 25% das aulas. A calculadora pega o total de aulas, calcula 25% e usa só a parte inteira, porque meia falta não existe e uma falta a mais já deixa a frequência abaixo do mínimo.</p>
+<p>Exemplo: uma disciplina de 72 aulas permite 18 faltas. Se cada dia tem 2 aulas, são 9 dias. Quem já tem 10 faltas ainda pode ter 8, ou seja, 4 dias de aula.</p>
+<h2>O que diz a lei</h2>
+<p>A <a href="https://www.planalto.gov.br/ccivil_03/leis/l9394.htm" target="_blank" rel="noopener">Lei 9.394/1996 (LDB)</a> diz que a frequência é obrigatória no ensino superior, salvo nos cursos a distância (art. 47, § 3º), e exige 75% das horas letivas na educação básica (art. 24, VI). No ensino superior, o mínimo de 75% vem da Resolução nº 4/1986 do antigo Conselho Federal de Educação e aparece no regimento das faculdades. Em casos como doença prolongada ou gestação, a lei permite exercícios domiciliares no lugar das aulas.</p>
+<h2>Como não chegar ao limite</h2>
+<p>Anote cada falta no dia em que ela acontece e confira o sistema da faculdade de vez em quando, porque às vezes a chamada é lançada errado. Deixe as faltas que sobram para imprevistos. No app do Dá Conta você organiza as aulas, as provas e os trabalhos e recebe aviso antes. Para ver se a nota também está em dia, use a <a href="media-de-notas.html">calculadora de média de notas</a>.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Quantas faltas posso ter na faculdade?</h3>
+<p>Até 25% das aulas da disciplina, porque a frequência mínima é de 75%. Numa matéria de 60 aulas, são 15 faltas; numa de 72 aulas, 18 faltas. A calculadora faz a conta com o total de aulas da sua disciplina.</p>
+<h3>De onde vem a regra dos 75% de frequência?</h3>
+<p>A Lei de Diretrizes e Bases da Educação (Lei 9.394/1996) torna a frequência obrigatória e exige 75% das horas letivas na educação básica. No ensino superior, os 75% vêm da Resolução nº 4/1986 do antigo Conselho Federal de Educação, seguida pelas faculdades nos seus regimentos.</p>
+<h3>Atestado médico abona falta na faculdade?</h3>
+<p>Pela regra geral, não existe abono de faltas no ensino superior: o atestado não apaga a falta. Em casos previstos em lei, como doença que impede de ir às aulas por um período ou gestação, o aluno pode pedir exercícios domiciliares, que compensam a ausência. Confira as regras na secretaria da sua faculdade.</p>
+<h3>Uma aula de duas horas conta como uma ou duas faltas?</h3>
+<p>Depende de como a faculdade registra a presença. Em muitas, cada hora-aula é uma falta, então faltar num dia com duas aulas seguidas conta duas faltas. Informe na calculadora quantas faltas cada dia de aula conta.</p>
+<h3>Reprovar por falta é diferente de reprovar por nota?</h3>
+<p>Sim. Mesmo com média alta, quem fica abaixo de 75% de frequência é reprovado na disciplina. Por isso vale acompanhar as faltas desde o começo do semestre.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="media-de-notas.html">Média de notas da faculdade</a><a href="pomodoro-online.html">Pomodoro online</a><a href="calculadora-mei.html">Calculadora de MEI 2026</a><a href="quanto-cobrar-por-hora.html">Quanto cobrar por hora</a><a href="alcool-ou-gasolina.html">Álcool ou gasolina</a><a href="alugar-ou-financiar.html">Alugar ou financiar imóvel</a><a href="custo-por-km.html">Custo por km do carro</a><a href="dividir-conta.html">Dividir a conta entre amigos</a><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>
