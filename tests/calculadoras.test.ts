@@ -241,6 +241,29 @@ describe("calculadoras 2026", () => {
     expect(C.mediaNotas({ notas: [{ nota: 15, peso: 0 }, { nota: 12 }] })).toMatchObject({ media: 10, feitas: 1 });
     expect(C.mediaNotas({ notas: [{}, {}] })).toBeNull();
   });
+  it("monta o plano de estudos para provas", () => {
+    const r = C.planoEstudos({ hoje: "2026-11-11", horasDia: 2, materias: [{ nome: "Cálculo", prova: "2026-11-18", dificuldade: 3 }, { nome: "História", prova: "2026-11-16", dificuldade: 1 }] });
+    expect(r.dias).toHaveLength(7);
+    expect(r.dias[0]).toEqual({ data: "2026-11-11", itens: [{ materia: "Cálculo", minutos: 90, revisao: false }, { materia: "História", minutos: 30, revisao: false }] });
+    expect(r.dias[4].itens).toEqual([{ materia: "História", minutos: 90, revisao: true }, { materia: "Cálculo", minutos: 30, revisao: false }]);
+    expect(r.dias[6].itens).toEqual([{ materia: "Cálculo", minutos: 120, revisao: true }]);
+    expect(r.materias.map((m: any) => [m.nome, m.minutos])).toEqual([["História", 210], ["Cálculo", 630]]);
+    for (const d of r.dias) expect(d.itens.reduce((s: number, x: any) => s + x.minutos, 0)).toBe(120);
+    const folga = C.planoEstudos({ hoje: "2026-11-11", folgas: [0], materias: [{ nome: "Física", prova: "2026-11-25" }, { nome: "Velha", prova: "2026-11-01" }, { prova: "" }] });
+    expect(folga.dias.map((d: any) => d.data)).not.toContain("2026-11-15");
+    expect(folga.dias.map((d: any) => d.data)).not.toContain("2026-11-22");
+    expect(folga.folgas).toBe(2);
+    expect(folga.ignoradas).toEqual(["Velha"]);
+    const vesperaNoDomingo = C.planoEstudos({ hoje: "2026-11-11", folgas: [0], materias: [{ nome: "A", prova: "2026-11-16" }] });
+    expect(vesperaNoDomingo.dias.at(-1)).toEqual({ data: "2026-11-15", itens: [{ materia: "A", minutos: 120, revisao: true }] });
+    const curto = C.planoEstudos({ hoje: "2026-11-11", horasDia: 0.5, materias: [{ nome: "A", prova: "2026-11-12" }, { nome: "B", prova: "2026-11-12" }] });
+    expect(curto.materias.find((m: any) => m.nome === "B").minutos).toBe(0);
+    const longe = C.planoEstudos({ hoje: "2026-11-11", materias: [{ nome: "A", prova: "2027-12-01" }] });
+    expect(longe.dias).toHaveLength(120);
+    expect(longe.cortado).toBe(true);
+    expect(C.planoEstudos({ hoje: "x" })).toBeNull();
+    expect(C.planoEstudos({ hoje: "2026-11-11", materias: [] }).materias).toEqual([]);
+  });
   it("calcula as faltas permitidas com 75% de frequência", () => {
     expect(C.faltas({ total: 72, porDia: 2, faltas: 10 })).toMatchObject({ limite: 18, limiteDias: 9, resta: 8, restaDias: 4, frequencia: 86.11, situacao: "ok" });
     expect(C.faltas({ total: 60 })).toMatchObject({ limite: 15, limiteDias: 15, resta: 15, faltas: 0, frequencia: 100, usado: 0, situacao: "ok" });

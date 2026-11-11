@@ -441,12 +441,67 @@
       situacao: resta < 0 ? "reprovado" : resta === 0 ? "limite" : resta < porDia ? "quase" : "ok"
     };
   }
+  // Planejador de estudos para provas: divide as horas de estudo de cada dia entre as matérias que ainda têm prova,
+  // dando mais tempo às mais difíceis e às mais próximas (peso = dificuldade ÷ √dias até a prova).
+  // Até 3 matérias por dia, em blocos de 30 min repartidos pelo peso (maior resto). Na véspera da prova, a matéria vira revisão com pelo menos metade do dia.
+  function planoEstudos(o) {
+    var hoje = dataUTC(o.hoje);
+    if (hoje === null) return null;
+    var LIMITE = 120;
+    var materias = [], ignoradas = [];
+    (o.materias || []).forEach(function (m, i) {
+      var nome = String(m && m.nome || "").trim().slice(0, 60), prova = m && dataUTC(m.prova);
+      if (!m || (!nome && !m.prova)) return;
+      if (!nome) nome = "Matéria " + (i + 1);
+      if (prova === null || prova <= hoje) { ignoradas.push(nome); return; }
+      var dif = Math.min(3, Math.max(1, Math.round(m.dificuldade > 0 ? m.dificuldade : 2)));
+      materias.push({ nome: nome, prova: prova, dificuldade: dif, minutos: 0, dias: 0 });
+    });
+    if (!materias.length) return { dias: [], materias: [], ignoradas: ignoradas, folgas: 0 };
+    materias.sort(function (a, b) { return a.prova - b.prova || b.dificuldade - a.dificuldade; });
+    var horas = Math.min(16, Math.max(0.5, o.horasDia > 0 ? o.horasDia : 2));
+    var slots = Math.max(1, Math.round(horas * 2));
+    var folga = o.folgas || [];
+    var ultima = Math.min(materias[materias.length - 1].prova, hoje + LIMITE * DIA);
+    var dias = [], folgas = 0;
+    for (var t = hoje; t < ultima; t += DIA) {
+      var ativas = materias.filter(function (m) { return m.prova > t; });
+      if (!ativas.length) continue;
+      var semana = new Date(t).getUTCDay();
+      var vespera = ativas.filter(function (m) { return m.prova - t === DIA; });
+      if (folga.indexOf(semana) >= 0 && !vespera.length) { folgas++; continue; }
+      ativas.forEach(function (m) { m.peso = m.dificuldade / Math.sqrt((m.prova - t) / DIA); });
+      var escolhidas = vespera.slice(0, Math.min(3, slots));
+      ativas.slice().sort(function (a, b) { return b.peso - a.peso; }).forEach(function (m) {
+        if (escolhidas.length < Math.min(3, slots) && escolhidas.indexOf(m) < 0) escolhidas.push(m);
+      });
+      var dados = escolhidas.map(function (m) { return { m: m, n: 0 }; }), livres = slots;
+      if (vespera.length) {
+        var meta = Math.ceil(slots / 2);
+        dados.forEach(function (d) { if (vespera.indexOf(d.m) >= 0) { var mais = Math.min(livres, Math.ceil(meta / vespera.length)); d.n += mais; livres -= mais; } });
+      }
+      var somaPeso = dados.reduce(function (s, d) { return s + d.m.peso; }, 0);
+      var base = dados.map(function (d) { var q = livres * d.m.peso / somaPeso; return { d: d, int: Math.floor(q), resto: q - Math.floor(q) }; });
+      var sobra = livres - base.reduce(function (s, b) { return s + b.int; }, 0);
+      base.sort(function (a, b) { return b.resto - a.resto; }).forEach(function (b, i) { b.d.n += b.int + (i < sobra ? 1 : 0); });
+      var itens = dados.filter(function (d) { return d.n > 0; }).map(function (d) {
+        d.m.minutos += d.n * 30; d.m.dias++;
+        return { materia: d.m.nome, minutos: d.n * 30, revisao: vespera.indexOf(d.m) >= 0 };
+      });
+      itens.sort(function (a, b) { return b.revisao - a.revisao || b.minutos - a.minutos; });
+      dias.push({ data: iso(t), itens: itens });
+    }
+    return {
+      dias: dias, folgas: folgas, ignoradas: ignoradas, horasDia: slots / 2, cortado: materias[materias.length - 1].prova > ultima,
+      materias: materias.map(function (m) { return { nome: m.nome, prova: iso(m.prova), dificuldade: m.dificuldade, minutos: m.minutos, dias: m.dias, diasAte: Math.round((m.prova - hoje) / DIA) }; })
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -762,6 +817,40 @@
       linha("Entra na fatura que fecha em", data(r.compra.fechamento)) + linha("Você paga em", data(r.compra.vencimento)) + linha("Prazo até pagar", dias(r.compra.dias), 1) +
       '<p class="note">É uma estimativa. Cada banco tem sua regra para compras feitas no próprio dia do fechamento, e o vencimento muda quando cai em fim de semana ou feriado. Confira o "melhor dia de compra" no app do seu cartão.</p>';
   };
+  telas.estudos = function () {
+    var materias = [];
+    for (var i = 1; i <= 8; i++) {
+      var nome = document.getElementById("materia" + i), prova = document.getElementById("prova" + i), dif = document.getElementById("dif" + i);
+      if (nome && prova) materias.push({ nome: nome.value, prova: prova.value, dificuldade: dif ? Number(dif.value) : 2 });
+    }
+    var hoje = new Date(), hojeIso = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0") + "-" + String(hoje.getDate()).padStart(2, "0");
+    var folgas = [];
+    document.querySelectorAll("input[data-folga]:checked").forEach(function (b) { folgas.push(Number(b.dataset.folga)); });
+    var r = planoEstudos({ hoje: hojeIso, materias: materias, horasDia: num("horasDia"), folgas: folgas });
+    if (!r || (!r.materias.length && !r.ignoradas.length)) return null;
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    var data = function (s, longo) { return new Date(s + "T12:00:00Z").toLocaleDateString("pt-BR", longo ? { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" } : { timeZone: "UTC", weekday: "short", day: "2-digit", month: "2-digit" }); };
+    var tempo = function (min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + "h" : "") + (m ? (h ? String(m).padStart(2, "0") : m + " min") : ""); };
+    var linha = function (rot, val, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + val + "</b></div>"; };
+    var aviso = r.ignoradas.length ? '<p class="note">Ficaram de fora porque a data da prova está vazia ou já passou: ' + r.ignoradas.map(esc).join(", ") + ".</p>" : "";
+    if (!r.materias.length) return aviso + '<p class="note">Coloque a data de uma prova a partir de amanhã para montar o plano.</p>';
+    var html = "<h3>Quanto tempo cada matéria recebe</h3>" + r.materias.map(function (m) {
+      return linha(esc(m.nome) + " · prova " + data(m.prova, true), m.minutos ? tempo(m.minutos) + " em " + (m.dias === 1 ? "1 dia" : m.dias + " dias") : "sem tempo");
+    }).join("") + aviso;
+    var semTempo = r.materias.filter(function (m) { return !m.minutos; });
+    if (semTempo.length) html += '<p class="note">Não sobrou tempo para ' + semTempo.map(function (m) { return esc(m.nome); }).join(", ") + ". Aumente as horas por dia ou estude um pouco hoje mesmo.</p>";
+    var curtas = r.materias.filter(function (m) { return m.minutos && m.diasAte <= 3; });
+    if (curtas.length) html += '<p class="note">A prova de ' + curtas.map(function (m) { return esc(m.nome); }).join(", ") + " está muito perto. Foque no que mais cai e em exercícios de provas antigas.</p>";
+    html += '<h3>Seu plano dia a dia</h3><table class="plano"><thead><tr><th>Dia</th><th>O que estudar</th></tr></thead><tbody>' + r.dias.map(function (d) {
+      return "<tr><td>" + data(d.data) + "</td><td>" + d.itens.map(function (x) { return (x.revisao ? "<b>Revisão de " + esc(x.materia) + "</b>" : esc(x.materia)) + " · " + tempo(x.minutos); }).join("<br>") + "</td></tr>";
+    }).join("") + "</tbody></table>";
+    if (r.cortado) html += '<p class="note">O plano mostra só os próximos 120 dias. Monte de novo mais perto das provas mais distantes.</p>';
+    html += '<p class="note"><button type="button" class="cta alt" data-imprimir>Imprimir ou salvar em PDF</button></p>';
+    return html + '<p class="note">É uma sugestão para começar. Ajuste pelo que você já sabe de cada matéria, pelo conteúdo que vai cair e pelo seu ritmo. Estude em blocos de 25 a 30 minutos com pausas, como no Pomodoro, e use os últimos dias para revisar e fazer exercícios.</p>';
+  };
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.closest && e.target.closest("[data-imprimir]")) window.print();
+  });
   var CHAVE = "nyvo.desafio52";
   var lerMarcas = function () { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } };
   var gravar = function (d) { try { localStorage.setItem(CHAVE, JSON.stringify(d)); } catch (e) {} };

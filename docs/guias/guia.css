@@ -65,3 +65,12 @@ th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); 
 .pomo .ctrl #zerar { background:transparent; color:var(--green); border:2px solid var(--green); }
 #tempo { font:800 clamp(72px,22vw,120px)/1 var(--display); font-variant-numeric:tabular-nums; }
 #ciclos { color:var(--muted); margin:0; }
+button.cta { font:inherit; font-weight:700; cursor:pointer; }
+.plano td:first-child { white-space:nowrap; vertical-align:top; text-transform:capitalize; }
+.dias-folga { display:flex; flex-wrap:wrap; gap:4px 16px; border:0; padding:0; margin:0; }
+.dias-folga legend { font-weight:700; padding:0; margin-bottom:6px; }
+@media print {
+  .so-resultado header.top, .so-resultado main > :not(h1):not(#resultado), .so-resultado [data-imprimir] { display:none !important; }
+  .so-resultado #resultado { background:none; padding:0; }
+  .so-resultado tr { break-inside:avoid; }
+}
