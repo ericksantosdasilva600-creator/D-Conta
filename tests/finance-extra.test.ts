@@ -22,6 +22,10 @@ describe("registro por frase", () => {
 });
 
 describe("importar extrato", () => {
+  it("lê valor com ponto de milhar e sem centavos", () => {
+    const rows = parseStatement("Data;Descrição;Valor\n01/11/2026;Aluguel;-1.234\n02/11/2026;Salário;R$ 2.500");
+    expect(rows.map((r) => r.amount)).toEqual([1234, 2500]);
+  });
   it("lê CSV de banco com ponto e vírgula", () => {
     const rows = parseStatement("Data;Descrição;Valor\n01/11/2026;Supermercado Bom Preço;-150,30\n02/11/2026;Pix recebido João;200,00");
     expect(rows).toEqual([

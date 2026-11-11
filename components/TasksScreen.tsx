@@ -70,7 +70,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
     const title = draft.title.trim();
     if (!title) { setError("Escreva um título para a tarefa."); return; }
     const now = new Date().toISOString();
-    const task: Task = { ...draft, title, description: draft.description.trim(), project: draft.project.trim(), id: editing?.id ?? createId(), createdAt: editing?.createdAt ?? now, updatedAt: now };
+    const task: Task = { ...draft, title, description: draft.description.trim(), project: draft.project.trim(), id: editing?.id ?? createId(), createdAt: editing?.createdAt ?? now, updatedAt: editing?.status === "done" && draft.status === "done" ? editing.updatedAt : now };
     const updated = { ...data, tasks: [task, ...data.tasks.filter((item) => item.id !== task.id)] };
     updateData(() => updated);
     void refreshLocalNotifications(updated);
@@ -106,7 +106,7 @@ export function TasksScreen({ autoCreate = false }: { autoCreate?: boolean }) {
       <View style={{ gap: 12 }}>
         <SectionTitle title="Tarefas" />
         {data.tasks.length ? <>
-        <View style={searchBox}><MaterialCommunityIcons name="magnify" size={19} color={C.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Pesquisar tarefas ou projetos…" placeholderTextColor={C.muted} accessibilityLabel="Pesquisar tarefas" style={searchInput} returnKeyType="search" /><Pressable onPress={() => setQuery("")} accessibilityRole="button" accessibilityLabel="Limpar pesquisa" hitSlop={8}><MaterialCommunityIcons name="close-circle" size={18} color={query ? C.muted : "transparent"} /></Pressable></View>
+        <View style={searchBox}><MaterialCommunityIcons name="magnify" size={19} color={C.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Pesquisar tarefas ou projetos…" placeholderTextColor={C.muted} accessibilityLabel="Pesquisar tarefas" style={searchInput} returnKeyType="search" />{query ? <Pressable onPress={() => setQuery("")} accessibilityRole="button" accessibilityLabel="Limpar pesquisa" hitSlop={8}><MaterialCommunityIcons name="close-circle" size={18} color={C.muted} /></Pressable> : <View style={{ width: 18 }} />}</View>
         <ChoiceChips values={["Todos", ...STATUS_OPTIONS.map((item) => item.label)]} selected={filter === "all" ? "Todos" : statusLabel(filter)} onSelect={(value) => setFilter(value === "Todos" ? "all" : STATUS_OPTIONS.find((item) => item.label === value)?.value ?? "all")} />
         <ChoiceChips values={["Todas prioridades", "Alta", "Média", "Baixa"]} selected={priorityFilter === "all" ? "Todas prioridades" : PRIORITY_LABELS[priorityFilter]} onSelect={(value) => setPriorityFilter(value === "Alta" ? "high" : value === "Média" ? "medium" : value === "Baixa" ? "low" : "all")} />
         </> : null}

@@ -158,7 +158,7 @@ function toDateKey(value: string) {
 
 function toNumber(value: string) {
   const v = value.trim().replace(/[R$\s]/g, "");
-  const normalized = /,\d{1,2}$/.test(v) ? v.replace(/\./g, "").replace(",", ".") : v.replace(/,/g, "");
+  const normalized = /,\d{1,2}$/.test(v) || /^-?\d{1,3}(\.\d{3})+$/.test(v) ? v.replace(/\./g, "").replace(",", ".") : v.replace(/,/g, "");
   return Number(normalized);
 }
 

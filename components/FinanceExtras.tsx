@@ -144,7 +144,7 @@ export function GoalsPanel({ onToast }: { onToast: (message: string) => void }) 
   const addDeposit = () => {
     const v = parseAmount(depositValue);
     if (!deposit || !Number.isFinite(v) || v === 0) return;
-    updateData((c) => ({ ...c, goals: c.goals.map((g) => g.id === deposit.id ? { ...g, saved: Math.max(0, g.saved + v) } : g) }));
+    updateData((c) => ({ ...c, goals: c.goals.map((g) => g.id === deposit.id ? { ...g, saved: Math.max(0, Math.round((g.saved + v) * 100) / 100) } : g) }));
     onToast(v > 0 ? `${money(v, data.currency)} guardados em ${deposit.name}.` : "Retirada registrada.");
     setDeposit(null); setDepositValue("");
   };
@@ -214,7 +214,7 @@ export function DebtsPanel({ onToast }: { onToast: (message: string) => void }) 
   const monthly = active.reduce((s, d) => s + d.monthly, 0);
   const pay = (d: Debt) => {
     const amount = Math.min(d.monthly || d.total - d.paid, d.total - d.paid);
-    updateData((c) => ({ ...c, debts: c.debts.map((x) => x.id === d.id ? { ...x, paid: x.paid + amount } : x), transactions: [{ id: createId(), kind: "expense", amount, merchant: `Parcela: ${d.name}`, category: "Outros", date: localDateKey(), dueDate: "", paid: true, priority: "high", notes: "Pagamento de dívida", receiptUri: "", scope: "personal", account: "main" }, ...c.transactions] }));
+    updateData((c) => ({ ...c, debts: c.debts.map((x) => x.id === d.id ? { ...x, paid: Math.round((x.paid + amount) * 100) / 100 } : x), transactions: [{ id: createId(), kind: "expense", amount, merchant: `Parcela: ${d.name}`, category: "Outros", date: localDateKey(), dueDate: "", paid: true, priority: "high", notes: "Pagamento de dívida", receiptUri: "", scope: "personal", account: "main" }, ...c.transactions] }));
     onToast(`Pagamento de ${money(amount, data.currency)} registrado.`);
   };
   return (
@@ -247,7 +247,7 @@ export function DebtsPanel({ onToast }: { onToast: (message: string) => void }) 
 
 function DebtForm({ initial, onClose, onSave, onDelete }: { initial: Debt | null; onClose: () => void; onSave: (d: Debt) => void; onDelete: (d: Debt) => void }) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [total, setTotal] = useState(initial ? String(initial.total - initial.paid).replace(".", ",") : "");
+  const [total, setTotal] = useState(initial ? String(Math.round((initial.total - initial.paid) * 100) / 100).replace(".", ",") : "");
   const [monthly, setMonthly] = useState(initial?.monthly ? String(initial.monthly).replace(".", ",") : "");
   const [interest, setInterest] = useState(initial?.interest ? String(initial.interest).replace(".", ",") : "");
   const [error, setError] = useState("");

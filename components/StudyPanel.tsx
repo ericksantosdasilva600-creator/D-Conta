@@ -88,14 +88,17 @@ function Pomodoro() {
   const state = useRef({ mode: "focus" as "focus" | "break", seconds: 25 * 60 });
   useEffect(() => {
     if (!running) return;
+    // Conta pelo relógio, não por ticks: com a aba em segundo plano o navegador atrasa o setInterval.
+    let endAt = Date.now() + state.current.seconds * 1000;
     const id = setInterval(() => {
       const st = state.current;
-      st.seconds -= 1;
+      st.seconds = Math.max(0, Math.round((endAt - Date.now()) / 1000));
       if (st.seconds <= 0) {
         const next = st.mode === "focus" ? "break" : "focus";
         if (st.mode === "focus") setCycles((c) => c + 1);
         st.mode = next;
         st.seconds = next === "focus" ? 25 * 60 : 5 * 60;
+        endAt = Date.now() + st.seconds * 1000;
         setMode(next);
         try { if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") new Notification(next === "break" ? "Hora da pausa: 5 minutos" : "Pausa acabou: volte ao foco"); } catch { /* sem notificação */ }
       }

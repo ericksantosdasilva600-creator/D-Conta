@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Network from "expo-network";
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { isValidDateKey, localDateKey } from "@/lib/format";
 import { deleteCachedReceipt } from "@/lib/receipt-cache";
@@ -645,16 +645,37 @@ export function AppDataProvider({ children, accountId = null }: { children: Reac
     if (activeAccountId !== null && !useGlobalUntilLinked) void persistMeta({ dirty: true });
   }, [activeAccountId, useGlobalUntilLinked, persistMeta]);
 
+  // Última versão recebida de outra aba (evento "storage"); não precisa ser regravada.
+  const remoteSnapshot = useRef<string | null>(null);
+
   useEffect(() => {
     if (!storageReady || loading) return;
     const key = currentStorageKey;
+    const serialized = JSON.stringify(data);
+    if (serialized === remoteSnapshot.current) return;
     const timer = setTimeout(() => {
-      AsyncStorage.setItem(key, JSON.stringify(data)).then(() => {
+      AsyncStorage.setItem(key, serialized).then(() => {
         setStorageError((current) => current?.startsWith("Não foi possível salvar") ? null : current);
       }).catch(() => setStorageError("Não foi possível salvar as alterações no aparelho. Verifique o espaço disponível e tente novamente."));
     }, 180);
     return () => clearTimeout(timer);
   }, [data, loading, storageReady, currentStorageKey]);
+
+  // Com o app aberto em duas abas, cada uma regravava o estado inteiro e apagava o que a outra salvou.
+  // Ao ouvir o evento "storage", esta aba passa a usar os dados que a outra acabou de gravar.
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined" || !storageReady) return;
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== currentStorageKey || !event.newValue) return;
+      try {
+        const next = normalizeStoredData(JSON.parse(event.newValue));
+        remoteSnapshot.current = JSON.stringify(next);
+        setData(next);
+      } catch { /* dado ilegível vindo da outra aba: ignora */ }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [currentStorageKey, storageReady]);
 
   useEffect(() => {
     if (Platform.OS === "web") {

@@ -238,7 +238,12 @@ describe("calculadoras 2026", () => {
     expect(C.mediaNotas({ notas: [{ peso: 1 }, { peso: 1 }], aprovacao: 6 })).toMatchObject({ media: null, precisa: 6 });
     expect(C.mediaNotas({ notas: [{ nota: 7 }, { nota: 7 }] })).toMatchObject({ media: 7, situacao: "aprovado" });
     expect(C.mediaNotas({ notas: [{ nota: 70 }, { nota: 50 }], maxima: 100, aprovacao: 60 })).toMatchObject({ media: 60, situacao: "aprovado" });
-    expect(C.mediaNotas({ notas: [{ nota: 15, peso: 0 }, { nota: 12 }] })).toMatchObject({ media: 10, feitas: 1 });
+    expect(C.mediaNotas({ notas: [{ nota: 15, peso: 0 }, { nota: 12 }], maxima: 10 })).toMatchObject({ media: 10, feitas: 1 });
+    // Sem nota máxima informada, nota acima de 10 é outra escala: pede a nota máxima em vez de dizer que passou.
+    expect(C.mediaNotas({ notas: [{ nota: 70 }, { nota: 50 }] })).toEqual({ erro: "maxima" });
+    expect(C.mediaNotas({ notas: [{ nota: 7 }], aprovacao: 60 })).toEqual({ erro: "maxima" });
+    // Nota necessária arredondada para cima: tirar 6,34 fecha a média 7; 6,33 não fecha.
+    expect(C.mediaNotas({ notas: [{ nota: 6, peso: 2 }, { nota: 8, peso: 2 }, { nota: 9, peso: 1 }, { peso: 3 }] })).toMatchObject({ media: 7.4, precisa: 6.34 });
     expect(C.mediaNotas({ notas: [{}, {}] })).toBeNull();
   });
   it("monta o plano de estudos para provas", () => {
@@ -284,7 +289,7 @@ describe("calculadoras 2026", () => {
     expect(C.mei({ faturado: 81000, ate: 12 })).toMatchObject({ mesesRestantes: 0, porMes: 0, situacao: "dentro", usado: 100 });
   });
   it("calcula quanto cobrar por hora como autônomo", () => {
-    expect(C.valorHora({ ganho: 4000, custos: 500, horasDia: 8, diasSemana: 5, semanasFolga: 4, naoCobrado: 25, imposto: 6, extras: true })).toMatchObject({ hora: 43.83, dia: 350.67, faturarMes: 5260.05, faturarAno: 63120.57, horasMes: 120, horasAno: 1440, horaVoce: 37.04, horaCustos: 4.17, horaMargem: 0, horaImposto: 2.63 });
+    expect(C.valorHora({ ganho: 4000, custos: 500, horasDia: 8, diasSemana: 5, semanasFolga: 4, naoCobrado: 25, imposto: 6, extras: true })).toMatchObject({ hora: 43.84, dia: 350.67, faturarMes: 5260.05, faturarAno: 63120.57, horasMes: 120, horasAno: 1440, horaVoce: 37.04, horaCustos: 4.17, horaMargem: 0, horaImposto: 2.63 });
     expect(C.valorHora({ ganho: 3000, horasDia: 6, diasSemana: 5, semanasFolga: 2, naoCobrado: 0 })).toMatchObject({ hora: 24, faturarMes: 3000, horasAno: 1500 });
     expect(C.valorHora({ ganho: 3000, horasDia: 8, diasSemana: 5, semanasFolga: 4, naoCobrado: 25, margem: 10, imposto: 10 })).toMatchObject({ hora: 30.56, faturarAno: 44000, horaVoce: 25, horaMargem: 2.5, horaImposto: 3.06 });
     expect(C.valorHora({ ganho: 0, horasDia: 8, diasSemana: 5 })).toBeNull();

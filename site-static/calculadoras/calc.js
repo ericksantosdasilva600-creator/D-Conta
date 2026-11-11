@@ -359,7 +359,8 @@
     var bruto = semImposto / (1 - imposto);
     var hora = bruto / horasAno;
     return {
-      hora: cents(hora), dia: cents(hora * horasDia), faturarMes: cents(bruto / 12), faturarAno: cents(bruto),
+      // Arredonda para cima: cobrar o valor mostrado precisa fechar a conta, não ficar 1 centavo abaixo.
+      hora: Math.ceil(hora * 100 - 1e-6) / 100, dia: cents(hora * horasDia), faturarMes: cents(bruto / 12), faturarAno: cents(bruto),
       horasMes: Math.round(horasAno / 12 * 10) / 10, horasAno: Math.round(horasAno),
       horaVoce: cents(paraVoce / horasAno), horaCustos: cents(custosAno / horasAno), horaMargem: cents((semImposto - paraVoce - custosAno) / horasAno), horaImposto: cents((bruto - semImposto) / horasAno)
     };
@@ -394,6 +395,12 @@
   // Avaliação sem nota (só com peso) conta como ainda por fazer. Peso em branco vale 1.
   // Exame final opcional: média final = média × (100 − peso do exame)% + exame × peso do exame%. Cada faculdade tem a sua regra.
   function mediaNotas(o) {
+    // Sem nota máxima informada vale 10. Nota ou média acima de 10 nesse caso é outra escala (0 a 100, por exemplo):
+    // em vez de cortar para 10 e dizer que a pessoa passou, pede para informar a nota máxima.
+    if (!(o.maxima > 0)) {
+      var acima = (o.notas || []).some(function (x) { return x && typeof x.nota === "number" && x.nota > 10; });
+      if (acima || (typeof o.aprovacao === "number" && o.aprovacao > 10)) return { erro: "maxima" };
+    }
     var maxima = o.maxima > 0 ? Math.min(1000, o.maxima) : 10;
     var aprovacao = Math.min(maxima, Math.max(0, typeof o.aprovacao === "number" && isFinite(o.aprovacao) ? o.aprovacao : 7));
     var itens = (o.notas || []).filter(function (x) { return x && (typeof x.nota === "number" || typeof x.peso === "number"); }).map(function (x) {
@@ -407,7 +414,7 @@
     var pesoTotal = pesoFeito + pesoFalta, r = { maxima: maxima, aprovacao: aprovacao, feitas: feitas, faltam: itens.length - feitas, media: pesoFeito ? cents(soma / pesoFeito) : null };
     if (pesoFalta > 0) {
       var precisa = (aprovacao * pesoTotal - soma) / pesoFalta;
-      r.precisa = cents(Math.max(0, precisa));
+      r.precisa = Math.max(0, Math.ceil(precisa * 100 - 1e-6) / 100); // para cima: tirar a nota mostrada basta
       r.melhorPossivel = cents((soma + maxima * pesoFalta) / pesoTotal);
       r.situacao = precisa <= 1e-9 ? "garantido" : precisa > maxima + 1e-9 ? "impossivel" : "falta";
       return r;
@@ -418,7 +425,7 @@
       var exameMinima = Math.min(maxima, o.exameMinima);
       var exame = (exameMinima - (soma / pesoTotal) * (1 - pe)) / pe;
       r.exameMinima = exameMinima; r.pesoExame = Math.round(pe * 100);
-      r.exame = cents(Math.max(0, exame));
+      r.exame = Math.max(0, Math.ceil(exame * 100 - 1e-6) / 100);
       r.exameSituacao = exame > maxima + 1e-9 ? "impossivel" : "possivel";
     }
     return r;
@@ -684,7 +691,7 @@
     var ex = document.getElementById("extras");
     var r = valorHora({ ganho: num("ganho"), custos: num("custos"), horasDia: opt("horasDia", 8), diasSemana: opt("diasSemana", 5), semanasFolga: opt("folga", 4),
       naoCobrado: opt("naoCobrado", 25), imposto: num("imposto"), margem: num("margem"), extras: ex ? ex.checked : true });
-    if (!r) return null;
+    if (!r) return num("ganho") > 0 ? '<p class="note">Com essas horas, dias e folgas não sobra nenhuma hora para cobrar. Revise esses campos.</p>' : null;
     var h = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 1 }); };
     var partes = [["Para você", r.horaVoce], ["Custos do trabalho", r.horaCustos]];
     if (r.horaMargem) partes.push(["Margem de segurança", r.horaMargem]);
@@ -701,6 +708,7 @@
     for (var i = 1; i <= 8; i++) notas.push({ nota: raw("nota" + i), peso: raw("peso" + i) });
     var r = mediaNotas({ notas: notas, aprovacao: raw("aprovacao"), maxima: raw("maxima"), exameMinima: raw("exameMinima"), pesoExame: raw("pesoExame") });
     if (!r) return null;
+    if (r.erro === "maxima") return '<p class="note">Alguma nota passou de 10. Se a sua faculdade usa outra escala (de 0 a 100, por exemplo), informe a nota máxima em "Minhas notas não vão de 0 a 10" e calcule de novo.</p>';
     var n = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
     var linha = function (rot, val, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + val + "</b></div>"; };
     var aval = function (k) { return k === 1 ? "1 avaliação" : k + " avaliações"; };
@@ -915,7 +923,8 @@
     if (!form) return;
     var saida = document.getElementById("resultado"), acoes = document.getElementById("depois");
     var mesAtual = document.getElementById("ateMes");
-    if (mesAtual && !mesAtual.dataset.fixo) mesAtual.value = String(new Date().getMonth() + 1);
+    // Mês anterior: o mês atual ainda não acabou e deixaria a média e a projeção baixas demais.
+    if (mesAtual && !mesAtual.dataset.fixo) mesAtual.value = String(Math.max(1, new Date().getMonth()));
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var html = telas[form.dataset.calc]();
