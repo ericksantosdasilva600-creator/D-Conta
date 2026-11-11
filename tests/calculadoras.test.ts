@@ -269,6 +269,18 @@ describe("calculadoras 2026", () => {
     expect(C.planoEstudos({ hoje: "x" })).toBeNull();
     expect(C.planoEstudos({ hoje: "2026-11-11", materias: [] }).materias).toEqual([]);
   });
+  it("estima a água do dia pela referência da EFSA", () => {
+    expect(C.agua({ sexo: "mulher", faixa: "14+" })).toMatchObject({ total: 2000, bebidas: 1600, comida: 400, copos: 7, garrafas: 3.2, porPeso: 0 });
+    expect(C.agua({ sexo: "homem", faixa: "14+", peso: 70 })).toMatchObject({ total: 2500, bebidas: 2000, copos: 8, garrafas: 4, porPeso: 2450 });
+    expect(C.agua({ sexo: "mulher", fase: "gestante" })).toMatchObject({ fase: "gestante", total: 2300, bebidas: 1850, copos: 8 });
+    expect(C.agua({ sexo: "mulher", fase: "amamentando" })).toMatchObject({ total: 2700, bebidas: 2150, copos: 9 });
+    expect(C.agua({ sexo: "homem", fase: "gestante" })).toMatchObject({ fase: "", total: 2500 });
+    expect(C.agua({ sexo: "mulher", faixa: "9-13", fase: "gestante", peso: 40 })).toMatchObject({ fase: "", total: 1900, bebidas: 1500, porPeso: 0 });
+    expect(C.agua({ sexo: "homem", faixa: "9-13" })).toMatchObject({ total: 2100, bebidas: 1700 });
+    expect(C.agua({ sexo: "homem", faixa: "4-8" })).toMatchObject({ total: 1600, bebidas: 1300 });
+    expect(C.agua({ sexo: "mulher", faixa: "2-3" })).toMatchObject({ total: 1300, bebidas: 1050, copos: 5 });
+    expect(C.agua({ sexo: "mulher", faixa: "xx", peso: -5 })).toMatchObject({ faixa: "14+", total: 2000, porPeso: 0 });
+  });
   it("calcula as faltas permitidas com 75% de frequência", () => {
     expect(C.faltas({ total: 72, porDia: 2, faltas: 10 })).toMatchObject({ limite: 18, limiteDias: 9, resta: 8, restaDias: 4, frequencia: 86.11, situacao: "ok" });
     expect(C.faltas({ total: 60 })).toMatchObject({ limite: 15, limiteDias: 15, resta: 15, faltas: 0, frequencia: 100, usado: 0, situacao: "ok" });

@@ -448,6 +448,24 @@
       situacao: resta < 0 ? "reprovado" : resta === 0 ? "limite" : resta < porDia ? "quase" : "ok"
     };
   }
+  // Água por dia: ingestão adequada de água total da EFSA (Scientific Opinion on Dietary Reference Values for water, 2010),
+  // que soma bebidas e a água dos alimentos, para temperatura e atividade moderadas. A partir de 14 anos: 2,0 L (mulher) e 2,5 L (homem);
+  // gestante +300 mL; amamentando +700 mL. Crianças: 2–3 anos 1,3 L; 4–8 anos 1,6 L; 9–13 anos 1,9 L (menina) e 2,1 L (menino).
+  // Cerca de 20% vem da comida, então as bebidas ficam com 80% (arredondado a 50 mL). A regra popular de 35 mL por kg só aparece como comparação.
+  function agua(o) {
+    var faixa = ["2-3", "4-8", "9-13", "14+"].indexOf(o.faixa) >= 0 ? o.faixa : "14+";
+    var mulher = o.sexo === "mulher";
+    var total = faixa === "2-3" ? 1300 : faixa === "4-8" ? 1600 : faixa === "9-13" ? (mulher ? 1900 : 2100) : (mulher ? 2000 : 2500);
+    var fase = faixa === "14+" && mulher && (o.fase === "gestante" || o.fase === "amamentando") ? o.fase : "";
+    total += fase === "gestante" ? 300 : fase === "amamentando" ? 700 : 0;
+    var bebidas = Math.round(total * 0.8 / 50) * 50;
+    var peso = o.peso > 0 && o.peso <= 400 ? o.peso : 0;
+    return {
+      faixa: faixa, sexo: mulher ? "mulher" : "homem", fase: fase, total: total, bebidas: bebidas, comida: total - bebidas,
+      copos: Math.ceil(bebidas / 250), garrafas: Math.round(bebidas / 500 * 10) / 10,
+      porPeso: faixa === "14+" && peso ? Math.round(peso * 35 / 50) * 50 : 0
+    };
+  }
   // Planejador de estudos para provas: divide as horas de estudo de cada dia entre as matérias que ainda têm prova,
   // dando mais tempo às mais difíceis e às mais próximas (peso = dificuldade ÷ √dias até a prova).
   // Até 3 matérias por dia, em blocos de 30 min repartidos pelo peso (maior resto). Na véspera da prova, a matéria vira revisão com pelo menos metade do dia.
@@ -508,7 +526,7 @@
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -745,6 +763,24 @@
       r.situacao === "quase" ? "Cuidado: as faltas que sobram não chegam a um dia inteiro de aula (cada dia conta " + f(r.porDia) + "). Faltar mais um dia já passa do limite." :
       "Você já usou " + r.usado + "% das faltas permitidas. Guarde as que sobram para imprevistos, como uma doença.") + "</p>";
     return html + '<p class="note">É uma estimativa. A conta usa a parte inteira de ' + n(100 - r.minimo) + '% das aulas. Confira no plano de ensino o total de aulas e como a sua faculdade conta as faltas (por aula ou por dia).</p>';
+  };
+  telas.agua = function () {
+    var val = function (id) { var el = document.getElementById(id); return el ? el.value : ""; };
+    var sexo = val("sexo");
+    if (!sexo) return null;
+    var r = agua({ sexo: sexo, faixa: val("faixa"), fase: val("fase"), peso: num("peso") });
+    var l = function (ml) { return (ml / 1000).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + "\u00a0L"; };
+    var linha = function (rot, v, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + v + "</b></div>"; };
+    var html = linha("Água total do dia", l(r.total)) +
+      linha("Vem da comida (uns 20%)", l(r.comida)) +
+      linha("Para beber no dia", l(r.bebidas), 1) +
+      linha("Em copos de 250 mL", r.copos + "\u00a0copos") +
+      linha("Em garrafinhas de 500 mL", r.garrafas.toLocaleString("pt-BR") + "\u00a0" + (r.garrafas === 1 ? "garrafinha" : "garrafinhas"));
+    if (r.porPeso) html += linha("Regra popular: 35 mL por kg", l(r.porPeso));
+    if (r.fase) html += '<p class="note">' + (r.fase === "gestante" ? "Na gravidez, a referência soma 300 mL ao valor de uma mulher que não está grávida." : "Amamentando, a referência soma 700 mL ao valor de uma mulher que não está amamentando.") + "</p>";
+    if (r.porPeso && Math.abs(r.porPeso - r.bebidas) >= 500) html += '<p class="note">A regra dos 35 mL por kg dá ' + l(r.porPeso) + ", bem diferente da referência. Ela é só um atalho popular, não uma recomendação oficial; use a referência acima como ponto de partida.</p>";
+    html += '<p class="note">Contam água, chás, sucos, leite e outras bebidas. Em dia quente, com treino ou muito suor, você precisa de mais: beba aos poucos ao longo do dia, sem esperar a sede apertar. Urina amarelo-clara é um bom sinal.</p>';
+    return html + '<p class="note">É uma estimativa para pessoas saudáveis, com base na referência da autoridade europeia de segurança alimentar (EFSA), e não substitui orientação médica. Quem tem doença nos rins, no coração ou recebeu ordem de limitar líquidos deve seguir o que o médico disse.</p>';
   };
   telas.mei = function () {
     var val = function (id, d) { var el = document.getElementById(id); return el ? el.value : d; };
