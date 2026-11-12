@@ -77,3 +77,36 @@ button.cta { font:inherit; font-weight:700; cursor:pointer; }
 .barra { width:100%; height:14px; accent-color:var(--green); margin:4px 0 10px; }
 .marcos { list-style:none; padding:0; display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 12px; }
 .marcos li { background:var(--surface); border-radius:999px; padding:6px 14px; font-weight:700; font-size:15px; }
+.calc .habitos { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; border:0; padding:0; margin:0; }
+.calc .habitos legend { font-weight:700; font-size:16px; padding:0; margin-bottom:8px; }
+.folha-titulo { margin:14px 0 4px; font-size:24px; }
+.folha-alvo { margin:0 0 8px; }
+.grade-rolagem { overflow-x:auto; background:var(--surface); border-radius:12px; margin:10px 0; }
+.rastreador { margin:0; font-size:13px; table-layout:fixed; min-width:760px; }
+.rastreador th, .rastreador td { border:1px solid var(--line); padding:0; text-align:center; height:34px; }
+.rastreador thead th { font-weight:700; line-height:1.1; padding:4px 0; height:auto; }
+.rastreador thead small { display:block; font-weight:400; color:var(--muted); font-size:11px; }
+.rastreador .nome { width:150px; text-align:left; padding:2px 8px; font-weight:700; overflow-wrap:anywhere; line-height:1.2; }
+.rastreador .soma { width:52px; }
+.rastreador .fds { background:color-mix(in srgb, var(--mint) 55%, transparent); }
+.rastreador .branco { display:block; border-bottom:1px dotted var(--muted); height:18px; }
+.folha-rodape { font-size:13px; color:var(--muted); margin:6px 0 10px; }
+@page paisagem { size:A4 landscape; margin:10mm; }
+@media print {
+  body.folha { background:#fff; color:#000; }
+  .folha h1 { display:none !important; }
+  .folha #resultado > :not(.folha-habitos) { display:none !important; }
+  .folha main { width:auto; padding:0; }
+  .folha-habitos { page:paisagem; color:#000; }
+  .folha-titulo { margin:0 0 2mm; font-size:16pt; }
+  .folha-alvo { font-size:11pt; margin:0 0 2mm; }
+  .grade-rolagem { overflow:visible; background:none; border-radius:0; }
+  .rastreador { min-width:0; font-size:8.5pt; }
+  .rastreador th, .rastreador td { border:0.6pt solid #555; height:17mm; }
+  .rastreador thead th { height:auto; }
+  .rastreador .nome { width:42mm; }
+  .rastreador .soma { width:12mm; }
+  .rastreador .fds { background:#eee; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .folha-rodape { color:#333; font-size:8pt; }
+}
+.calc .dica-form { margin:0; font-size:15px; color:var(--muted); }

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rastreador de hábitos para imprimir: grátis em PDF | Dá Conta</title>
+<meta name="description" content="Monte sua folha de hábitos do mês com os seus hábitos e os dias da semana, imprima ou salve em PDF. Grátis, sem cadastro e sem marca d'água.">
+<link rel="canonical" href="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/rastreador-de-habitos.html">
+<meta property="og:title" content="Rastreador de hábitos para imprimir: grátis em PDF | Dá Conta">
+<meta property="og:description" content="Monte sua folha de hábitos do mês com os seus hábitos e os dias da semana, imprima ou salve em PDF. Grátis, sem cadastro e sem marca d'água.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/rastreador-de-habitos.html">
+<meta property="og:image" content="https://ericksantosdasilva600-creator.github.io/D-Conta/og.png">
+<meta name="theme-color" content="#0E4A3B">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../guias/guia.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Rastreador de hábitos para imprimir", "url": "https://ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/rastreador-de-habitos.html", "applicationCategory": "LifestyleApplication", "operatingSystem": "Web", "inLanguage": "pt-BR", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Como usar um rastreador de hábitos?", "acceptedAnswer": {"@type": "Answer", "text": "Escreva na folha os hábitos que quer manter, cole em um lugar que você vê todo dia e pinte o quadrinho do dia sempre que cumprir. No fim do mês, conte os dias de cada hábito na coluna Total e veja o que funcionou."}}, {"@type": "Question", "name": "Quantos hábitos colocar na folha?", "acceptedAnswer": {"@type": "Answer", "text": "Comece com poucos, de 3 a 5. É melhor cumprir quase todos os dias poucos hábitos do que abandonar uma lista longa na segunda semana. A folha aceita até 8 nomes e completa o resto com linhas em branco."}}, {"@type": "Question", "name": "Dá para salvar em PDF em vez de imprimir?", "acceptedAnswer": {"@type": "Answer", "text": "Sim. Clique em Imprimir ou salvar em PDF e, na janela que abrir, escolha Salvar como PDF no lugar da impressora. No celular, a opção aparece no menu de compartilhar ou imprimir do navegador."}}, {"@type": "Question", "name": "A folha sai em que tamanho?", "acceptedAnswer": {"@type": "Answer", "text": "Em uma página A4 na horizontal, com um quadrinho para cada dia do mês. Os sábados e domingos ficam em cinza claro para você se localizar."}}, {"@type": "Question", "name": "Meus hábitos ficam salvos?", "acceptedAnswer": {"@type": "Answer", "text": "Os nomes ficam guardados só neste navegador, para você imprimir o mês seguinte sem digitar de novo. Nada é enviado para fora."}}]}]}</script>
+</head>
+<body class="so-resultado folha">
+<header class="top"><div class="in"><a class="brand" href="../?ver=1"><img src="../icon-192.png" alt="">Dá Conta</a><a class="small" href="../app/">Abrir o app</a></div></header>
+<main>
+<p class="crumbs"><a href="../?ver=1">Dá Conta</a> › <a href="./">Calculadoras</a></p>
+<h1>Rastreador de hábitos para imprimir</h1>
+<p class="lead">Escreva os hábitos que quer manter, escolha o mês e imprima uma folha com um quadrinho para cada dia. Também dá para salvar em PDF.</p>
+<form class="calc" data-calc="rastreador">
+<label for="mes">Mês da folha<small>Já vem com o mês atual. Troque para montar a folha do próximo mês.</small><input id="mes" type="month" required></label>
+<fieldset class="habitos"><legend>Seus hábitos (até 8)</legend><label for="hab1">Hábito 1<input id="hab1" type="text" maxlength="40" autocomplete="off" placeholder="Ex.: beber 2 litros de água"></label><label for="hab2">Hábito 2<input id="hab2" type="text" maxlength="40" autocomplete="off" placeholder="Ex.: ler 10 páginas"></label><label for="hab3">Hábito 3<input id="hab3" type="text" maxlength="40" autocomplete="off" placeholder="Ex.: caminhar 30 minutos"></label><label for="hab4">Hábito 4<input id="hab4" type="text" maxlength="40" autocomplete="off" placeholder="Ex.: dormir antes das 23h"></label><label for="hab5">Hábito 5<input id="hab5" type="text" maxlength="40" autocomplete="off"></label><label for="hab6">Hábito 6<input id="hab6" type="text" maxlength="40" autocomplete="off"></label><label for="hab7">Hábito 7<input id="hab7" type="text" maxlength="40" autocomplete="off"></label><label for="hab8">Hábito 8<input id="hab8" type="text" maxlength="40" autocomplete="off"></label></fieldset>
+<p class="dica-form">Deixe em branco para escrever à mão: a folha sempre sai com 8 linhas.</p>
+<label for="objetivo">Objetivo do mês (opcional)<small>Aparece no topo da folha. Ex.: ter mais energia, passar na prova.</small><input id="objetivo" type="text" maxlength="80" autocomplete="off"></label>
+<button type="submit">Montar minha folha</button>
+</form>
+<div id="resultado" tabindex="-1" aria-live="polite" hidden></div>
+<div id="depois" class="actions" hidden>
+<a class="cta" href="https://wa.me/?text=Montei%20minha%20folha%20de%20h%C3%A1bitos%20do%20m%C3%AAs%20para%20imprimir.%20Monte%20a%20sua%20gr%C3%A1tis%3A%20https%3A//ericksantosdasilva600-creator.github.io/D-Conta/calculadoras/rastreador-de-habitos.html" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+<a class="cta alt" href="../app/">Acompanhar os hábitos no Dá Conta</a>
+</div>
+<p class="more">Tudo roda no seu navegador e nada do que você digita é enviado. Os nomes dos hábitos ficam salvos só neste aparelho.</p>
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+<article>
+<h2>Como usar a folha de hábitos</h2>
+<p>Imprima a folha e cole onde você olha todo dia: na geladeira, no espelho do banheiro ou ao lado da cama. Sempre que cumprir um hábito, pinte o quadrinho daquele dia. Ver a fileira de quadrinhos pintados crescer é um empurrão para não parar.</p>
+<p>No fim do mês, conte os dias de cada hábito e anote na coluna Total. Assim você vê o que já virou rotina e o que precisa de ajuste, e imprime a folha do mês seguinte com os mesmos hábitos ou com novos.</p>
+<h2>Dicas para a folha funcionar</h2>
+<p>Comece pequeno: "ler 10 páginas" é mais fácil de cumprir do que "ler um livro por semana". Prefira hábitos que dá para marcar com sim ou não. Ligue cada hábito a algo que você já faz, como beber água logo depois de escovar os dentes. E deixe a caneta junto da folha.</p>
+<p>Falhou um dia? Tudo bem. O importante é não deixar a falha virar dois, três dias seguidos. Um estudo da University College London, publicado em 2010, encontrou uma média de 66 dias para um comportamento novo ficar automático, com muita variação de pessoa para pessoa. Para ir mais fundo, veja o guia <a href="../guias/criar-habitos.html">como criar hábitos que duram</a>.</p>
+<h2>Prefere marcar no celular?</h2>
+<p>No app do Dá Conta você cria os hábitos com dias e horário, recebe lembretes, marca o que fez e vê a sequência de dias seguidos, sem precisar de papel. Se quer largar um hábito ruim, use o <a href="dias-sem-mau-habito.html">contador de dias sem um mau hábito</a>.</p>
+<h2>Perguntas frequentes</h2>
+<h3>Como usar um rastreador de hábitos?</h3>
+<p>Escreva na folha os hábitos que quer manter, cole em um lugar que você vê todo dia e pinte o quadrinho do dia sempre que cumprir. No fim do mês, conte os dias de cada hábito na coluna Total e veja o que funcionou.</p>
+<h3>Quantos hábitos colocar na folha?</h3>
+<p>Comece com poucos, de 3 a 5. É melhor cumprir quase todos os dias poucos hábitos do que abandonar uma lista longa na segunda semana. A folha aceita até 8 nomes e completa o resto com linhas em branco.</p>
+<h3>Dá para salvar em PDF em vez de imprimir?</h3>
+<p>Sim. Clique em Imprimir ou salvar em PDF e, na janela que abrir, escolha Salvar como PDF no lugar da impressora. No celular, a opção aparece no menu de compartilhar ou imprimir do navegador.</p>
+<h3>A folha sai em que tamanho?</h3>
+<p>Em uma página A4 na horizontal, com um quadrinho para cada dia do mês. Os sábados e domingos ficam em cinza claro para você se localizar.</p>
+<h3>Meus hábitos ficam salvos?</h3>
+<p>Os nomes ficam guardados só neste navegador, para você imprimir o mês seguinte sem digitar de novo. Nada é enviado para fora.</p>
+</article>
+<div class="more"><b>Outras calculadoras</b><a href="dias-sem-mau-habito.html">Contador de dias sem um mau hábito</a><a href="quanto-beber-de-agua.html">Quanto beber de água por dia</a><a href="planejador-de-estudos.html">Planejador de estudos para provas</a><a href="media-de-notas.html">Média de notas da faculdade</a><a href="pomodoro-online.html">Pomodoro online</a><a href="calculadora-mei.html">Calculadora de MEI 2026</a><a href="quanto-cobrar-por-hora.html">Quanto cobrar por hora</a><a href="alcool-ou-gasolina.html">Álcool ou gasolina</a><a href="alugar-ou-financiar.html">Alugar ou financiar imóvel</a><a href="custo-por-km.html">Custo por km do carro</a><a href="dividir-conta.html">Dividir a conta entre amigos</a><a href="melhor-dia-cartao.html">Melhor dia para comprar no cartão</a><a href="juros-rotativo.html">Juros do rotativo do cartão</a><a href="quitar-dividas.html">Plano para quitar dívidas</a><a href="vale-parcelar.html">Vale a pena parcelar?</a><a href="juros-compostos.html">Calculadora de juros compostos</a><a href="orcamento-50-30-20.html">Orçamento 50-30-20</a><a href="reserva-de-emergencia.html">Calculadora de reserva de emergência</a><a href="quanto-rende.html">Quanto rende meu dinheiro</a><a href="salario-liquido.html">Calculadora de salário líquido</a><a href="13-salario.html">Calculadora de 13º salário</a><a href="horas-extras.html">Calculadora de horas extras</a><a href="ferias.html">Calculadora de férias</a><a href="rescisao.html">Calculadora de rescisão</a><a href="desafio-52-semanas.html">Desafio das 52 semanas</a></div>
+</main>
+<script src="calc.js"></script>
+<script src="../ads.js" defer></script>
+<script src="../conta.js" defer></script>
+</body>
+</html>

@@ -541,12 +541,30 @@
       economia: cents(dias * gasto), porMes: cents(30 * gasto), porAno: cents(365 * gasto)
     };
   }
+  // Rastreador de hábitos para imprimir: monta a grade de um mês (dias com a letra do dia da semana) e a lista de hábitos,
+  // completando com linhas em branco para escrever à mão. Aceita até 10 hábitos; nomes vazios viram linhas em branco.
+  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  function rastreador(o) {
+    var m = /^(\d{4})-(\d{2})$/.exec(String(o && o.mes || ""));
+    if (!m) return null;
+    var ano = +m[1], mes = +m[2];
+    if (mes < 1 || mes > 12 || ano < 1900 || ano > 2200) return null;
+    var total = new Date(Date.UTC(ano, mes, 0)).getUTCDate(), dias = [];
+    for (var d = 1; d <= total; d++) {
+      var sem = new Date(Date.UTC(ano, mes - 1, d)).getUTCDay();
+      dias.push({ dia: d, letra: "DSTQQSS".charAt(sem), fimDeSemana: sem === 0 || sem === 6 });
+    }
+    var nomes = (o.habitos || []).map(function (h) { return String(h == null ? "" : h).replace(/\s+/g, " ").trim().slice(0, 40); }).filter(Boolean).slice(0, 10);
+    var minimo = Math.min(10, Math.max(0, Math.floor(o.linhas || 0)));
+    while (nomes.length < minimo) nomes.push("");
+    return { ano: ano, mes: mes, nomeMes: MESES[mes - 1], dias: dias, habitos: nomes };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -941,6 +959,37 @@
     g.querySelectorAll("input:checked").forEach(function (b) { marcadas.push(Number(b.dataset.s)); });
     gravar({ inicial: Number(g.dataset.inicial), marcadas: marcadas });
     resumoDesafio();
+  });
+  var CHAVE_RASTREADOR = "nyvo.rastreador";
+  telas.rastreador = function () {
+    var mes = document.getElementById("mes"), habitos = [];
+    for (var i = 1; i <= 8; i++) { var el = document.getElementById("hab" + i); if (el) habitos.push(el.value); }
+    var r = rastreador({ mes: mes ? mes.value : "", habitos: habitos, linhas: 8 });
+    if (!r) return null;
+    try { localStorage.setItem(CHAVE_RASTREADOR, JSON.stringify(habitos.map(function (h) { return String(h).slice(0, 40); }))); } catch (e) {}
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    var objetivo = document.getElementById("objetivo"), alvo = objetivo ? objetivo.value.replace(/\s+/g, " ").trim().slice(0, 80) : "";
+    var cab = '<th scope="col" class="nome">Hábito</th>' + r.dias.map(function (d) {
+      return '<th scope="col"' + (d.fimDeSemana ? ' class="fds"' : "") + "><small>" + d.letra + "</small>" + d.dia + "</th>";
+    }).join("") + '<th scope="col" class="soma">Total</th>';
+    var corpo = r.habitos.map(function (h) {
+      return '<tr><th scope="row" class="nome">' + (h ? esc(h) : '<span class="branco" aria-label="Linha em branco"></span>') + "</th>" + r.dias.map(function (d) { return "<td" + (d.fimDeSemana ? ' class="fds"' : "") + "></td>"; }).join("") + '<td class="soma"></td></tr>';
+    }).join("");
+    var titulo = "Rastreador de hábitos · " + r.nomeMes + " de " + r.ano;
+    return '<div class="folha-habitos"><h2 class="folha-titulo">' + titulo + "</h2>" + (alvo ? '<p class="folha-alvo">Objetivo do mês: <b>' + esc(alvo) + "</b></p>" : "") +
+      '<div class="grade-rolagem" tabindex="0" role="region" aria-label="' + titulo + '"><table class="rastreador"><thead><tr>' + cab + "</tr></thead><tbody>" + corpo + "</tbody></table></div>" +
+      '<p class="folha-rodape">Pinte o quadrinho do dia em que cumpriu o hábito. No fim do mês, some os dias na coluna Total. · Dá Conta: ericksantosdasilva600-creator.github.io/D-Conta</p></div>' +
+      '<p class="note"><button type="button" class="cta alt" data-imprimir>Imprimir ou salvar em PDF</button></p>' +
+      '<p class="note">A folha sai na horizontal, em uma página A4. Se a impressora cortar as bordas, escolha "Ajustar à página" na janela de impressão.</p>';
+  };
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector('form[data-calc="rastreador"]');
+    if (!form) return;
+    var mes = document.getElementById("mes"), agora = new Date();
+    if (mes && !mes.value) mes.value = agora.getFullYear() + "-" + String(agora.getMonth() + 1).padStart(2, "0");
+    var salvos = null;
+    try { salvos = JSON.parse(localStorage.getItem(CHAVE_RASTREADOR)); } catch (e) {}
+    if (Array.isArray(salvos)) salvos.slice(0, 8).forEach(function (h, i) { var el = document.getElementById("hab" + (i + 1)); if (el && typeof h === "string") el.value = h; });
   });
   var CHAVE_HABITO = "nyvo.diasSem";
   var NOME_MARCO = { 1: "1 dia", 3: "3 dias", 7: "1 semana", 14: "2 semanas", 30: "1 mês", 60: "2 meses", 90: "3 meses", 180: "6 meses", 365: "1 ano", 730: "2 anos", 1095: "3 anos", 1825: "5 anos" };

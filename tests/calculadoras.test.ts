@@ -281,6 +281,23 @@ describe("calculadoras 2026", () => {
     expect(C.agua({ sexo: "mulher", faixa: "2-3" })).toMatchObject({ total: 1300, bebidas: 1050, copos: 5 });
     expect(C.agua({ sexo: "mulher", faixa: "xx", peso: -5 })).toMatchObject({ faixa: "14+", total: 2000, porPeso: 0 });
   });
+  it("monta a folha do rastreador de hábitos", () => {
+    const nov = C.rastreador({ mes: "2026-11", habitos: ["  Ler 10 páginas ", "", "Beber   água"], linhas: 8 });
+    expect(nov).toMatchObject({ ano: 2026, mes: 11, nomeMes: "novembro" });
+    expect(nov.dias).toHaveLength(30);
+    expect(nov.dias[0]).toEqual({ dia: 1, letra: "D", fimDeSemana: true });
+    expect(nov.dias[1]).toEqual({ dia: 2, letra: "S", fimDeSemana: false });
+    expect(nov.dias[6]).toEqual({ dia: 7, letra: "S", fimDeSemana: true });
+    expect(nov.habitos).toEqual(["Ler 10 páginas", "Beber água", "", "", "", "", "", ""]);
+    expect(C.rastreador({ mes: "2028-02" }).dias).toHaveLength(29);
+    expect(C.rastreador({ mes: "2026-02" }).dias).toHaveLength(28);
+    expect(C.rastreador({ mes: "2026-12", habitos: [] }).dias[30]).toMatchObject({ dia: 31, letra: "Q" });
+    expect(C.rastreador({ mes: "2026-01", habitos: Array.from({ length: 12 }, (_, i) => "H" + i), linhas: 8 }).habitos).toHaveLength(10);
+    expect(C.rastreador({ mes: "2026-01", habitos: ["x".repeat(70)] }).habitos[0]).toHaveLength(40);
+    expect(C.rastreador({ mes: "2026-13" })).toBeNull();
+    expect(C.rastreador({ mes: "" })).toBeNull();
+    expect(C.rastreador({ mes: "novembro" })).toBeNull();
+  });
   it("conta os dias sem um mau hábito, marcos e economia", () => {
     expect(C.diasSem({ inicio: "2026-11-12", hoje: "2026-11-12" })).toMatchObject({ dias: 0, marcos: [], proximo: 1, falta: 1, dataProximo: "2026-11-13", progresso: 0, economia: 0, porMes: 0 });
     expect(C.diasSem({ inicio: "2026-11-01", hoje: "2026-11-12", gastoDia: 12.5 })).toMatchObject({ dias: 11, semanas: 1, restoDias: 4, marcos: [1, 3, 7], proximo: 14, falta: 3, dataProximo: "2026-11-15", progresso: 57, economia: 137.5, porMes: 375, porAno: 4562.5 });
