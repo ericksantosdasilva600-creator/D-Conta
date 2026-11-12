@@ -281,6 +281,17 @@ describe("calculadoras 2026", () => {
     expect(C.agua({ sexo: "mulher", faixa: "2-3" })).toMatchObject({ total: 1300, bebidas: 1050, copos: 5 });
     expect(C.agua({ sexo: "mulher", faixa: "xx", peso: -5 })).toMatchObject({ faixa: "14+", total: 2000, porPeso: 0 });
   });
+  it("conta os dias sem um mau hábito, marcos e economia", () => {
+    expect(C.diasSem({ inicio: "2026-11-12", hoje: "2026-11-12" })).toMatchObject({ dias: 0, marcos: [], proximo: 1, falta: 1, dataProximo: "2026-11-13", progresso: 0, economia: 0, porMes: 0 });
+    expect(C.diasSem({ inicio: "2026-11-01", hoje: "2026-11-12", gastoDia: 12.5 })).toMatchObject({ dias: 11, semanas: 1, restoDias: 4, marcos: [1, 3, 7], proximo: 14, falta: 3, dataProximo: "2026-11-15", progresso: 57, economia: 137.5, porMes: 375, porAno: 4562.5 });
+    expect(C.diasSem({ inicio: "2026-02-28", hoje: "2026-03-30" })).toMatchObject({ dias: 30, marcos: [1, 3, 7, 14, 30], proximo: 60, progresso: 0 });
+    expect(C.diasSem({ inicio: "2025-11-12", hoje: "2026-11-12" })).toMatchObject({ dias: 365, proximo: 730, dataProximo: "2027-11-12" });
+    expect(C.diasSem({ inicio: "2016-01-01", hoje: "2026-11-12" })).toMatchObject({ proximo: null, falta: 0, progresso: 100, dataProximo: null });
+    expect(C.diasSem({ inicio: "2026-11-13", hoje: "2026-11-12" })).toEqual({ futuro: true });
+    expect(C.diasSem({ inicio: "", hoje: "2026-11-12" })).toBeNull();
+    expect(C.diasSem({ inicio: "ontem", hoje: "2026-11-12" })).toBeNull();
+    expect(C.diasSem({ inicio: "2026-11-10", hoje: "2026-11-12", gastoDia: -3 })).toMatchObject({ dias: 2, economia: 0 });
+  });
   it("calcula as faltas permitidas com 75% de frequência", () => {
     expect(C.faltas({ total: 72, porDia: 2, faltas: 10 })).toMatchObject({ limite: 18, limiteDias: 9, resta: 8, restaDias: 4, frequencia: 86.11, situacao: "ok" });
     expect(C.faltas({ total: 60 })).toMatchObject({ limite: 15, limiteDias: 15, resta: 15, faltas: 0, frequencia: 100, usado: 0, situacao: "ok" });

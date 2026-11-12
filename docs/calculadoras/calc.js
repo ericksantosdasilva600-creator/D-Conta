@@ -521,12 +521,32 @@
       materias: materias.map(function (m) { return { nome: m.nome, prova: iso(m.prova), dificuldade: m.dificuldade, minutos: m.minutos, dias: m.dias, diasAte: Math.round((m.prova - hoje) / DIA) }; })
     };
   }
+  // Dias sem um mau hábito: conta os dias desde a data de início (dias de calendário, sem horário), mostra semanas,
+  // marcos já alcançados, o próximo marco com a data e, se a pessoa informar quanto gastava por dia, o dinheiro que deixou de gastar.
+  var MARCOS = [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1095, 1825];
+  function diasSem(o) {
+    var ini = dataUTC(o.inicio), hoje = dataUTC(o.hoje);
+    if (ini === null || hoje === null || !/^\d{4}-\d{2}-\d{2}$/.test(String(o.inicio))) return null;
+    var dias = Math.round((hoje - ini) / DIA);
+    if (dias < 0) return { futuro: true };
+    var gasto = o.gastoDia > 0 && o.gastoDia < 1e6 ? o.gastoDia : 0;
+    var feitos = MARCOS.filter(function (m) { return m <= dias; });
+    var anterior = feitos.length ? feitos[feitos.length - 1] : 0;
+    var proximo = null;
+    for (var i = 0; i < MARCOS.length; i++) if (MARCOS[i] > dias) { proximo = MARCOS[i]; break; }
+    return {
+      dias: dias, semanas: Math.floor(dias / 7), restoDias: dias % 7, marcos: feitos,
+      proximo: proximo, falta: proximo ? proximo - dias : 0, dataProximo: proximo ? iso(ini + proximo * DIA) : null,
+      progresso: proximo ? Math.floor((dias - anterior) / (proximo - anterior) * 100) : 100,
+      economia: cents(dias * gasto), porMes: cents(30 * gasto), porAno: cents(365 * gasto)
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -921,6 +941,66 @@
     g.querySelectorAll("input:checked").forEach(function (b) { marcadas.push(Number(b.dataset.s)); });
     gravar({ inicial: Number(g.dataset.inicial), marcadas: marcadas });
     resumoDesafio();
+  });
+  var CHAVE_HABITO = "nyvo.diasSem";
+  var NOME_MARCO = { 1: "1 dia", 3: "3 dias", 7: "1 semana", 14: "2 semanas", 30: "1 mês", 60: "2 meses", 90: "3 meses", 180: "6 meses", 365: "1 ano", 730: "2 anos", 1095: "3 anos", 1825: "5 anos" };
+  var hojeLocal = function () { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  telas.habito = function () {
+    var campo = function (id) { var el = document.getElementById(id); return el ? el.value : ""; };
+    var inicio = campo("inicio");
+    if (!inicio) return null;
+    var r = diasSem({ inicio: inicio, hoje: hojeLocal(), gastoDia: num("gastoDia") });
+    if (!r) return null;
+    if (r.futuro) return '<p class="note">A data de início está no futuro. Escolha hoje ou um dia que já passou.</p>';
+    var nome = campo("habito").trim().slice(0, 60);
+    try { localStorage.setItem(CHAVE_HABITO, JSON.stringify({ habito: nome, inicio: inicio, gastoDia: num("gastoDia") })); } catch (e) {}
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    var linha = function (rot, val, total) { return '<div class="line' + (total ? " total" : "") + '"><span>' + rot + "</span><b>" + val + "</b></div>"; };
+    var dias = function (n) { return n === 1 ? "1 dia" : n.toLocaleString("pt-BR") + " dias"; };
+    var data = function (s) { return new Date(s + "T12:00:00Z").toLocaleDateString("pt-BR", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" }); };
+    var html = linha(nome ? "Dias sem " + esc(nome) : "Dias sem o mau hábito", dias(r.dias), 1);
+    if (r.dias >= 7) html += linha("Em semanas", r.semanas + (r.semanas === 1 ? " semana" : " semanas") + (r.restoDias ? " e " + dias(r.restoDias) : ""));
+    html += linha("Desde", data(inicio));
+    if (r.proximo) {
+      html += linha("Próximo marco", NOME_MARCO[r.proximo] + " em " + data(r.dataProximo));
+      html += '<p class="note">Faltam ' + dias(r.falta) + ' para o próximo marco.</p><progress class="barra" max="100" value="' + r.progresso + '" aria-label="Caminho até o próximo marco">' + r.progresso + "%</progress>";
+    } else html += '<p class="note">Você passou de 5 anos. Que conquista!</p>';
+    if (r.marcos.length) html += '<h3>Marcos alcançados</h3><ul class="marcos">' + r.marcos.map(function (m) { return "<li>" + NOME_MARCO[m] + "</li>"; }).join("") + "</ul>";
+    else html += '<p class="note">O primeiro dia é o mais importante. Amanhã você alcança o primeiro marco.</p>';
+    if (r.porMes) html += "<h3>Dinheiro que ficou no bolso</h3>" + linha("Até hoje", brl(r.economia), 1) + linha("Em 1 mês", brl(r.porMes)) + linha("Em 1 ano", brl(r.porAno)) +
+      '<p class="note">Que tal mandar esse dinheiro para uma meta, como a <a href="reserva-de-emergencia.html">reserva de emergência</a>?</p>';
+    html += '<p class="note"><button type="button" class="cta alt" data-recomecar>Recaí: recomeçar a contagem hoje</button> <button type="button" class="cta alt" data-apagar-habito>Apagar deste aparelho</button></p>';
+    return html + '<p class="note">O contador fica salvo só neste navegador. Volte quando quiser para ver os dias aumentarem.</p>';
+  };
+  document.addEventListener("click", function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var form = document.querySelector('form[data-calc="habito"]');
+    if (!form) return;
+    if (alvo.closest("[data-recomecar]")) {
+      document.getElementById("inicio").value = hojeLocal();
+      form.dispatchEvent(new Event("submit", { cancelable: true }));
+    } else if (alvo.closest("[data-apagar-habito]")) {
+      try { localStorage.removeItem(CHAVE_HABITO); } catch (err) {}
+      form.reset();
+      var saida = document.getElementById("resultado");
+      saida.innerHTML = '<p class="note">Pronto, o contador foi apagado deste aparelho.</p>';
+      document.getElementById("depois").hidden = true;
+    }
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector('form[data-calc="habito"]');
+    if (!form) return;
+    var ini = document.getElementById("inicio");
+    ini.max = hojeLocal();
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(CHAVE_HABITO)); } catch (e) {}
+    if (!d || !d.inicio) return;
+    ini.value = d.inicio;
+    document.getElementById("habito").value = d.habito || "";
+    if (d.gastoDia) document.getElementById("gastoDia").value = d.gastoDia;
+    // Espera o envio do formulário ser ligado (logo abaixo) antes de calcular.
+    setTimeout(function () { form.dispatchEvent(new Event("submit", { cancelable: true })); }, 0);
   });
   function pomodoro(box) {
     var tempos = { foco: 25, pausa: 5 }, modo = "foco", resta = tempos.foco * 60, fim = 0, rel = null, ciclos = 0;
