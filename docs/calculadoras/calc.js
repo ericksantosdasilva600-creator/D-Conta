@@ -559,12 +559,36 @@
     while (nomes.length < minimo) nomes.push("");
     return { ano: ano, mes: mes, nomeMes: MESES[mes - 1], dias: dias, habitos: nomes };
   }
+  // Planilha de gastos: soma os gastos do mês por categoria e compara com a renda.
+  // As categorias são as mesmas da planilha em Excel (scripts/planilha-de-gastos.py).
+  var CATEGORIAS_GASTOS = ["Moradia", "Contas da casa", "Mercado", "Comer fora e delivery", "Transporte", "Saúde", "Educação", "Lazer", "Compras pessoais", "Dívidas e cartão", "Outros"];
+  function planilhaGastos(o) {
+    var renda = Math.max(0, Number(o && o.renda) || 0), somas = {}, total = 0, quantos = 0;
+    ((o && o.gastos) || []).forEach(function (g) {
+      var v = Number(g && g.valor);
+      if (!isFinite(v) || v <= 0) return;
+      var c = CATEGORIAS_GASTOS.indexOf(g.categoria) >= 0 ? g.categoria : "Outros";
+      somas[c] = (somas[c] || 0) + v;
+      total += v;
+      quantos++;
+    });
+    if (!quantos && !renda) return null;
+    total = cents(total);
+    var categorias = CATEGORIAS_GASTOS.filter(function (c) { return somas[c]; }).map(function (c) {
+      var t = cents(somas[c]);
+      return { categoria: c, total: t, parte: total ? Math.round(t / total * 1000) / 10 : 0 };
+    }).sort(function (a, b) { return b.total - a.total; });
+    return {
+      renda: cents(renda), total: total, quantos: quantos, saldo: cents(renda - total),
+      parteRenda: renda ? Math.round(total / renda * 1000) / 10 : null, categorias: categorias
+    };
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -990,6 +1014,92 @@
     var salvos = null;
     try { salvos = JSON.parse(localStorage.getItem(CHAVE_RASTREADOR)); } catch (e) {}
     if (Array.isArray(salvos)) salvos.slice(0, 8).forEach(function (h, i) { var el = document.getElementById("hab" + (i + 1)); if (el && typeof h === "string") el.value = h; });
+  });
+  var CHAVE_PLANILHA = "nyvo.planilhaGastos";
+  var escHtml = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  function linhaGasto(g) {
+    g = g || {};
+    var n = document.querySelectorAll("#gastos .gasto").length + 1;
+    var ops = CATEGORIAS_GASTOS.map(function (c) { return '<option' + (g.categoria === c ? " selected" : "") + ">" + c + "</option>"; }).join("");
+    var f = document.createElement("fieldset");
+    f.className = "divida gasto";
+    f.innerHTML = "<legend>Gasto " + n + '</legend><label for="desc' + n + '">O que foi<input id="desc' + n + '" data-campo="descricao" type="text" maxlength="40" autocomplete="off" value="' + escHtml(g.descricao || "") + '"></label>' +
+      '<label for="cat' + n + '">Categoria<select id="cat' + n + '" data-campo="categoria"><option value="">Escolha (sem escolha vai para Outros)</option>' + ops + "</select></label>" +
+      '<label for="val' + n + '">Valor (R$)<input id="val' + n + '" data-campo="valor" type="number" inputmode="decimal" min="0" step="any" value="' + (g.valor > 0 ? g.valor : "") + '"></label>';
+    document.getElementById("gastos").appendChild(f);
+    return f;
+  }
+  function lerPlanilha() {
+    var gastos = [];
+    document.querySelectorAll("#gastos .gasto").forEach(function (f) {
+      var campo = function (k) { var el = f.querySelector('[data-campo="' + k + '"]'); return el ? el.value : ""; };
+      var v = parseFloat(campo("valor"));
+      gastos.push({ descricao: campo("descricao").replace(/\s+/g, " ").trim().slice(0, 40), categoria: campo("categoria"), valor: isFinite(v) ? Math.min(1e9, Math.max(0, v)) : 0 });
+    });
+    return { renda: num("renda"), gastos: gastos };
+  }
+  telas.planilha = function () {
+    var d = lerPlanilha(), r = planilhaGastos(d);
+    if (!r) return null;
+    try { localStorage.setItem(CHAVE_PLANILHA, JSON.stringify(d)); } catch (e) {}
+    var html = "";
+    if (r.categorias.length) {
+      html += "<h3>Para onde foi o dinheiro</h3>" + r.categorias.map(function (c) {
+        return '<div class="line"><span>' + c.categoria + " · " + c.parte.toLocaleString("pt-BR") + "%</span><b>" + brl(c.total) + "</b></div>";
+      }).join("");
+    }
+    html += linhas([["Renda do mês", r.renda], ["Total gasto", r.total], [r.saldo < 0 ? "Faltou" : "Sobrou", Math.abs(r.saldo), 1]]);
+    if (!r.renda) html += '<p class="note">Informe a renda do mês para ver quanto sobrou.</p>';
+    else if (r.saldo < 0) html += '<p class="note">Os gastos passaram a renda em ' + brl(-r.saldo) + ". Comece pela maior categoria da lista: é onde um corte pequeno faz mais diferença. O <a href=\"quitar-dividas.html\">plano para quitar dívidas</a> ajuda se a conta já virou dívida.</p>";
+    else html += '<p class="note">Você gastou ' + r.parteRenda.toLocaleString("pt-BR") + "% da renda. Que tal mandar o que sobrou para a <a href=\"reserva-de-emergencia.html\">reserva de emergência</a>? Para dividir a renda do próximo mês, use o <a href=\"orcamento-50-30-20.html\">orçamento 50-30-20</a>.</p>";
+    return html + '<p class="note"><button type="button" class="cta alt" data-baixar-csv>Baixar meus gastos (abre no Excel)</button> <button type="button" class="cta alt" data-apagar-planilha>Apagar deste aparelho</button></p>' +
+      '<p class="note">Os gastos ficam salvos só neste navegador. Volte quando quiser para continuar anotando.</p>';
+  };
+  function csvGastos(d) {
+    var cel = function (s) { s = String(s); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    var dinheiro = function (v) { return v.toFixed(2).replace(".", ","); };
+    var r = planilhaGastos(d), lin = ["Descrição;Categoria;Valor"];
+    d.gastos.forEach(function (g) { if (g.valor > 0) lin.push([cel(g.descricao || "-"), cel(CATEGORIAS_GASTOS.indexOf(g.categoria) >= 0 ? g.categoria : "Outros"), dinheiro(g.valor)].join(";")); });
+    if (r) {
+      lin.push("", "Resumo;;");
+      r.categorias.forEach(function (c) { lin.push(cel(c.categoria) + ";;" + dinheiro(c.total)); });
+      lin.push("Renda do mês;;" + dinheiro(r.renda), "Total gasto;;" + dinheiro(r.total), "Saldo;;" + dinheiro(r.saldo));
+    }
+    return "\ufeff" + lin.join("\r\n") + "\r\n";
+  }
+  document.addEventListener("click", function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo || !document.getElementById("gastos")) return;
+    if (alvo.closest("[data-mais-gasto]")) {
+      var f = linhaGasto();
+      f.querySelector("input").focus();
+    } else if (alvo.closest("[data-baixar-csv]")) {
+      var blob = new Blob([csvGastos(lerPlanilha())], { type: "text/csv;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "meus-gastos-da-conta.csv";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    } else if (alvo.closest("[data-apagar-planilha]")) {
+      try { localStorage.removeItem(CHAVE_PLANILHA); } catch (err) {}
+      document.getElementById("renda").value = "";
+      document.getElementById("gastos").innerHTML = "";
+      for (var i = 0; i < 5; i++) linhaGasto();
+      document.getElementById("resultado").innerHTML = '<p class="note">Pronto, os gastos foram apagados deste aparelho.</p>';
+      document.getElementById("depois").hidden = true;
+    }
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    var lista = document.getElementById("gastos");
+    if (!lista) return;
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(CHAVE_PLANILHA)); } catch (e) {}
+    var salvos = d && Array.isArray(d.gastos) ? d.gastos.slice(0, 200) : [];
+    salvos.forEach(function (g) { linhaGasto(g && typeof g === "object" ? g : {}); });
+    for (var i = salvos.length; i < 5; i++) linhaGasto();
+    if (d && d.renda > 0) document.getElementById("renda").value = d.renda;
+    if (salvos.length || (d && d.renda > 0)) setTimeout(function () { document.querySelector('form[data-calc="planilha"]').dispatchEvent(new Event("submit", { cancelable: true })); }, 0);
   });
   var CHAVE_HABITO = "nyvo.diasSem";
   var NOME_MARCO = { 1: "1 dia", 3: "3 dias", 7: "1 semana", 14: "2 semanas", 30: "1 mês", 60: "2 meses", 90: "3 meses", 180: "6 meses", 365: "1 ano", 730: "2 anos", 1095: "3 anos", 1825: "5 anos" };

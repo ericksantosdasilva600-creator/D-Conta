@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 // @ts-ignore arquivo estático do site, sem tipos
 import "../site-static/calculadoras/calc.js";
 
@@ -280,6 +281,27 @@ describe("calculadoras 2026", () => {
     expect(C.agua({ sexo: "homem", faixa: "4-8" })).toMatchObject({ total: 1600, bebidas: 1300 });
     expect(C.agua({ sexo: "mulher", faixa: "2-3" })).toMatchObject({ total: 1300, bebidas: 1050, copos: 5 });
     expect(C.agua({ sexo: "mulher", faixa: "xx", peso: -5 })).toMatchObject({ faixa: "14+", total: 2000, porPeso: 0 });
+  });
+  it("resume a planilha de gastos por categoria", () => {
+    const r = C.planilhaGastos({ renda: 3000, gastos: [
+      { categoria: "Moradia", valor: 1200 }, { categoria: "Mercado", valor: 400.25 }, { categoria: "Mercado", valor: 250.25 },
+      { categoria: "inventada", valor: 10.1 }, { categoria: "Lazer", valor: 0 }, { categoria: "Lazer", valor: -50 }, { categoria: "Saúde", valor: "abc" },
+    ] });
+    expect(r).toMatchObject({ renda: 3000, total: 1860.6, quantos: 4, saldo: 1139.4, parteRenda: 62 });
+    expect(r.categorias).toEqual([
+      { categoria: "Moradia", total: 1200, parte: 64.5 },
+      { categoria: "Mercado", total: 650.5, parte: 35 },
+      { categoria: "Outros", total: 10.1, parte: 0.5 },
+    ]);
+    expect(C.planilhaGastos({ renda: 1000, gastos: [{ categoria: "Lazer", valor: 1250.5 }] })).toMatchObject({ saldo: -250.5, parteRenda: 125.1 });
+    expect(C.planilhaGastos({ renda: 0, gastos: [{ categoria: "Transporte", valor: 0.1 }, { categoria: "Transporte", valor: 0.2 }] })).toMatchObject({ total: 0.3, saldo: -0.3, parteRenda: null });
+    expect(C.planilhaGastos({ renda: 2000, gastos: [] })).toMatchObject({ total: 0, saldo: 2000, parteRenda: 0, categorias: [] });
+    expect(C.planilhaGastos({ renda: 0, gastos: [{ categoria: "Lazer", valor: 0 }] })).toBeNull();
+    expect(C.planilhaGastos({})).toBeNull();
+    expect(C.CATEGORIAS_GASTOS).toHaveLength(11);
+    const script = readFileSync(new URL("../scripts/planilha-de-gastos.py", import.meta.url), "utf8");
+    const lista = /CATEGORIAS = \[([\s\S]*?)\]/.exec(script)![1].match(/"([^"]+)"/g)!.map((x) => x.slice(1, -1));
+    expect(lista).toEqual(C.CATEGORIAS_GASTOS);
   });
   it("monta a folha do rastreador de hábitos", () => {
     const nov = C.rastreador({ mes: "2026-11", habitos: ["  Ler 10 páginas ", "", "Beber   água"], linhas: 8 });
