@@ -303,6 +303,38 @@ describe("calculadoras 2026", () => {
     const lista = /CATEGORIAS = \[([\s\S]*?)\]/.exec(script)![1].match(/"([^"]+)"/g)!.map((x) => x.slice(1, -1));
     expect(lista).toEqual(C.CATEGORIAS_GASTOS);
   });
+  it("monta o calendário de contas do mês", () => {
+    const contas = [{ nome: " Aluguel ", dia: 5, valor: 1200 }, { nome: "Luz", dia: 15, valor: 180.456 }, { nome: "Cartão", dia: 31, valor: 900 }, { nome: "", dia: 10 }, { nome: "Sem dia", dia: 0, valor: 50 }];
+    const nov = C.calendarioContas({ mes: "2026-11", contas });
+    expect(nov).toMatchObject({ ano: 2026, mes: 11, nomeMes: "novembro", ultimoDia: 30, total: 2280.46, primeiraQuinzena: 1380.46, segundaQuinzena: 900, noFimDeSemana: 1 });
+    expect(nov.contas.map((c: any) => [c.nome, c.diaReal, c.semana])).toEqual([["Aluguel", 5, "Q"], ["Conta 4", 10, "T"], ["Luz", 15, "D"], ["Cartão", 30, "S"]]);
+    expect(nov.contas[2].fimDeSemana).toBe(true);
+    expect(nov.contas[3]).toMatchObject({ dia: 31, diaReal: 30, ajustada: true });
+    expect(nov.semanas).toHaveLength(5);
+    expect(nov.semanas[0][0]).toMatchObject({ dia: 1, fimDeSemana: true });
+    expect(nov.semanas[4][1]).toMatchObject({ dia: 30 });
+    expect(nov.semanas[4][2]).toBeNull();
+    expect(nov.maiorDia).toEqual({ dia: 5, total: 1200 });
+    const fev = C.calendarioContas({ mes: "2026-02", contas });
+    expect(fev.semanas).toHaveLength(4);
+    expect(fev.contas.at(-1)).toMatchObject({ diaReal: 28, ajustada: true });
+    expect(C.calendarioContas({ mes: "2028-02", contas: [{ dia: 30 }] }).contas[0].diaReal).toBe(29);
+    expect(C.calendarioContas({ mes: "2026-11", contas: [{ dia: 0 }, { dia: 32 }] })).toBeNull();
+    expect(C.calendarioContas({ mes: "2026-13", contas })).toBeNull();
+  });
+  it("gera a agenda .ics das contas", () => {
+    const ics = C.icsContas({ mes: "2026-12", contas: [{ nome: "Cartão; Nubank", dia: 31, valor: 900 }], meses: 3, agora: "20261114T120000Z" });
+    expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
+    expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(3);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20261231");
+    expect(ics).toContain("DTSTART;VALUE=DATE:20270131");
+    expect(ics).toContain("DTSTART;VALUE=DATE:20270228");
+    expect(ics).toContain("DTEND;VALUE=DATE:20270301");
+    expect(ics).toContain("Cartão\\; Nubank");
+    expect(ics.split("\r\n").every((l: string) => new TextEncoder().encode(l).length <= 75)).toBe(true);
+    expect(C.icsContas({ mes: "x", contas: [{ dia: 1 }] })).toBeNull();
+  });
   it("monta a folha do rastreador de hábitos", () => {
     const nov = C.rastreador({ mes: "2026-11", habitos: ["  Ler 10 páginas ", "", "Beber   água"], linhas: 8 });
     expect(nov).toMatchObject({ ano: 2026, mes: 11, nomeMes: "novembro" });

@@ -110,3 +110,35 @@ button.cta { font:inherit; font-weight:700; cursor:pointer; }
   .folha-rodape { color:#333; font-size:8pt; }
 }
 .calc .dica-form { margin:0; font-size:15px; color:var(--muted); }
+.cal-contas { margin:0; font-size:14px; table-layout:fixed; width:100%; min-width:560px; }
+.cal-contas th { text-align:center; font-weight:700; padding:6px 0; }
+.cal-contas td { border:1px solid var(--line); vertical-align:top; height:78px; padding:4px 6px; }
+.cal-contas td.fds { background:color-mix(in srgb, var(--mint) 55%, transparent); }
+.cal-contas td.vazio { background:transparent; border-color:transparent; }
+.cal-contas .num { font-weight:700; font-size:13px; color:var(--muted); }
+.cal-contas ul { list-style:none; padding:0; margin:2px 0 0; }
+.cal-contas li { margin:0 0 3px; font-size:12.5px; line-height:1.25; overflow-wrap:anywhere; max-width:none; }
+.cal-contas li b { display:block; font-size:12px; }
+.lista-contas { width:100%; margin:6px 0 8px; font-size:16px; }
+.lista-contas .v { text-align:right; white-space:nowrap; }
+.lista-contas .ok { width:52px; }
+@page retrato { size:A4 portrait; margin:10mm; }
+.caixa { display:inline-block; width:18px; height:18px; border:1.5px solid var(--muted); border-radius:4px; vertical-align:middle; }
+@media print {
+  body.contas-mes { background:#fff; color:#000; }
+  .contas-mes h1 { display:none !important; }
+  .contas-mes #resultado > :not(.folha-contas) { display:none !important; }
+  .contas-mes main { width:auto; padding:0; }
+  .folha-contas { page:retrato; color:#000; }
+  .folha-contas .folha-titulo { margin:0 0 3mm; font-size:16pt; }
+  .folha-contas .grade-rolagem { overflow:visible; background:none; border-radius:0; margin:0 0 3mm; }
+  .cal-contas { min-width:0; font-size:9pt; }
+  .cal-contas td { border:0.6pt solid #555; height:24mm; }
+  .cal-contas td.vazio { border:0; }
+  .cal-contas td.fds { background:#eee; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .cal-contas .num, .cal-contas li { color:#000; }
+  .lista-contas { font-size:10pt; }
+  .lista-contas th, .lista-contas td { padding:1.2mm 2mm; border-bottom:0.5pt solid #999; }
+  .folha-contas .line { font-size:11pt; }
+  .folha-contas .folha-rodape { color:#333; font-size:8pt; }
+}

@@ -583,12 +583,95 @@
       parteRenda: renda ? Math.round(total / renda * 1000) / 10 : null, categorias: categorias
     };
   }
+  // Calendário de contas do mês: põe cada conta no dia do vencimento (dia 29 a 31 vai para o último dia nos meses mais curtos),
+  // monta as semanas do mês (começando no domingo), soma o total e as duas quinzenas e marca as contas que caem no fim de semana.
+  function calendarioContas(o) {
+    var m = /^(\d{4})-(\d{2})$/.exec(String(o && o.mes || ""));
+    if (!m) return null;
+    var ano = +m[1], mes = +m[2];
+    if (mes < 1 || mes > 12 || ano < 1900 || ano > 2200) return null;
+    var ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+    var contas = [];
+    ((o && o.contas) || []).slice(0, 60).forEach(function (c, i) {
+      var dia = Math.floor(Number(c && c.dia));
+      if (!isFinite(dia) || dia < 1 || dia > 31) return;
+      var v = Number(c.valor);
+      var real = Math.min(dia, ultimo), sem = new Date(Date.UTC(ano, mes - 1, real)).getUTCDay();
+      contas.push({
+        nome: String(c.nome == null ? "" : c.nome).replace(/\s+/g, " ").trim().slice(0, 40) || "Conta " + (i + 1),
+        dia: dia, diaReal: real, valor: isFinite(v) && v > 0 ? cents(Math.min(v, 1e9)) : 0,
+        semana: "DSTQQSS".charAt(sem), fimDeSemana: sem === 0 || sem === 6, ajustada: real !== dia
+      });
+    });
+    if (!contas.length) return null;
+    contas.sort(function (a, b) { return a.diaReal - b.diaReal; });
+    var total = 0, q1 = 0, q2 = 0, porDia = {};
+    contas.forEach(function (c) {
+      total += c.valor;
+      if (c.diaReal <= 15) q1 += c.valor; else q2 += c.valor;
+      (porDia[c.diaReal] = porDia[c.diaReal] || []).push(c);
+    });
+    var semanas = [], linha = [], inicio = new Date(Date.UTC(ano, mes - 1, 1)).getUTCDay();
+    for (var k = 0; k < inicio; k++) linha.push(null);
+    for (var d = 1; d <= ultimo; d++) {
+      var s = (inicio + d - 1) % 7;
+      linha.push({ dia: d, fimDeSemana: s === 0 || s === 6, contas: porDia[d] || [] });
+      if (linha.length === 7) { semanas.push(linha); linha = []; }
+    }
+    if (linha.length) { while (linha.length < 7) linha.push(null); semanas.push(linha); }
+    var maior = null;
+    Object.keys(porDia).forEach(function (dk) {
+      var soma = cents(porDia[dk].reduce(function (t, c) { return t + c.valor; }, 0));
+      if (soma > 0 && (!maior || soma > maior.total)) maior = { dia: +dk, total: soma };
+    });
+    return {
+      ano: ano, mes: mes, nomeMes: MESES[mes - 1], ultimoDia: ultimo, contas: contas, semanas: semanas,
+      total: cents(total), primeiraQuinzena: cents(q1), segundaQuinzena: cents(q2), maiorDia: maior,
+      noFimDeSemana: contas.filter(function (c) { return c.fimDeSemana; }).length
+    };
+  }
+  // Arquivo de agenda (.ics) com um evento de dia inteiro por conta e por mês, a partir do mês escolhido,
+  // com aviso às 9h da véspera. Usa datas fixas (sem regra de repetição) para o dia 31 cair no último dia de cada mês.
+  function icsContas(o) {
+    var m = /^(\d{4})-(\d{2})$/.exec(String(o && o.mes || ""));
+    if (!m) return null;
+    var ano = +m[1], mes = +m[2], meses = Math.min(24, Math.max(1, Math.floor(o.meses || 12)));
+    var carimbo = /^\d{8}T\d{6}Z$/.test(String(o.agora)) ? String(o.agora) : "20260101T000000Z";
+    var txt = function (s) { return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, " "); };
+    var p2 = function (n) { return String(n).padStart(2, "0"); };
+    var ymd = function (x) { return x.getUTCFullYear() + p2(x.getUTCMonth() + 1) + p2(x.getUTCDate()); };
+    var saida = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Da Conta//Calendario de contas//PT-BR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:Contas do mês"];
+    for (var i = 0; i < meses; i++) {
+      var a = ano + Math.floor((mes - 1 + i) / 12), mm = (mes - 1 + i) % 12 + 1;
+      var r = calendarioContas({ mes: a + "-" + p2(mm), contas: o.contas });
+      if (!r) return null;
+      r.contas.forEach(function (c, j) {
+        var dt = new Date(Date.UTC(a, mm - 1, c.diaReal)), fim = new Date(dt.getTime() + 864e5);
+        var valor = c.valor ? " · R$ " + c.valor.toFixed(2).replace(".", ",") : "";
+        saida.push("BEGIN:VEVENT", "UID:" + ymd(dt) + "-" + j + "@da-conta.calendario", "DTSTAMP:" + carimbo,
+          "DTSTART;VALUE=DATE:" + ymd(dt), "DTEND;VALUE=DATE:" + ymd(fim), "SUMMARY:" + txt("Vence: " + c.nome + valor),
+          "DESCRIPTION:" + txt("Conta anotada no calendário de contas do Dá Conta."), "TRANSP:TRANSPARENT",
+          "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + txt("Amanhã vence: " + c.nome), "TRIGGER:-PT15H", "END:VALARM", "END:VEVENT");
+      });
+    }
+    saida.push("END:VCALENDAR");
+    // Linhas com mais de 75 bytes são dobradas, como pede o formato iCalendar (RFC 5545).
+    return saida.map(function (l) {
+      var out = "", atual = "", bytes = 0;
+      Array.from(l).forEach(function (ch) {
+        var cp = ch.codePointAt(0), b = cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+        if (bytes + b > 75) { out += atual + "\r\n "; atual = ""; bytes = 1; }
+        atual += ch; bytes += b;
+      });
+      return out + atual;
+    }).join("\r\n") + "\r\n";
+  }
   function desafio52(inicial) {
     var semanas = [];
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, calendarioContas: calendarioContas, icsContas: icsContas, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -1100,6 +1183,97 @@
     for (var i = salvos.length; i < 5; i++) linhaGasto();
     if (d && d.renda > 0) document.getElementById("renda").value = d.renda;
     if (salvos.length || (d && d.renda > 0)) setTimeout(function () { document.querySelector('form[data-calc="planilha"]').dispatchEvent(new Event("submit", { cancelable: true })); }, 0);
+  });
+  var CHAVE_CONTAS_MES = "nyvo.calendarioContas";
+  var EXEMPLOS_CONTAS = ["Ex.: aluguel", "Ex.: luz", "Ex.: internet", "Ex.: fatura do cartão", "Ex.: água"];
+  function linhaConta(c) {
+    c = c || {};
+    var n = document.querySelectorAll("#contas .conta").length + 1;
+    var f = document.createElement("fieldset");
+    f.className = "divida conta";
+    f.innerHTML = "<legend>Conta " + n + '</legend><label for="cnome' + n + '">Nome<input id="cnome' + n + '" data-campo="nome" type="text" maxlength="40" autocomplete="off" placeholder="' + (EXEMPLOS_CONTAS[n - 1] || "") + '" value="' + escHtml(c.nome || "") + '"></label>' +
+      '<label for="cdia' + n + '">Dia do vencimento<input id="cdia' + n + '" data-campo="dia" type="number" inputmode="numeric" min="1" max="31" step="1" placeholder="1 a 31" value="' + (c.dia >= 1 && c.dia <= 31 ? Math.floor(c.dia) : "") + '"></label>' +
+      '<label for="cval' + n + '">Valor (R$, opcional)<input id="cval' + n + '" data-campo="valor" type="number" inputmode="decimal" min="0" step="any" value="' + (c.valor > 0 ? c.valor : "") + '"></label>';
+    document.getElementById("contas").appendChild(f);
+    return f;
+  }
+  function lerContasMes() {
+    var contas = [];
+    document.querySelectorAll("#contas .conta").forEach(function (f) {
+      var campo = function (k) { var el = f.querySelector('[data-campo="' + k + '"]'); return el ? el.value : ""; };
+      var dia = parseInt(campo("dia"), 10), v = parseFloat(campo("valor")), nome = campo("nome").replace(/\s+/g, " ").trim().slice(0, 40);
+      if (!nome && !isFinite(dia)) return;
+      contas.push({ nome: nome, dia: isFinite(dia) ? dia : 0, valor: isFinite(v) ? Math.min(1e9, Math.max(0, v)) : 0 });
+    });
+    var mes = document.getElementById("mes");
+    return { mes: mes ? mes.value : "", contas: contas };
+  }
+  telas.contasMes = function () {
+    var d = lerContasMes(), r = calendarioContas(d);
+    if (!r) return null;
+    try { localStorage.setItem(CHAVE_CONTAS_MES, JSON.stringify({ contas: d.contas })); } catch (e) {}
+    var titulo = "Contas de " + r.nomeMes + " de " + r.ano;
+    var cab = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(function (s) { return '<th scope="col">' + s + "</th>"; }).join("");
+    var grade = r.semanas.map(function (sem) {
+      return "<tr>" + sem.map(function (c) {
+        if (!c) return '<td class="vazio"></td>';
+        var itens = c.contas.map(function (x) { return "<li>" + escHtml(x.nome) + (x.valor ? " <b>" + brl(x.valor) + "</b>" : "") + "</li>"; }).join("");
+        return "<td" + (c.fimDeSemana ? ' class="fds"' : "") + '><span class="num">' + c.dia + "</span>" + (itens ? "<ul>" + itens + "</ul>" : "") + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    var lista = r.contas.map(function (c) {
+      return '<tr><td class="ok"><span class="caixa" aria-hidden="true"></span></td><td>' + c.diaReal + " (" + c.semana + ")" + (c.ajustada ? " *" : "") + "</td><td>" + escHtml(c.nome) + '</td><td class="v">' + (c.valor ? brl(c.valor) : "—") + "</td></tr>";
+    }).join("");
+    var html = '<div class="folha-contas"><h2 class="folha-titulo">' + titulo + "</h2>" +
+      '<div class="grade-rolagem" tabindex="0" role="region" aria-label="Calendário: ' + titulo + '"><table class="cal-contas"><thead><tr>' + cab + "</tr></thead><tbody>" + grade + "</tbody></table></div>" +
+      '<table class="lista-contas"><thead><tr><th scope="col">Paga</th><th scope="col">Dia</th><th scope="col">Conta</th><th scope="col" class="v">Valor</th></tr></thead><tbody>' + lista + "</tbody></table>" +
+      linhas([["Vence do dia 1 ao 15", r.primeiraQuinzena], ["Vence do dia 16 ao " + r.ultimoDia, r.segundaQuinzena], ["Total das contas do mês", r.total, 1]]) +
+      (r.contas.some(function (c) { return c.ajustada; }) ? '<p class="folha-rodape">* Este mês não tem esse dia: a conta foi para o último dia do mês. Confira a data no boleto.</p>' : "") +
+      '<p class="folha-rodape">Marque o quadrinho quando pagar. · Dá Conta: ericksantosdasilva600-creator.github.io/D-Conta</p></div>';
+    var dicas = [];
+    if (r.maiorDia && r.total && r.maiorDia.total >= r.total * 0.4 && r.contas.length > 1) dicas.push("O dia " + r.maiorDia.dia + " concentra " + brl(r.maiorDia.total) + ". Se o salário cai depois disso, pergunte à empresa se dá para mudar o vencimento de alguma conta.");
+    if (r.noFimDeSemana) dicas.push((r.noFimDeSemana === 1 ? "1 conta vence" : r.noFimDeSemana + " contas vencem") + " em sábado ou domingo neste mês. Para não arriscar multa, pague na sexta ou confira no boleto se ele aceita o próximo dia útil.");
+    if (!r.total) dicas.push("Coloque os valores para ver quanto sai em cada metade do mês.");
+    html += dicas.map(function (t) { return '<p class="note">' + t + "</p>"; }).join("");
+    html += '<p class="note"><button type="button" class="cta alt" data-imprimir>Imprimir ou salvar em PDF</button> <button type="button" class="cta alt" data-baixar-ics>Colocar na agenda do celular</button> <button type="button" class="cta alt" data-apagar-contas>Apagar deste aparelho</button></p>' +
+      '<p class="note">A agenda recebe as contas dos próximos 12 meses, com aviso às 9h da véspera. Abra o arquivo baixado no celular ou importe no Google Agenda. As contas ficam salvas só neste navegador.</p>';
+    return html;
+  };
+  document.addEventListener("click", function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo || !document.getElementById("contas")) return;
+    if (alvo.closest("[data-mais-conta]")) {
+      if (document.querySelectorAll("#contas .conta").length >= 60) return;
+      linhaConta().querySelector("input").focus();
+    } else if (alvo.closest("[data-baixar-ics]")) {
+      var d = lerContasMes(), agora = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+      var ics = icsContas({ mes: d.mes, contas: d.contas, meses: 12, agora: agora });
+      if (!ics) return;
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+      a.download = "contas-do-mes-da-conta.ics";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    } else if (alvo.closest("[data-apagar-contas]")) {
+      try { localStorage.removeItem(CHAVE_CONTAS_MES); } catch (err) {}
+      document.getElementById("contas").innerHTML = "";
+      for (var i = 0; i < 5; i++) linhaConta();
+      document.getElementById("resultado").innerHTML = '<p class="note">Pronto, as contas foram apagadas deste aparelho.</p>';
+      document.getElementById("depois").hidden = true;
+    }
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    var lista = document.getElementById("contas");
+    if (!lista) return;
+    var mes = document.getElementById("mes"), agora = new Date();
+    if (mes && !mes.value) mes.value = agora.getFullYear() + "-" + String(agora.getMonth() + 1).padStart(2, "0");
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(CHAVE_CONTAS_MES)); } catch (e) {}
+    var salvas = d && Array.isArray(d.contas) ? d.contas.slice(0, 60) : [];
+    salvas.forEach(function (c) { linhaConta(c && typeof c === "object" ? c : {}); });
+    for (var i = salvas.length; i < 5; i++) linhaConta();
+    if (salvas.length) setTimeout(function () { document.querySelector('form[data-calc="contasMes"]').dispatchEvent(new Event("submit", { cancelable: true })); }, 0);
   });
   var CHAVE_HABITO = "nyvo.diasSem";
   var NOME_MARCO = { 1: "1 dia", 3: "3 dias", 7: "1 semana", 14: "2 semanas", 30: "1 mês", 60: "2 meses", 90: "3 meses", 180: "6 meses", 365: "1 ano", 730: "2 anos", 1095: "3 anos", 1825: "5 anos" };
