@@ -72,6 +72,31 @@ describe("calculadoras 2026", () => {
     expect(r.adiantamento).toBe(1500);
     expect(C.rescisao({ salario: 3000, admissao: "2026-05-01", saida: "2026-04-01", tipo: "sem" })).toBeNull();
   });
+  it("calcula quanto falta para a meta", () => {
+    const r = C.metaFalta({ meta: 6000, guardado: 1500, meses: 9 });
+    expect(r.falta).toBe(4500);
+    expect(r.progresso).toBe(25);
+    expect(r.porMes).toBe(500);
+    expect(r.depositado).toBe(4500);
+    expect(r.rendimento).toBe(0);
+    expect(C.metaFalta({ meta: 1000, guardado: 0, meses: 3 }).porMes).toBe(333.34); // arredonda para cima
+    expect(C.metaFalta({ meta: 0 })).toBeNull();
+    expect(C.metaFalta({ meta: 500, guardado: 800 })).toMatchObject({ falta: 0, progresso: 100, mesesAteMeta: 0 });
+  });
+  it("usa o rendimento mensal no depósito da meta", () => {
+    // 12 depósitos de P a 1% ao mês: P × (1,01^12 − 1) / 0,01 = 10.000 → P = 788,49
+    const r = C.metaFalta({ meta: 10000, guardado: 0, meses: 12, taxa: 1 });
+    expect(r.porMes).toBe(788.49);
+    expect(r.rendimento).toBeCloseTo(10000 - 788.49 * 12, 2);
+    // o que já tem rendendo basta
+    expect(C.metaFalta({ meta: 1100, guardado: 1000, meses: 12, taxa: 1 }).porMes).toBe(0);
+  });
+  it("mostra em quantos meses chega guardando um valor fixo", () => {
+    expect(C.metaFalta({ meta: 6000, guardado: 1500, aporte: 400 }).mesesAteMeta).toBe(12);
+    expect(C.metaFalta({ meta: 10000, aporte: 788.49, taxa: 1 }).mesesAteMeta).toBe(12);
+    expect(C.metaFalta({ meta: 1e9, aporte: 1 }).mesesAteMeta).toBe(-1);
+    expect(C.metaFalta({ meta: 1000, meses: 0 })).toMatchObject({ meses: 0, porMes: null });
+  });
   it("calcula a reserva", () => {
     expect(C.reserva(2500, 6, 3000, 500)).toEqual({ meta: 15000, falta: 12000, mesesAteMeta: 24 });
     expect(C.reserva(1000, 3, 5000, 0).mesesAteMeta).toBe(0);

@@ -123,6 +123,29 @@
     var meta = cents(gasto * meses), falta = Math.max(0, cents(meta - (guardado || 0)));
     return { meta: meta, falta: falta, mesesAteMeta: falta === 0 ? 0 : aporte > 0 ? Math.ceil(falta / aporte) : null };
   }
+  // Quanto falta para a meta: progresso, quanto guardar por mês até um mês escolhido e/ou em quantos meses chega
+  // guardando um valor fixo. Depósito no fim de cada mês; rendimento opcional ao mês, sem imposto nem taxas.
+  // Com rendimento i: saldo = G(1 + i)^n + P[(1 + i)^n − 1] / i, então P = (meta − G(1 + i)^n) × i / ((1 + i)^n − 1).
+  function metaFalta(o) {
+    var meta = o.meta > 0 ? Math.min(1e12, o.meta) : 0;
+    if (!meta) return null;
+    var g = Math.max(0, o.guardado || 0), i = Math.max(0, Math.min(10, o.taxa || 0)) / 100, a = Math.max(0, o.aporte || 0);
+    var falta = Math.max(0, cents(meta - g)), r = { meta: cents(meta), guardado: cents(g), falta: falta, progresso: Math.min(100, Math.floor(g / meta * 100)), meses: null, porMes: null, mesesAteMeta: null };
+    if (falta === 0) { r.mesesAteMeta = 0; return r; }
+    var n = o.meses == null ? null : Math.round(o.meses);
+    if (n !== null && n > 0 && n <= 1200) {
+      var f = Math.pow(1 + i, n), resto = meta - g * f, p = resto <= 0 ? 0 : i === 0 ? resto / n : resto * i / (f - 1);
+      p = Math.ceil(Number((p * 100).toFixed(6))) / 100;
+      r.meses = n; r.porMes = p; r.porSemana = cents(p * 12 / 52); r.depositado = cents(p * n);
+      r.rendimento = Math.max(0, cents(meta - g - p * n));
+    } else if (n !== null) r.meses = n;
+    if (a > 0) {
+      var saldo = g, m = 0;
+      while (saldo < meta - 0.005 && m < 1200) { saldo = saldo * (1 + i) + a; m++; }
+      r.mesesAteMeta = saldo >= meta - 0.005 ? m : -1;
+    }
+    return r;
+  }
   function horasExtras(salario, jornada, horas, adicional) {
     var hora = salario / (jornada || 220), extra = hora * (1 + (adicional === undefined ? 50 : adicional) / 100);
     return { hora: cents(hora), extra: cents(extra), total: cents(extra * horas) };
@@ -671,7 +694,7 @@
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, calendarioContas: calendarioContas, icsContas: icsContas, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, metaFalta: metaFalta, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, calendarioContas: calendarioContas, icsContas: icsContas, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
@@ -1274,6 +1297,65 @@
     salvas.forEach(function (c) { linhaConta(c && typeof c === "object" ? c : {}); });
     for (var i = salvas.length; i < 5; i++) linhaConta();
     if (salvas.length) setTimeout(function () { document.querySelector('form[data-calc="contasMes"]').dispatchEvent(new Event("submit", { cancelable: true })); }, 0);
+  });
+  var CHAVE_META = "nyvo.metaFalta";
+  // Meses entre este mês e o mês da meta ("AAAA-MM"): o depósito do mês da meta conta.
+  var mesesAte = function (alvo, agora) {
+    var p = String(alvo || "").split("-");
+    if (p.length !== 2 || !+p[0] || !+p[1]) return null;
+    return (+p[0] * 12 + +p[1]) - (agora.getFullYear() * 12 + agora.getMonth() + 1);
+  };
+  var nomeMes = function (agora, n) { return new Date(agora.getFullYear(), agora.getMonth() + n, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }); };
+  telas.metaFalta = function () {
+    var campo = function (id) { var el = document.getElementById(id); return el ? el.value : ""; };
+    var agora = new Date(), quando = campo("quando");
+    var r = metaFalta({ meta: num("valorMeta"), guardado: num("jaTenho"), meses: quando ? mesesAte(quando, agora) : null, aporte: num("porMes"), taxa: num("taxaMes") });
+    if (!r) return null;
+    var nome = campo("nomeMeta").trim().slice(0, 60);
+    try { localStorage.setItem(CHAVE_META, JSON.stringify({ nome: nome, meta: num("valorMeta"), guardado: num("jaTenho"), quando: quando, aporte: num("porMes"), taxa: num("taxaMes") })); } catch (e) {}
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    var meses = function (n) { return n === 1 ? "1 mês" : n.toLocaleString("pt-BR") + " meses"; };
+    var html = linhas([[nome ? "Meta: " + esc(nome) : "Valor da meta", r.meta], ["Você já tem", r.guardado], ["Quanto falta", r.falta, 1]]);
+    html += '<p class="note">Você já percorreu ' + r.progresso + '% do caminho.</p><progress class="barra" max="100" value="' + r.progresso + '" aria-label="Caminho até a meta">' + r.progresso + "%</progress>";
+    if (r.falta === 0) return html + '<p class="note">Meta alcançada. Parabéns! Que tal começar a próxima?</p>';
+    if (r.meses !== null && r.porMes === null) html += '<p class="note">O mês da meta precisa ser depois deste mês. Escolha uma data mais para frente.</p>';
+    if (r.porMes !== null) {
+      html += "<h3>Para chegar lá em " + nomeMes(agora, r.meses) + "</h3>";
+      if (r.porMes === 0) html += '<p class="note">Só com o rendimento informado o que você já tem chega à meta nesse prazo.</p>';
+      else {
+        html += linhas([["Guardar por mês", r.porMes, 1], ["Ou por semana, mais ou menos", r.porSemana]]);
+        html += '<p class="note">São ' + meses(r.meses) + " de depósitos, " + brl(r.depositado) + " ao todo" + (r.rendimento > 0 ? ", e cerca de " + brl(r.rendimento) + " vêm do rendimento." : ".") + "</p>";
+      }
+    }
+    if (r.mesesAteMeta > 0) html += "<h3>Guardando " + brl(num("porMes")) + " por mês</h3>" + '<div class="line total"><span>Você chega lá em</span><b>' + meses(r.mesesAteMeta) + "</b></div>" + '<p class="note">Isso dá ' + nomeMes(agora, r.mesesAteMeta) + ".</p>";
+    else if (r.mesesAteMeta === -1) html += '<p class="note">Com esse valor por mês a meta levaria mais de 100 anos. Tente guardar um pouco mais ou rever a meta.</p>';
+    if (r.porMes === null && r.mesesAteMeta === null) html += '<p class="note">Informe o mês em que quer chegar lá ou quanto pode guardar por mês para ver o plano.</p>';
+    return html + '<p class="note">É uma estimativa com depósito no fim de cada mês' + (num("taxaMes") ? " e rendimento fixo, sem imposto nem taxas. Rendimento não é garantido." : ", sem rendimento.") + " Os dados ficam salvos só neste navegador.</p>" +
+      '<p class="note"><button type="button" class="cta alt" data-apagar-meta>Apagar deste aparelho</button></p>';
+  };
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector('form[data-calc="metaFalta"]');
+    if (!form) return;
+    var q = document.getElementById("quando"), agora = new Date();
+    var prox = new Date(agora.getFullYear(), agora.getMonth() + 1, 1);
+    q.min = prox.getFullYear() + "-" + String(prox.getMonth() + 1).padStart(2, "0");
+    document.addEventListener("click", function (e) {
+      if (!e.target || !e.target.closest || !e.target.closest("[data-apagar-meta]")) return;
+      try { localStorage.removeItem(CHAVE_META); } catch (err) {}
+      form.reset();
+      document.getElementById("resultado").hidden = true;
+      document.getElementById("depois").hidden = true;
+    });
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(CHAVE_META)); } catch (e) {}
+    if (!d || !d.meta) return;
+    document.getElementById("nomeMeta").value = String(d.nome || "").slice(0, 60);
+    document.getElementById("valorMeta").value = d.meta;
+    if (d.guardado) document.getElementById("jaTenho").value = d.guardado;
+    if (d.quando && /^\d{4}-\d{2}$/.test(d.quando)) q.value = d.quando;
+    if (d.aporte) document.getElementById("porMes").value = d.aporte;
+    if (d.taxa) document.getElementById("taxaMes").value = d.taxa;
+    setTimeout(function () { form.dispatchEvent(new Event("submit", { cancelable: true })); }, 0);
   });
   var CHAVE_HABITO = "nyvo.diasSem";
   var NOME_MARCO = { 1: "1 dia", 3: "3 dias", 7: "1 semana", 14: "2 semanas", 30: "1 mês", 60: "2 meses", 90: "3 meses", 180: "6 meses", 365: "1 ano", 730: "2 anos", 1095: "3 anos", 1825: "5 anos" };
