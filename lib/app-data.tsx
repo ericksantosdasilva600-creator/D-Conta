@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { Platform } from "react-native";
 import { isValidDateKey, localDateKey } from "@/lib/format";
 import { deleteCachedReceipt } from "@/lib/receipt-cache";
+import { LOCAL_ONLY } from "@/lib/local-mode";
 import { DEFAULT_PREFS, normalizePrefs, normalizeReminder, type NotificationPrefs, type Reminder } from "@/lib/reminders";
 
 export type Priority = "low" | "medium" | "high";
@@ -268,7 +269,8 @@ function normalizeTransaction(value: unknown): Transaction | null {
     notes: stringValue(item.notes),
     receiptUri: stringValue(item.receiptUri),
     ...(typeof item.receiptId === "string" ? { receiptId: item.receiptId } : {}),
-    ...(typeof item.receiptPendingBase64 === "string" ? { receiptPendingBase64: item.receiptPendingBase64 } : {}),
+    // No modo local não há envio para a nuvem: a cópia em base64 só ocupava espaço (a imagem já está em receiptUri).
+    ...(!LOCAL_ONLY && typeof item.receiptPendingBase64 === "string" ? { receiptPendingBase64: item.receiptPendingBase64 } : {}),
     ...(typeof item.receiptMimeType === "string" ? { receiptMimeType: item.receiptMimeType } : {}),
     // In schema v1 every existing movement belongs to the original travel notebook.
     scope: item.scope === "personal" ? "personal" : "trip",

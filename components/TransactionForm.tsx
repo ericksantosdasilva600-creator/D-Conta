@@ -11,6 +11,7 @@ import { DatePickerField } from "@/components/DatePickerField";
 import { ACCOUNTS, accountLabel, useAppData, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
 import { C, SANS } from "@/lib/design";
 import { createId, isValidDateKey, localDateKey, parseAmount } from "@/lib/format";
+import { LOCAL_ONLY } from "@/lib/local-mode";
 
 async function keepReceipt(uri: string, base64?: string | null) {
   if (Platform.OS === "web") return base64 ? `data:image/jpeg;base64,${base64}` : uri;
@@ -116,7 +117,7 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
         if (!processed.base64 || byteLength(processed.base64) > 1.5 * 1024 * 1024) throw new Error("A imagem excede o limite de 1,5 MB após compressão.");
         setReceiptUri(await keepReceipt(processed.uri, processed.base64));
         setReceiptId(undefined);
-        setReceiptPendingBase64(processed.base64);
+        setReceiptPendingBase64(LOCAL_ONLY ? undefined : processed.base64);
         setReceiptMimeType("image/jpeg");
       }
     } catch {

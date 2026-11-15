@@ -117,7 +117,12 @@ async function refreshNow(data: AppData, generation: number) {
     const allowed = await getNotificationPermission();
     if (!allowed) return false;
     const now = new Date();
-    const events = eventsBetween(data, now, new Date(now.getTime() + 14 * 86400000), 60).slice(0, 60);
+    // O sistema aceita poucas notificações agendadas: avisos de contas e tarefas vêm antes dos lembretes repetidos
+    // (ex.: "beber água a cada hora"), para não ficarem de fora.
+    const events = eventsBetween(data, now, new Date(now.getTime() + 14 * 86400000), 60)
+      .sort((a, b) => (a.source === "auto" ? 0 : 1) - (b.source === "auto" ? 0 : 1) || a.at.getTime() - b.at.getTime())
+      .slice(0, 60)
+      .sort((a, b) => a.at.getTime() - b.at.getTime());
     for (const event of events) {
       if (generation !== refreshGeneration) return false;
       await scheduleAt(event.title, event.body, event.at, event.sound);

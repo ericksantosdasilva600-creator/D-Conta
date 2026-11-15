@@ -82,6 +82,22 @@ export function payBill(data: AppData, bill: RecurringBill, month = monthKey()):
   };
 }
 
+/** Remove um movimento; se ele era o pagamento de uma conta fixa, a conta volta a ficar "a pagar" naquele mês. */
+export function removeTransactionAndUnpay(data: AppData, transactionId: string): AppData {
+  const removed = data.transactions.find((t) => t.id === transactionId);
+  const transactions = data.transactions.filter((t) => t.id !== transactionId);
+  const billId = removed?.recurringBillId;
+  const month = removed?.dueDate?.slice(0, 7);
+  if (!billId || !month) return { ...data, transactions };
+  const stillPaid = transactions.some((t) => t.recurringBillId === billId && t.dueDate?.slice(0, 7) === month);
+  if (stillPaid) return { ...data, transactions };
+  return {
+    ...data,
+    transactions,
+    recurringBills: data.recurringBills.map((b) => b.id === billId ? { ...b, paidMonths: b.paidMonths.filter((m) => m !== month) } : b),
+  };
+}
+
 const CATEGORY_WORDS: [RegExp, string][] = [
   [/mercado|supermercado|atacad|feira|hortifruti|padaria|açougue|acougue/, "Mercado"],
   [/ifood|delivery|rappi|pizza|lanche|hamb[uú]rguer|restaurante|almo[cç]o|jantar|caf[eé]/, "Alimentação"],

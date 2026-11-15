@@ -71,3 +71,27 @@ describe("cartão de crédito", () => {
     expect(parsePhrase("gastei 30 no mercado")?.date).toBeUndefined();
   });
 });
+
+describe("pagamento de conta fixa", () => {
+  it("apagar o pagamento devolve a conta para 'a pagar'", async () => {
+    const { payBill, removeTransactionAndUnpay, billStatus } = await import("../lib/finance-extra");
+    const bill = { id: "b1", name: "Aluguel", amount: 900, category: "Moradia", dueDay: 10, account: "main" as const, paidMonths: [], active: true };
+    const base = { transactions: [], recurringBills: [bill] } as unknown as import("../lib/app-data").AppData;
+    const paid = payBill(base, bill, "2026-11");
+    expect(billStatus(paid.recurringBills[0], "2026-11", "2026-11-05").paid).toBe(true);
+    const tx = paid.transactions.find((t) => t.recurringBillId === "b1")!;
+    const undone = removeTransactionAndUnpay(paid, tx.id);
+    expect(undone.transactions.some((t) => t.id === tx.id)).toBe(false);
+    expect(undone.recurringBills[0].paidMonths).toEqual([]);
+  });
+});
+
+describe("valores digitados", () => {
+  it("arredonda para centavos e aceita R$", async () => {
+    const { parseAmount } = await import("../lib/format");
+    expect(parseAmount("10,999")).toBe(11);
+    expect(parseAmount("R$ 1.234,56")).toBe(1234.56);
+    expect(parseAmount("")).toBeNaN();
+    expect(parseAmount("abc")).toBeNaN();
+  });
+});

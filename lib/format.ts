@@ -8,9 +8,11 @@ export function money(value: number, currency = "BRL") {
 }
 
 export function parseAmount(value: string) {
-  const normalized = value.trim().replace(/\s/g, "").replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", ".");
+  const normalized = value.trim().replace(/\s/g, "").replace(/^R\$/i, "").replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", ".");
+  if (!normalized) return NaN;
   const amount = Number(normalized);
-  return Number.isFinite(amount) ? amount : NaN;
+  // Dinheiro tem no máximo centavos: "10,999" vira 11,00 em vez de ficar gravado com 3 casas.
+  return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : NaN;
 }
 
 export function localDateKey(date = new Date()) {

@@ -623,7 +623,7 @@
       contas.push({
         nome: String(c.nome == null ? "" : c.nome).replace(/\s+/g, " ").trim().slice(0, 40) || "Conta " + (i + 1),
         dia: dia, diaReal: real, valor: isFinite(v) && v > 0 ? cents(Math.min(v, 1e9)) : 0,
-        semana: "DSTQQSS".charAt(sem), fimDeSemana: sem === 0 || sem === 6, ajustada: real !== dia
+        semana: "DSTQQSS".charAt(sem), semanaCurta: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][sem], fimDeSemana: sem === 0 || sem === 6, ajustada: real !== dia
       });
     });
     if (!contas.length) return null;
@@ -1103,7 +1103,7 @@
       return '<th scope="col"' + (d.fimDeSemana ? ' class="fds"' : "") + "><small>" + d.letra + "</small>" + d.dia + "</th>";
     }).join("") + '<th scope="col" class="soma">Total</th>';
     var corpo = r.habitos.map(function (h) {
-      return '<tr><th scope="row" class="nome">' + (h ? esc(h) : '<span class="branco" aria-label="Linha em branco"></span>') + "</th>" + r.dias.map(function (d) { return "<td" + (d.fimDeSemana ? ' class="fds"' : "") + "></td>"; }).join("") + '<td class="soma"></td></tr>';
+      return '<tr><th scope="row" class="nome">' + (h ? esc(h) : '<span class="branco"></span><span class="sr-only">Linha em branco</span>') + "</th>" + r.dias.map(function (d) { return "<td" + (d.fimDeSemana ? ' class="fds"' : "") + "></td>"; }).join("") + '<td class="soma"></td></tr>';
     }).join("");
     var titulo = "Rastreador de hábitos · " + r.nomeMes + " de " + r.ano;
     return '<div class="folha-habitos"><h2 class="folha-titulo">' + titulo + "</h2>" + (alvo ? '<p class="folha-alvo">Objetivo do mês: <b>' + esc(alvo) + "</b></p>" : "") +
@@ -1232,8 +1232,11 @@
     return { mes: mes ? mes.value : "", contas: contas };
   }
   telas.contasMes = function () {
-    var d = lerContasMes(), r = calendarioContas(d);
-    if (!r) return null;
+    var d = lerContasMes();
+    var semDia = d.contas.filter(function (c) { return c.nome && !c.dia; }).map(function (c) { return c.nome; });
+    if (semDia.length) return { erro: "Falta o dia de vencimento de: " + semDia.join(", ") + "." };
+    var r = calendarioContas(d);
+    if (!r) return { erro: "Escolha o mês e preencha pelo menos uma conta com o dia de vencimento." };
     try { localStorage.setItem(CHAVE_CONTAS_MES, JSON.stringify({ contas: d.contas })); } catch (e) {}
     var titulo = "Contas de " + r.nomeMes + " de " + r.ano;
     var cab = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(function (s) { return '<th scope="col">' + s + "</th>"; }).join("");
@@ -1245,7 +1248,7 @@
       }).join("") + "</tr>";
     }).join("");
     var lista = r.contas.map(function (c) {
-      return '<tr><td class="ok"><span class="caixa" aria-hidden="true"></span></td><td>' + c.diaReal + " (" + c.semana + ")" + (c.ajustada ? " *" : "") + "</td><td>" + escHtml(c.nome) + '</td><td class="v">' + (c.valor ? brl(c.valor) : "—") + "</td></tr>";
+      return '<tr><td class="ok"><span class="caixa" aria-hidden="true"></span></td><td>' + c.diaReal + " (" + c.semanaCurta + ")" + (c.ajustada ? " *" : "") + "</td><td>" + escHtml(c.nome) + '</td><td class="v">' + (c.valor ? brl(c.valor) : "—") + "</td></tr>";
     }).join("");
     var html = '<div class="folha-contas"><h2 class="folha-titulo">' + titulo + "</h2>" +
       '<div class="grade-rolagem" tabindex="0" role="region" aria-label="Calendário: ' + titulo + '"><table class="cal-contas"><thead><tr>' + cab + "</tr></thead><tbody>" + grade + "</tbody></table></div>" +
@@ -1378,7 +1381,7 @@
     html += linha("Desde", data(inicio));
     if (r.proximo) {
       html += linha("Próximo marco", NOME_MARCO[r.proximo] + " em " + data(r.dataProximo));
-      html += '<p class="note">Faltam ' + dias(r.falta) + ' para o próximo marco.</p><progress class="barra" max="100" value="' + r.progresso + '" aria-label="Caminho até o próximo marco">' + r.progresso + "%</progress>";
+      html += '<p class="note">' + (r.falta === 1 ? "Falta " : "Faltam ") + dias(r.falta) + ' para o próximo marco.</p><progress class="barra" max="100" value="' + r.progresso + '" aria-label="Caminho até o próximo marco">' + r.progresso + "%</progress>";
     } else html += '<p class="note">Você passou de 5 anos. Que conquista!</p>';
     if (r.marcos.length) html += '<h3>Marcos alcançados</h3><ul class="marcos">' + r.marcos.map(function (m) { return "<li>" + NOME_MARCO[m] + "</li>"; }).join("") + "</ul>";
     else html += '<p class="note">O primeiro dia é o mais importante. Amanhã você alcança o primeiro marco.</p>';
@@ -1459,8 +1462,10 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var html = telas[form.dataset.calc]();
+      var erro = html && typeof html === "object" ? html.erro : "";
+      if (erro) html = "";
       saida.hidden = false;
-      saida.innerHTML = html || '<p class="note">Preencha o primeiro campo para calcular.</p>';
+      saida.innerHTML = html || '<p class="note">' + escHtml(erro || "Preencha os campos obrigatórios para calcular.") + "</p>";
       acoes.hidden = !html;
       saida.focus();
     });

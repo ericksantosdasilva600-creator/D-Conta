@@ -142,3 +142,4 @@ button.cta { font:inherit; font-weight:700; cursor:pointer; }
   .folha-contas .line { font-size:11pt; }
   .folha-contas .folha-rodape { color:#333; font-size:8pt; }
 }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

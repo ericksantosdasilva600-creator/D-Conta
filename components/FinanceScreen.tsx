@@ -8,7 +8,7 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { FinanceCharts } from "@/components/FinanceCharts";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { CreditCardPanel, DebtsPanel, GoalsPanel, ImportPanel, MonthSummaryPanel, RecurringBillsPanel } from "@/components/FinanceExtras";
-import { splitInstallments } from "@/lib/finance-extra";
+import { removeTransactionAndUnpay, splitInstallments } from "@/lib/finance-extra";
 import { ACCOUNTS, accountLabel, useAppData, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
 import { toast } from "@/lib/toast";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
@@ -93,7 +93,7 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
 
   const removeTransaction = () => {
     if (!deleting) return;
-    const updated = { ...data, transactions: data.transactions.filter((item) => item.id !== deleting.id) };
+    const updated = removeTransactionAndUnpay(data, deleting.id);
     updateData(() => updated);
     void refreshLocalNotifications(updated);
     setDeleting(null);

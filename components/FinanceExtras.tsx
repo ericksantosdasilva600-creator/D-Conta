@@ -213,7 +213,7 @@ export function DebtsPanel({ onToast }: { onToast: (message: string) => void }) 
   const remaining = active.reduce((s, d) => s + d.total - d.paid, 0);
   const monthly = active.reduce((s, d) => s + d.monthly, 0);
   const pay = (d: Debt) => {
-    const amount = Math.min(d.monthly || d.total - d.paid, d.total - d.paid);
+    const amount = Math.round(Math.min(d.monthly || d.total - d.paid, d.total - d.paid) * 100) / 100;
     updateData((c) => ({ ...c, debts: c.debts.map((x) => x.id === d.id ? { ...x, paid: Math.round((x.paid + amount) * 100) / 100 } : x), transactions: [{ id: createId(), kind: "expense", amount, merchant: `Parcela: ${d.name}`, category: "Outros", date: localDateKey(), dueDate: "", paid: true, priority: "high", notes: "Pagamento de dívida", receiptUri: "", scope: "personal", account: "main" }, ...c.transactions] }));
     onToast(`Pagamento de ${money(amount, data.currency)} registrado.`);
   };
