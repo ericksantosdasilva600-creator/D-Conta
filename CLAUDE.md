@@ -15,3 +15,4 @@
 - Contagem anônima de visitas: `site-static/conta.js` grava em `nyvo_visits` (Supabase), só no domínio publicado; nunca incluir hash, query ou dados do app. Se o domínio mudar, atualize a checagem de `host` nesse arquivo.
 - Ícones e sons: temas em `lib/themes.ts`, sons em `assets/sounds` (app) e `site-static/sons` (site). Som novo no app exige nova versão instalada. No Android cada som tem um canal próprio.
 - Entrar com Google: o botão só aparece quando o provedor Google está ligado no Supabase. `docs/app` tem uma política de segurança (CSP) em `scripts/finish-site.mjs`: serviços novos no app precisam entrar nela.
+- Hooks em `.claude/settings.json` (scripts em `.claude/hooks/`): bloqueiam force push/reset --hard, edições em `fb/`, ligar monetização, trocar pacote/slug/chaves `nyvo.*` e segredos; rodam os testes das calculadoras quando `calc.js` muda; avisam para reconstruir `docs/` antes de terminar; repõem estas regras depois de compactar a conversa.
