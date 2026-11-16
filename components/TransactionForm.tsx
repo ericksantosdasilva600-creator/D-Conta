@@ -138,6 +138,7 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
       category: categoryToAdd?.name ?? category, date, dueDate: kind === "expense" ? dueDate : "",
       paid: kind === "expense" ? paid : true, priority, notes: notes.trim(), receiptUri, scope, account,
       ...(initial?.installment ? { installment: initial.installment, installmentGroup: initial.installmentGroup } : {}),
+      ...(initial?.recurringBillId ? { recurringBillId: initial.recurringBillId } : {}),
       ...(icon ? { icon } : {}),
       ...(receiptId ? { receiptId } : {}),
       ...(receiptPendingBase64 ? { receiptPendingBase64 } : {}),

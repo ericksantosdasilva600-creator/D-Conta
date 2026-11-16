@@ -119,8 +119,12 @@ async function refreshNow(data: AppData, generation: number) {
     const now = new Date();
     // O sistema aceita poucas notificações agendadas: avisos de contas e tarefas vêm antes dos lembretes repetidos
     // (ex.: "beber água a cada hora"), para não ficarem de fora.
+    // Prioridade: contas, despesas, tarefas, estudos e lembretes de uma vez só. Hábitos, resumo diário e
+    // lembretes repetidos ficam por último (eles voltam a ser agendados na próxima atualização).
+    const onceIds = new Set(data.reminders.filter((r) => r.repeat === "once").map((r) => r.id));
+    const rank = (e: { key: string }) => /^(bill|tx|task|study):/.test(e.key) || (e.key.startsWith("custom:") && onceIds.has(e.key.split(":")[1])) ? 0 : 1;
     const events = eventsBetween(data, now, new Date(now.getTime() + 14 * 86400000), 60)
-      .sort((a, b) => (a.source === "auto" ? 0 : 1) - (b.source === "auto" ? 0 : 1) || a.at.getTime() - b.at.getTime())
+      .sort((a, b) => rank(a) - rank(b) || a.at.getTime() - b.at.getTime())
       .slice(0, 60)
       .sort((a, b) => a.at.getTime() - b.at.getTime());
     for (const event of events) {

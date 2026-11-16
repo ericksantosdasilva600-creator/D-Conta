@@ -360,6 +360,13 @@ describe("calculadoras 2026", () => {
     expect(ics.split("\r\n").every((l: string) => new TextEncoder().encode(l).length <= 75)).toBe(true);
     expect(C.icsContas({ mes: "x", contas: [{ dia: 1 }] })).toBeNull();
   });
+  it("identifica cada conta no .ics pelo nome e aceita mês MM/AAAA", () => {
+    const antes = C.icsContas({ mes: "2026-12", contas: [{ nome: "Aluguel", dia: 5 }, { nome: "Luz", dia: 10 }], meses: 1, agora: "20261114T120000Z" });
+    const depois = C.icsContas({ mes: "12/2026", contas: [{ nome: "Luz", dia: 10 }], meses: 1, agora: "20261114T120000Z" });
+    expect(antes).toContain("UID:20261210-luz-10@da-conta.calendario");
+    expect(depois).toContain("UID:20261210-luz-10@da-conta.calendario");
+    expect(C.calendarioContas({ mes: "2/2027", contas: [{ dia: 1 }] }).mes).toBe(2);
+  });
   it("monta a folha do rastreador de hábitos", () => {
     const nov = C.rastreador({ mes: "2026-11", habitos: ["  Ler 10 páginas ", "", "Beber   água"], linhas: 8 });
     expect(nov).toMatchObject({ ano: 2026, mes: 11, nomeMes: "novembro" });

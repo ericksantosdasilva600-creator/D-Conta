@@ -101,7 +101,12 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
   };
 
   const togglePaid = (transaction: Transaction) => {
-    const updated = { ...data, transactions: data.transactions.map((item) => item.id === transaction.id ? { ...item, paid: !item.paid } : item) };
+    const transactions = data.transactions.map((item) => item.id === transaction.id ? { ...item, paid: !item.paid } : item);
+    const month = transaction.dueDate?.slice(0, 7);
+    const billId = transaction.recurringBillId;
+    // Voltar o pagamento de uma conta fixa para "pendente" também tira o "Paga" da conta naquele mês.
+    const unpay = transaction.paid && billId && month && !transactions.some((t) => t.paid && t.recurringBillId === billId && t.dueDate?.slice(0, 7) === month);
+    const updated = { ...data, transactions, ...(unpay ? { recurringBills: data.recurringBills.map((b) => b.id === billId ? { ...b, paidMonths: b.paidMonths.filter((m) => m !== month) } : b) } : {}) };
     updateData(() => updated);
     void refreshLocalNotifications(updated);
     showToast(transaction.paid ? "Despesa marcada como pendente." : "Despesa paga; os lembretes foram atualizados.");

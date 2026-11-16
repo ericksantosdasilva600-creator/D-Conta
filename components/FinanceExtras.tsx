@@ -141,9 +141,12 @@ export function GoalsPanel({ onToast }: { onToast: (message: string) => void }) 
   const [open, setOpen] = useState(false);
   const [deposit, setDeposit] = useState<SavingsGoal | null>(null);
   const [depositValue, setDepositValue] = useState("");
+  const [depositError, setDepositError] = useState("");
   const addDeposit = () => {
     const v = parseAmount(depositValue);
-    if (!deposit || !Number.isFinite(v) || v === 0) return;
+    if (!deposit) return;
+    if (!Number.isFinite(v) || v === 0) { setDepositError("Informe um valor, por exemplo 50 (guardar) ou -50 (retirar)."); return; }
+    setDepositError("");
     updateData((c) => ({ ...c, goals: c.goals.map((g) => g.id === deposit.id ? { ...g, saved: Math.max(0, Math.round((g.saved + v) * 100) / 100) } : g) }));
     onToast(v > 0 ? `${money(v, data.currency)} guardados em ${deposit.name}.` : "Retirada registrada.");
     setDeposit(null); setDepositValue("");
@@ -161,12 +164,13 @@ export function GoalsPanel({ onToast }: { onToast: (message: string) => void }) 
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}><View style={[icon, { backgroundColor: C.greenSoft }]}><MaterialCommunityIcons name={(pct >= 1 ? "trophy-outline" : iconFor(g.icon, g.name, "piggy-bank-outline")) as "check"} size={18} color={C.green} /></View><View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={strong}>{g.name}</Text><Text style={muted}>{money(g.saved, data.currency)} de {money(g.target, data.currency)}{g.deadline ? ` · até ${displayDate(g.deadline)}` : ""}</Text></View><IconButton name="pencil-outline" label={`Editar ${g.name}`} tone="soft" onPress={() => { setEditing(g); setOpen(true); }} /></View>
           <View style={barLight}><View style={[barFill, { width: `${pct * 100}%`, backgroundColor: C.green }]} /></View>
           <Text style={muted}>{pct >= 1 ? "Meta alcançada. Parabéns!" : expired ? `Prazo encerrado · ${Math.round(pct * 100)}% do caminho. Edite a meta para escolher um novo prazo.` : perMonth ? `Guardando ${money(perMonth, data.currency)} por mês você chega lá no prazo.` : `${Math.round(pct * 100)}% do caminho.`}</Text>
-          <PrimaryButton title="Guardar dinheiro" tone="light" icon="plus" onPress={() => { setDeposit(g); setDepositValue(""); }} />
+          <PrimaryButton title="Guardar dinheiro" tone="light" icon="plus" onPress={() => { setDeposit(g); setDepositValue(""); setDepositError(""); }} />
         </Card>;
       }) : <Card><EmptyState icon="piggy-bank-outline" title="Nenhuma meta ainda" description="Comece pela reserva de emergência: o ideal é juntar de 3 a 6 meses dos seus gastos." action={<PrimaryButton title="Criar reserva de emergência" icon="plus" onPress={() => { setEditing({ id: "", name: "Reserva de emergência", target: 0, saved: 0, deadline: "" }); setOpen(true); }} />} /></Card>}
       {open ? <GoalForm initial={editing} onClose={() => setOpen(false)} onSave={(g) => { updateData((c) => ({ ...c, goals: [g, ...c.goals.filter((x) => x.id !== g.id)] })); setOpen(false); onToast("Meta salva."); }} onDelete={(g) => { updateData((c) => ({ ...c, goals: c.goals.filter((x) => x.id !== g.id) })); setOpen(false); onToast("Meta removida."); }} /> : null}
       <AppModal visible={Boolean(deposit)} title={`Guardar em ${deposit?.name ?? ""}`} subtitle="Use um valor negativo para registrar uma retirada." onClose={() => setDeposit(null)} footer={<PrimaryButton title="Confirmar" icon="check" onPress={addDeposit} />}>
-        <Field label="Valor" value={depositValue} onChangeText={setDepositValue} keyboardType="numbers-and-punctuation" placeholder="0,00" />
+        <Field label="Valor" value={depositValue} onChangeText={(v) => { setDepositValue(v); setDepositError(""); }} keyboardType="numbers-and-punctuation" placeholder="0,00" />
+        {depositError ? <Text accessibilityRole="alert" style={errorText}>{depositError}</Text> : null}
       </AppModal>
     </View>
   );
@@ -193,7 +197,7 @@ function GoalForm({ initial, onClose, onSave, onDelete }: { initial: SavingsGoal
       <Field label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Reserva de emergência, Viagem, Moto" />
       <IconPicker text={name} value={goalIcon} onChange={setGoalIcon} />
       <Field label="Quanto quer juntar" value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="0,00" />
-      {monthlyExpense > 0 && /reserva/i.test(name) ? <Pressable onPress={() => setTarget(String(Math.round(monthlyExpense * 6)))}><Text style={link}>Sugestão: 6 meses dos seus gastos = {money(monthlyExpense * 6, data.currency)}</Text></Pressable> : null}
+      {monthlyExpense > 0 && /reserva/i.test(name) ? <Pressable accessibilityRole="button" accessibilityLabel={`Usar sugestão de ${money(monthlyExpense * 6, data.currency)}`} onPress={() => setTarget(String(Math.round(monthlyExpense * 6)))}><Text style={link}>Sugestão: 6 meses dos seus gastos = {money(monthlyExpense * 6, data.currency)}</Text></Pressable> : null}
       <Field label="Já guardado (opcional)" value={saved} onChangeText={setSaved} keyboardType="decimal-pad" placeholder="0,00" />
       <Field label="Prazo (opcional, AAAA-MM)" value={deadline.slice(0, 7)} onChangeText={setDeadline} placeholder="2027-06" />
       {error ? <Text accessibilityRole="alert" style={errorText}>{error}</Text> : null}
@@ -224,7 +228,7 @@ export function DebtsPanel({ onToast }: { onToast: (message: string) => void }) 
         <Card style={{ gap: 4 }}>
           <View style={summaryRow}><Text style={muted}>Total que falta pagar</Text><Text style={[strong, { color: C.danger }]}>{money(remaining, data.currency)}</Text></View>
           <View style={summaryRow}><Text style={muted}>Parcelas por mês</Text><Text style={strong}>{money(monthly, data.currency)}</Text></View>
-          {monthly > 0 ? <View style={summaryRow}><Text style={muted}>Livre das dívidas em cerca de</Text><Text style={strong}>{Math.ceil(remaining / monthly)} meses</Text></View> : null}
+          {monthly > 0 && active.every((d) => d.monthly > 0) ? <View style={summaryRow}><Text style={muted}>Livre das dívidas em cerca de</Text><Text style={strong}>{Math.ceil(remaining / monthly)} meses</Text></View> : null}
         </Card>
         <ChoiceChips values={["Avalanche", "Bola de neve"]} selected={method} onSelect={(v) => setMethod(v as typeof method)} />
         <Text style={muted}>{method === "Avalanche" ? "Avalanche: pague o mínimo em todas e jogue o dinheiro extra na de juros mais altos. Economiza mais." : "Bola de neve: quite primeiro a menor dívida. Cada uma que acaba dá ânimo para a próxima."}</Text>
@@ -252,7 +256,7 @@ function DebtForm({ initial, onClose, onSave, onDelete }: { initial: Debt | null
   const [interest, setInterest] = useState(initial?.interest ? String(initial.interest).replace(".", ",") : "");
   const [error, setError] = useState("");
   const submit = () => {
-    const t = parseAmount(total); const m = monthly ? parseAmount(monthly) : 0; const j = interest ? parseAmount(interest) : 0;
+    const t = parseAmount(total); const m = monthly ? parseAmount(monthly) : 0; const j = interest ? parseAmount(interest, 4) : 0;
     if (!name.trim()) return setError("Dê um nome, como Cartão Nubank ou Empréstimo.");
     if (!Number.isFinite(t) || t <= 0) return setError("Informe quanto ainda falta pagar.");
     onSave({ id: initial?.id ?? createId(), name: name.trim(), total: t, paid: 0, monthly: Number.isFinite(m) ? m : 0, interest: Number.isFinite(j) ? j : 0 });

@@ -608,8 +608,13 @@
   }
   // Calendário de contas do mês: põe cada conta no dia do vencimento (dia 29 a 31 vai para o último dia nos meses mais curtos),
   // monta as semanas do mês (começando no domingo), soma o total e as duas quinzenas e marca as contas que caem no fim de semana.
+  // Aceita o mês como "AAAA-MM" (campo de mês) ou "MM/AAAA" (digitado nos navegadores que mostram caixa de texto).
+  function mesISO(v) {
+    var t = String(v == null ? "" : v).trim(), b = /^(\d{1,2})\s*[\/.-]\s*(\d{4})$/.exec(t);
+    return b ? b[2] + "-" + String(+b[1]).padStart(2, "0") : t;
+  }
   function calendarioContas(o) {
-    var m = /^(\d{4})-(\d{2})$/.exec(String(o && o.mes || ""));
+    var m = /^(\d{4})-(\d{2})$/.exec(mesISO(o && o.mes));
     if (!m) return null;
     var ano = +m[1], mes = +m[2];
     if (mes < 1 || mes > 12 || ano < 1900 || ano > 2200) return null;
@@ -656,7 +661,7 @@
   // Arquivo de agenda (.ics) com um evento de dia inteiro por conta e por mês, a partir do mês escolhido,
   // com aviso às 9h da véspera. Usa datas fixas (sem regra de repetição) para o dia 31 cair no último dia de cada mês.
   function icsContas(o) {
-    var m = /^(\d{4})-(\d{2})$/.exec(String(o && o.mes || ""));
+    var m = /^(\d{4})-(\d{2})$/.exec(mesISO(o && o.mes));
     if (!m) return null;
     var ano = +m[1], mes = +m[2], meses = Math.min(24, Math.max(1, Math.floor(o.meses || 12)));
     var carimbo = /^\d{8}T\d{6}Z$/.test(String(o.agora)) ? String(o.agora) : "20260101T000000Z";
@@ -668,10 +673,16 @@
       var a = ano + Math.floor((mes - 1 + i) / 12), mm = (mes - 1 + i) % 12 + 1;
       var r = calendarioContas({ mes: a + "-" + p2(mm), contas: o.contas });
       if (!r) return null;
-      r.contas.forEach(function (c, j) {
+      var dt0 = function (c) { return new Date(Date.UTC(a, mm - 1, c.diaReal)); };
+      var usados = {};
+      r.contas.forEach(function (c) {
+        // Identificador ligado à conta (nome + dia), para reimportar sem trocar uma conta por outra.
+        var base = ymd(dt0(c)) + "-" + (c.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "conta") + "-" + c.dia;
+        usados[base] = (usados[base] || 0) + 1;
+        var uid = usados[base] > 1 ? base + "-" + usados[base] : base;
         var dt = new Date(Date.UTC(a, mm - 1, c.diaReal)), fim = new Date(dt.getTime() + 864e5);
         var valor = c.valor ? " · R$ " + c.valor.toFixed(2).replace(".", ",") : "";
-        saida.push("BEGIN:VEVENT", "UID:" + ymd(dt) + "-" + j + "@da-conta.calendario", "DTSTAMP:" + carimbo,
+        saida.push("BEGIN:VEVENT", "UID:" + uid + "@da-conta.calendario", "DTSTAMP:" + carimbo,
           "DTSTART;VALUE=DATE:" + ymd(dt), "DTEND;VALUE=DATE:" + ymd(fim), "SUMMARY:" + txt("Vence: " + c.nome + valor),
           "DESCRIPTION:" + txt("Conta anotada no calendário de contas do Dá Conta."), "TRANSP:TRANSPARENT",
           "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + txt("Amanhã vence: " + c.nome), "TRIGGER:-PT15H", "END:VALARM", "END:VEVENT");
@@ -704,8 +715,10 @@
   };
   var telas = {
     decimo: function () {
-      var s = num("salario"), m = Math.min(12, Math.max(1, Math.floor(num("meses") || 12)));
+      var campoMeses = document.getElementById("meses"), vazio = !campoMeses || campoMeses.value.trim() === "";
+      var s = num("salario"), m = vazio ? 12 : Math.min(12, Math.floor(num("meses")));
       if (!s) return null;
+      if (m < 1) return { erro: "Com menos de 1 mês trabalhado (15 dias ou mais) no ano, não há 13º a receber." };
       var r = decimoTerceiro(s, m, num("media"), num("dependentes"));
       return linhas([["1ª parcela, sem descontos", r.primeira], ["2ª parcela, já com os descontos", r.segunda], ["INSS", r.inss], ["Imposto de Renda", r.irrf], ["Total líquido do 13º", r.liquido, 1]]);
     },
@@ -1225,15 +1238,15 @@
     document.querySelectorAll("#contas .conta").forEach(function (f) {
       var campo = function (k) { var el = f.querySelector('[data-campo="' + k + '"]'); return el ? el.value : ""; };
       var dia = parseInt(campo("dia"), 10), v = parseFloat(campo("valor")), nome = campo("nome").replace(/\s+/g, " ").trim().slice(0, 40);
-      if (!nome && !isFinite(dia)) return;
+      if (!nome && !isFinite(dia) && !(v > 0)) return;
       contas.push({ nome: nome, dia: isFinite(dia) ? dia : 0, valor: isFinite(v) ? Math.min(1e9, Math.max(0, v)) : 0 });
     });
     var mes = document.getElementById("mes");
-    return { mes: mes ? mes.value : "", contas: contas };
+    return { mes: mes ? mesISO(mes.value) : "", contas: contas };
   }
   telas.contasMes = function () {
     var d = lerContasMes();
-    var semDia = d.contas.filter(function (c) { return c.nome && !c.dia; }).map(function (c) { return c.nome; });
+    var semDia = d.contas.filter(function (c) { return !c.dia; }).map(function (c) { return c.nome || "a conta de " + brl(c.valor); });
     if (semDia.length) return { erro: "Falta o dia de vencimento de: " + semDia.join(", ") + "." };
     var r = calendarioContas(d);
     if (!r) return { erro: "Escolha o mês e preencha pelo menos uma conta com o dia de vencimento." };
@@ -1304,7 +1317,7 @@
   var CHAVE_META = "nyvo.metaFalta";
   // Meses entre este mês e o mês da meta ("AAAA-MM"): o depósito do mês da meta conta.
   var mesesAte = function (alvo, agora) {
-    var p = String(alvo || "").split("-");
+    var p = mesISO(alvo).split("-");
     if (p.length !== 2 || !+p[0] || !+p[1]) return null;
     return (+p[0] * 12 + +p[1]) - (agora.getFullYear() * 12 + agora.getMonth() + 1);
   };

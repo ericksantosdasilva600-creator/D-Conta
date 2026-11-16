@@ -91,6 +91,8 @@ describe("valores digitados", () => {
     const { parseAmount } = await import("../lib/format");
     expect(parseAmount("10,999")).toBe(11);
     expect(parseAmount("R$ 1.234,56")).toBe(1234.56);
+    expect(parseAmount("-R$ 50")).toBe(-50);
+    expect(parseAmount("1,875", 4)).toBe(1.875);
     expect(parseAmount("")).toBeNaN();
     expect(parseAmount("abc")).toBeNaN();
   });

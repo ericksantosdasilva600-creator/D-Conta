@@ -106,7 +106,7 @@ export default function SettingsScreen() {
         await resetLocalData();
       } else {
         const allKeys = await AsyncStorage.getAllKeys();
-        const appKeys = allKeys.filter((key) => key === STORAGE_KEY || key === LEGACY_STORAGE_KEY || key === STORAGE_MIGRATION_BACKUP_KEY || key === STORAGE_RECOVERY_BACKUP_KEY || key.startsWith(`${STORAGE_MIGRATION_BACKUP_KEY}.`) || key.startsWith(`${STORAGE_RECOVERY_BACKUP_KEY}.`));
+        const appKeys = allKeys.filter((key) => key === STORAGE_KEY || key === LEGACY_STORAGE_KEY || key === STORAGE_MIGRATION_BACKUP_KEY || key === STORAGE_RECOVERY_BACKUP_KEY || key === `${STORAGE_KEY}.before-restore` || key.startsWith(`${STORAGE_MIGRATION_BACKUP_KEY}.`) || key.startsWith(`${STORAGE_RECOVERY_BACKUP_KEY}.`));
         await AsyncStorage.multiRemove(appKeys);
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reset));
         updateData(() => reset);
@@ -233,7 +233,7 @@ export default function SettingsScreen() {
         </Card>
       </View>
 
-      <AppModal visible={restoreOpen} title="Restaurar backup" subtitle="Cole o texto do backup que você copiou antes. Os dados atuais deste navegador serão substituídos." onClose={() => setRestoreOpen(false)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Restaurar dados" icon="backup-restore" onPress={() => { const restored = parseBackup(restoreText); if (!restored) { setRestoreError("Esse texto não é um backup válido do Dá Conta."); return; } const restore = () => { updateData(() => ({ ...restored, onboarded: true })); setRestoreOpen(false); showToast("Backup restaurado. Uma cópia dos dados anteriores foi guardada neste navegador."); }; AsyncStorage.setItem(`${STORAGE_KEY}.before-restore`, JSON.stringify(data)).then(restore, restore); }} /><PrimaryButton title="Escolher arquivo .json" tone="light" icon="file-upload-outline" onPress={() => pickBackupFile((text) => setRestoreText(text))} /></View>}>
+      <AppModal visible={restoreOpen} title="Restaurar backup" subtitle="Cole o texto do backup que você copiou antes. Os dados atuais deste navegador serão substituídos." onClose={() => setRestoreOpen(false)} footer={<View style={{ gap: 9 }}><PrimaryButton title="Restaurar dados" icon="backup-restore" onPress={() => { const restored = parseBackup(restoreText); if (!restored) { setRestoreError("Esse texto não é um backup válido do Dá Conta."); return; } const restore = (kept: boolean) => { updateData(() => ({ ...restored, onboarded: true })); setRestoreOpen(false); showToast(kept ? "Backup restaurado. Uma cópia dos dados anteriores foi guardada neste navegador." : "Backup restaurado. Não houve espaço para guardar uma cópia dos dados anteriores."); }; const previous = { ...data, transactions: data.transactions.map((t) => t.receiptUri?.startsWith("data:") ? { ...t, receiptUri: "" } : t) }; AsyncStorage.setItem(`${STORAGE_KEY}.before-restore`, JSON.stringify(previous)).then(() => restore(true), () => restore(false)); }} /><PrimaryButton title="Escolher arquivo .json" tone="light" icon="file-upload-outline" onPress={() => pickBackupFile((text) => setRestoreText(text))} /></View>}>
         <Field label="Texto do backup" value={restoreText} onChangeText={(value) => { setRestoreText(value); setRestoreError(""); }} multiline placeholder='{"transactions": [...]}' style={{ minHeight: 120 }} />
         {restoreError ? <Text accessibilityRole="alert" style={{ color: C.danger, fontFamily: SANS, fontSize: 12 }}>{restoreError}</Text> : null}
       </AppModal>
