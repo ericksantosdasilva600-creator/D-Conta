@@ -13,7 +13,7 @@ export function parseAmount(value: string, decimals = 2) {
   const amount = Number(normalized);
   // Dinheiro tem no máximo centavos: "10,999" vira 11,00 em vez de ficar gravado com 3 casas.
   const factor = 10 ** decimals;
-  return Number.isFinite(amount) ? Math.round(amount * factor) / factor : NaN;
+  return Number.isFinite(amount) ? Math.round((amount + Math.sign(amount) * Number.EPSILON * Math.max(1, Math.abs(amount))) * factor) / factor : NaN;
 }
 
 export function localDateKey(date = new Date()) {

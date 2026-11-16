@@ -1,3 +1,4 @@
+import { habitStreak } from "@/lib/habit-streak";
 import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -25,19 +26,6 @@ function tipAction(tip: string): { label: string; path: "/tasks" | "/finance" | 
   if (/ideia|nota|anot/.test(t)) return { label: "Abrir Anotações", path: "/notes" };
   return null;
 }
-function habitStreak(completedByDate: Record<string, string[]>, today: string) {
-  let streak = 0;
-  const d = new Date(`${today}T12:00:00`);
-  if (!(completedByDate[today] ?? []).length) d.setDate(d.getDate() - 1);
-  for (;;) {
-    const key = localDateKey(d);
-    if (!(completedByDate[key] ?? []).length) break;
-    streak += 1;
-    d.setDate(d.getDate() - 1);
-  }
-  return streak;
-}
-
 type CaptureTarget = "notes" | "finance" | "habit" | "health" | "tasks";
 
 export function DashboardScreen() {
@@ -79,7 +67,7 @@ export function DashboardScreen() {
   const tasksToday = openTasks.filter((task) => task.dueDate && task.dueDate <= today).slice(0, 5);
   const studySoon = data.studyItems.filter((item) => !item.done && item.dueDate && (daysUntil(item.dueDate) ?? 99) <= 3).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 3);
   const doneToday = plannedHabits.filter((h) => completed.includes(h.id)).length;
-  const streak = habitStreak(data.completedByDate, today);
+  const streak = habitStreak(data.completedByDate, data.habits, today);
   const toggleHabit = (id: string) => {
     const wasDone = completed.includes(id);
     updateData((c) => { const list = c.completedByDate[today] ?? []; return { ...c, completedByDate: { ...c.completedByDate, [today]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] } }; });

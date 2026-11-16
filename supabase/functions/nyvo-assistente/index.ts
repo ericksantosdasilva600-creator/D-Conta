@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
   const body = await req.json().catch(() => null) as { messages?: { role?: string; content?: string }[] } | null;
   const messages = (Array.isArray(body?.messages) ? body!.messages! : []).slice(-6)
-    .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
+    .filter((m) => m && typeof m === "object" && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
     .map((m) => ({ role: m.role as string, content: m.content!.slice(0, 800) }));
   while (messages.length && messages[0].role !== "user") messages.shift();
   if (!messages.length || messages[messages.length - 1].role !== "user") return json({ error: "input" }, 400);

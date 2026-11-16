@@ -47,16 +47,27 @@ export function currentInvoiceMonth(card: CreditCard, today = localDateKey()) {
 }
 
 /** Divide uma compra parcelada em N movimentos mensais. */
-export function splitInstallments(base: Transaction, count: number): Transaction[] {
+export function splitInstallments(base: Transaction, count: number, card?: CreditCard): Transaction[] {
   if (count <= 1) return [base];
   const group = base.installmentGroup ?? createId();
   const cents = Math.round(base.amount * 100);
   const each = Math.floor(cents / count);
+  const day = Number(base.date.slice(8, 10));
+  const useCard = Boolean(card && base.account === "card");
+  const firstInvoice = useCard && card ? invoiceMonthFor(base.date, card) : "";
+  const dueDay = base.dueDate && isValidDateKey(base.dueDate) ? Number(base.dueDate.slice(8, 10)) : 0;
   return Array.from({ length: count }, (_, i) => {
     const month = addMonths(base.date.slice(0, 7), i);
-    const date = dayInMonth(month, Number(base.date.slice(8, 10)));
+    let date = dayInMonth(month, day);
+    // Em meses curtos (fevereiro) o dia 29–31 vira 28 e pode cair antes do fechamento:
+    // a parcela iria para a mesma fatura da anterior. Cada parcela fica em uma fatura.
+    if (useCard && card && i > 0) {
+      const target = addMonths(firstInvoice, i);
+      if (invoiceMonthFor(date, card) !== target) date = `${target}-01`;
+    }
+    const dueDate = dueDay ? dayInMonth(addMonths(base.dueDate.slice(0, 7), i), dueDay) : base.dueDate;
     const amount = (i === 0 ? cents - each * (count - 1) : each) / 100;
-    return { ...base, id: i === 0 ? base.id : createId(), date, amount, installment: `${i + 1}/${count}`, installmentGroup: group };
+    return { ...base, id: i === 0 ? base.id : createId(), date, dueDate, amount, installment: `${i + 1}/${count}`, installmentGroup: group };
   });
 }
 
@@ -68,7 +79,9 @@ export function billStatus(bill: RecurringBill, month = monthKey(), today = loca
 }
 
 export function payBill(data: AppData, bill: RecurringBill, month = monthKey()): AppData {
-  if (bill.paidMonths.includes(month)) return data;
+  // Confere o dado atual, não o da tela: dois toques rápidos não criam dois pagamentos.
+  const current = data.recurringBills.find((b) => b.id === bill.id) ?? bill;
+  if (current.paidMonths.includes(month)) return data;
   const today = localDateKey();
   const transaction: Transaction = {
     id: createId(), kind: "expense", amount: bill.amount, merchant: bill.name, category: bill.category,
@@ -89,12 +102,18 @@ export function removeTransactionAndUnpay(data: AppData, transactionId: string):
   const billId = removed?.recurringBillId;
   const month = removed?.dueDate?.slice(0, 7);
   if (!billId || !month) return { ...data, transactions };
-  const stillPaid = transactions.some((t) => t.recurringBillId === billId && t.dueDate?.slice(0, 7) === month);
-  if (stillPaid) return { ...data, transactions };
+  return syncBillPaid({ ...data, transactions }, billId, month);
+}
+
+/** Deixa o "Paga" de uma conta fixa num mês de acordo com os movimentos pagos ligados a ela. */
+export function syncBillPaid(data: AppData, billId: string | undefined, month: string | undefined): AppData {
+  if (!billId || !month) return data;
+  const paid = data.transactions.some((t) => t.paid && t.recurringBillId === billId && t.dueDate?.slice(0, 7) === month);
+  const bill = data.recurringBills.find((b) => b.id === billId);
+  if (!bill || bill.paidMonths.includes(month) === paid) return data;
   return {
     ...data,
-    transactions,
-    recurringBills: data.recurringBills.map((b) => b.id === billId ? { ...b, paidMonths: b.paidMonths.filter((m) => m !== month) } : b),
+    recurringBills: data.recurringBills.map((b) => b.id === billId ? { ...b, paidMonths: paid ? [...b.paidMonths, month] : b.paidMonths.filter((m) => m !== month) } : b),
   };
 }
 

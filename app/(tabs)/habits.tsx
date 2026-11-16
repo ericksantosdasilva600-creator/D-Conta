@@ -1,3 +1,4 @@
+import { habitStreak } from "@/lib/habit-streak";
 import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, Text, TextInput, View } from "react-native";
@@ -37,13 +38,7 @@ export default function HabitsScreen() {
     ? data.habits.filter((habit) => habit.weekdays.includes(weekday) || completed.includes(habit.id))
     : scheduledHabits;
   const doneCount = focusedHabits.filter((habit) => completed.includes(habit.id)).length;
-  const streakDays = useMemo(() => {
-    const cursor = new Date(`${today}T12:00:00`);
-    if (!(data.completedByDate[today] ?? []).length) cursor.setDate(cursor.getDate() - 1);
-    let total = 0;
-    while ((data.completedByDate[localDateKey(cursor)] ?? []).length) { total += 1; cursor.setDate(cursor.getDate() - 1); }
-    return total;
-  }, [today, data.completedByDate]);
+  const streakDays = useMemo(() => habitStreak(data.completedByDate, data.habits, today), [today, data.completedByDate, data.habits]);
   const visibleHabits = useMemo(() => {
     const selected = mode === "archived" ? data.habits.filter((habit) => habit.archived) : mode === "all" ? activeHabits : mode === "history" ? focusedHabits : scheduledHabits;
     const normalized = query.trim().toLocaleLowerCase("pt-BR");

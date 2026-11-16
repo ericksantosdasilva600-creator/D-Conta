@@ -8,7 +8,7 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { FinanceCharts } from "@/components/FinanceCharts";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { CreditCardPanel, DebtsPanel, GoalsPanel, ImportPanel, MonthSummaryPanel, RecurringBillsPanel } from "@/components/FinanceExtras";
-import { removeTransactionAndUnpay, splitInstallments } from "@/lib/finance-extra";
+import { removeTransactionAndUnpay, splitInstallments, syncBillPaid } from "@/lib/finance-extra";
 import { ACCOUNTS, accountLabel, useAppData, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
 import { toast } from "@/lib/toast";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
@@ -76,15 +76,19 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
 
   const saveTransaction = (transaction: Transaction, categoryToAdd?: { kind: TransactionKind; name: string }, installments = 1) => {
     const isNew = !data.transactions.some((item) => item.id === transaction.id);
-    const created = isNew && installments > 1 ? splitInstallments(transaction, installments) : [transaction];
+    const created = isNew && installments > 1 ? splitInstallments(transaction, installments, data.creditCard) : [transaction];
     const existingCustom = categoryToAdd?.kind === "expense" ? data.customExpenseCategories : data.customIncomeCategories;
     const duplicate = Boolean(categoryToAdd && existingCustom.some((item) => item.toLocaleLowerCase("pt-BR") === categoryToAdd.name.toLocaleLowerCase("pt-BR")));
-    const updated = {
+    const previous = data.transactions.find((item) => item.id === transaction.id);
+    let updated: typeof data = {
       ...data,
       transactions: [...created, ...data.transactions.filter((item) => item.id !== transaction.id)],
       customExpenseCategories: categoryToAdd?.kind === "expense" && !duplicate ? [...data.customExpenseCategories, categoryToAdd.name] : data.customExpenseCategories,
       customIncomeCategories: categoryToAdd?.kind === "income" && !duplicate ? [...data.customIncomeCategories, categoryToAdd.name] : data.customIncomeCategories,
     };
+    // Editar o pagamento de uma conta fixa (pago/pendente ou outro mês) atualiza o "Paga" da conta.
+    updated = syncBillPaid(updated, previous?.recurringBillId, previous?.dueDate?.slice(0, 7));
+    updated = syncBillPaid(updated, transaction.recurringBillId, transaction.dueDate?.slice(0, 7));
     updateData(() => updated);
     void refreshLocalNotifications(updated);
     setEditing(null);
@@ -102,11 +106,8 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
 
   const togglePaid = (transaction: Transaction) => {
     const transactions = data.transactions.map((item) => item.id === transaction.id ? { ...item, paid: !item.paid } : item);
-    const month = transaction.dueDate?.slice(0, 7);
-    const billId = transaction.recurringBillId;
-    // Voltar o pagamento de uma conta fixa para "pendente" também tira o "Paga" da conta naquele mês.
-    const unpay = transaction.paid && billId && month && !transactions.some((t) => t.paid && t.recurringBillId === billId && t.dueDate?.slice(0, 7) === month);
-    const updated = { ...data, transactions, ...(unpay ? { recurringBills: data.recurringBills.map((b) => b.id === billId ? { ...b, paidMonths: b.paidMonths.filter((m) => m !== month) } : b) } : {}) };
+    // Pagamento de conta fixa: pendente tira o "Paga" da conta naquele mês, pago coloca de volta.
+    const updated = syncBillPaid({ ...data, transactions }, transaction.recurringBillId, transaction.dueDate?.slice(0, 7));
     updateData(() => updated);
     void refreshLocalNotifications(updated);
     showToast(transaction.paid ? "Despesa marcada como pendente." : "Despesa paga; os lembretes foram atualizados.");

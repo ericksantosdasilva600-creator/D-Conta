@@ -801,8 +801,10 @@
   telas.rende = function () {
     var c = num("inicial"), a = num("aporte"), meses = Math.min(600, Math.round(num("meses")));
     if (!(c || a) || !meses) return null;
-    var pCdb = num("pctCdb") || 100, pLci = num("pctLci") || 90;
-    var r = quantoRende({ inicial: c, aporte: a, meses: meses, selic: num("selic") || 13.75, tr: num("tr"), pctCdb: pCdb, pctLci: pLci });
+    // O padrão só vale para campo vazio: um 0 digitado de propósito continua 0.
+    var v = function (id, d) { var el = document.getElementById(id); return el && String(el.value).trim() !== "" ? num(id) : d; };
+    var pCdb = v("pctCdb", 100), pLci = v("pctLci", 90);
+    var r = quantoRende({ inicial: c, aporte: a, meses: meses, selic: v("selic", 13.75), tr: num("tr"), pctCdb: pCdb, pctLci: pLci });
     var nomes = { poupanca: "Poupança", cdb: "CDB (" + pCdb.toLocaleString("pt-BR") + "% do CDI)", lci: "LCI ou LCA (" + pLci.toLocaleString("pt-BR") + "% do CDI)" };
     var ordem = ["poupanca", "cdb", "lci"].sort(function (x, y) { return r[y].liquido - r[x].liquido; });
     var pct = function (v) { return v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }); };
@@ -1334,7 +1336,7 @@
     var html = linhas([[nome ? "Meta: " + esc(nome) : "Valor da meta", r.meta], ["Você já tem", r.guardado], ["Quanto falta", r.falta, 1]]);
     html += '<p class="note">Você já percorreu ' + r.progresso + '% do caminho.</p><progress class="barra" max="100" value="' + r.progresso + '" aria-label="Caminho até a meta">' + r.progresso + "%</progress>";
     if (r.falta === 0) return html + '<p class="note">Meta alcançada. Parabéns! Que tal começar a próxima?</p>';
-    if (r.meses !== null && r.porMes === null) html += '<p class="note">O mês da meta precisa ser depois deste mês. Escolha uma data mais para frente.</p>';
+    if (r.meses !== null && r.porMes === null) html += r.meses > 1200 ? '<p class="note">Escolha uma data em até 100 anos.</p>' : '<p class="note">O mês da meta precisa ser depois deste mês. Escolha uma data mais para frente.</p>';
     if (r.porMes !== null) {
       html += "<h3>Para chegar lá em " + nomeMes(agora, r.meses) + "</h3>";
       if (r.porMes === 0) html += '<p class="note">Só com o rendimento informado o que você já tem chega à meta nesse prazo.</p>';

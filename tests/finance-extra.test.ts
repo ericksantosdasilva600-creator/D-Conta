@@ -97,3 +97,36 @@ describe("valores digitados", () => {
     expect(parseAmount("abc")).toBeNaN();
   });
 });
+
+describe("revisão 16/11", () => {
+  it("parcelas no cartão ficam uma em cada fatura mesmo passando por fevereiro", async () => {
+    const { splitInstallments, invoiceMonthFor } = await import("../lib/finance-extra");
+    const card = { closingDay: 28, dueDay: 10, limit: 0 };
+    const base = { id: "a", kind: "expense", amount: 300, merchant: "Loja", category: "Compras", date: "2027-01-31", dueDate: "2027-02-10", paid: false, priority: "medium", notes: "", receiptUri: "", scope: "personal", account: "card" } as any;
+    const parts = splitInstallments(base, 3, card);
+    expect(parts.map((p) => invoiceMonthFor(p.date, card))).toEqual(["2027-02", "2027-03", "2027-04"]);
+    expect(parts.map((p) => p.dueDate)).toEqual(["2027-02-10", "2027-03-10", "2027-04-10"]);
+  });
+
+  it("pagar, voltar para pendente e pagar de novo mantém a conta fixa paga", async () => {
+    const { syncBillPaid, payBill } = await import("../lib/finance-extra");
+    const bill = { id: "b1", name: "Luz", amount: 100, dueDay: 10, category: "Contas da casa", account: "main", paidMonths: [] } as any;
+    const data = { transactions: [], recurringBills: [bill] } as any;
+    const paid = payBill(data, bill, "2026-11");
+    expect(payBill(paid, bill, "2026-11")).toBe(paid);
+    const tx = paid.transactions[0];
+    const pending = syncBillPaid({ ...paid, transactions: [{ ...tx, paid: false }] }, "b1", "2026-11");
+    expect(pending.recurringBills[0].paidMonths).toEqual([]);
+    const again = syncBillPaid({ ...pending, transactions: [{ ...tx, paid: true }] }, "b1", "2026-11");
+    expect(again.recurringBills[0].paidMonths).toEqual(["2026-11"]);
+  });
+
+  it("sequência de hábitos não zera em dia sem hábito agendado", async () => {
+    const { habitStreak } = await import("../lib/habit-streak");
+    // 2026-11-16 é segunda; hábito só de segunda a sexta.
+    const habits = [{ weekdays: [1, 2, 3, 4, 5] }];
+    const done = { "2026-11-16": ["h"], "2026-11-13": ["h"], "2026-11-12": ["h"] };
+    expect(habitStreak(done, habits, "2026-11-16")).toBe(3);
+    expect(habitStreak({ "2026-11-16": ["h"] }, [], "2026-11-16")).toBe(1);
+  });
+});
