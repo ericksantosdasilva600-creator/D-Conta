@@ -130,3 +130,27 @@ describe("revisão 16/11", () => {
     expect(habitStreak({ "2026-11-16": ["h"] }, [], "2026-11-16")).toBe(1);
   });
 });
+
+describe("revisão 21/11", () => {
+  it("conta fixa com pagamento pendente não duplica ao pagar", async () => {
+    const { payBill, markTransactionPaid, shownAsBill } = await import("../lib/finance-extra");
+    const bill = { id: "b1", name: "Luz", amount: 100, dueDay: 10, category: "Contas da casa", account: "main", paidMonths: [], active: true } as any;
+    const paid = payBill({ transactions: [], recurringBills: [bill] } as any, bill, "2026-11");
+    const pendingTx = { ...paid.transactions[0], paid: false };
+    const pending = { ...paid, transactions: [pendingTx], recurringBills: [{ ...bill }] } as any;
+    expect(shownAsBill(pending.recurringBills, pendingTx, ["2026-11"])).toBe(true);
+    const viaBill = payBill(pending, bill, "2026-11");
+    expect(viaBill.transactions).toHaveLength(1);
+    expect(viaBill.transactions[0].paid).toBe(true);
+    expect(viaBill.recurringBills[0].paidMonths).toEqual(["2026-11"]);
+    const viaTx = markTransactionPaid(pending, pendingTx.id);
+    expect(viaTx.transactions).toHaveLength(1);
+    expect(viaTx.recurringBills[0].paidMonths).toEqual(["2026-11"]);
+  });
+
+  it("remover exemplo leva junto o pagamento de conta fixa de exemplo", async () => {
+    const { removeDemoData } = await import("../lib/demo-data");
+    const empty = { transactions: [{ id: "x1", recurringBillId: "demo-b1" }, { id: "x2" }], recurringBills: [], goals: [], debts: [], habits: [], tasks: [], notes: [], studySubjects: [], studyItems: [], healthLogs: [], completedByDate: {} } as any;
+    expect(removeDemoData(empty).transactions.map((t: any) => t.id)).toEqual(["x2"]);
+  });
+});

@@ -5,6 +5,7 @@ import { Card, Field, PrimaryButton } from "@/components/app-ui";
 import { ACTIVE_PALETTE, C, PALETTES, SANS, paletteColors, readThemeChoice, resolvePalette, saveThemeChoice, type Palette } from "@/lib/design";
 
 const SWATCHES = ["#187A61", "#1F6FB2", "#6A4BC4", "#C2416F", "#C8582B", "#3E6B2F", "#34404A", "#0E8C9A", "#D14B4B", "#8A5A2B", "#2E7D32", "#5C6BC0"];
+const SWATCH_NAMES = ["Verde", "Azul", "Roxo", "Rosa", "Laranja", "Verde-oliva", "Cinza-escuro", "Azul-petróleo", "Vermelho", "Marrom", "Verde-folha", "Azul-anil"];
 
 export function AppearanceCard() {
   const saved = readThemeChoice();
@@ -54,7 +55,7 @@ export function AppearanceCard() {
 }
 
 function SwatchRow({ value, onPick }: { value: string; onPick: (v: string) => void }) {
-  return <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>{SWATCHES.map((c) => <Pressable key={c} onPress={() => onPick(c)} accessibilityRole="button" accessibilityLabel={`Cor ${c}`} style={[swatch, { backgroundColor: c }, value.toUpperCase() === c ? { borderColor: C.ink, borderWidth: 3 } : null]} />)}</View>;
+  return <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>{SWATCHES.map((c, i) => <Pressable key={c} onPress={() => onPick(c)} accessibilityRole="radio" accessibilityState={{ selected: value.toUpperCase() === c }} accessibilityLabel={`Cor ${SWATCH_NAMES[i] ?? i + 1}`} style={[swatch, { backgroundColor: c }, value.toUpperCase() === c ? { borderColor: C.ink, borderWidth: 3 } : null]} />)}</View>;
 }
 
 const strong = { color: C.ink, fontFamily: SANS, fontSize: 14, fontWeight: "700" as const };

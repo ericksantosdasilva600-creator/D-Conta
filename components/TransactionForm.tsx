@@ -108,11 +108,14 @@ export function TransactionForm({ visible, initial, defaultScope = "personal", o
         : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.9 });
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
-        const targetWidth = Math.min(asset.width || 1600, 1600);
-        let processed = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: targetWidth } }], { compress: 0.68, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+        // No site (modo local) o recibo fica dentro do localStorage, que tem uns 5 MB no total: imagem bem menor.
+        const smallWeb = Platform.OS === "web" && LOCAL_ONLY;
+        const targetWidth = Math.min(asset.width || 1600, smallWeb ? 900 : 1600);
+        let processed = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: targetWidth } }], { compress: smallWeb ? 0.55 : 0.68, format: ImageManipulator.SaveFormat.JPEG, base64: true });
         const byteLength = (value: string) => Math.floor(value.length * 3 / 4) - (value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0);
-        if (!processed.base64 || byteLength(processed.base64) > 1.5 * 1024 * 1024) {
-          processed = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: Math.min(targetWidth, 1200) } }], { compress: 0.45, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+        const softLimit = smallWeb ? 250 * 1024 : 1.5 * 1024 * 1024;
+        if (!processed.base64 || byteLength(processed.base64) > softLimit) {
+          processed = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: Math.min(targetWidth, smallWeb ? 700 : 1200) } }], { compress: smallWeb ? 0.4 : 0.45, format: ImageManipulator.SaveFormat.JPEG, base64: true });
         }
         if (!processed.base64 || byteLength(processed.base64) > 1.5 * 1024 * 1024) throw new Error("A imagem excede o limite de 1,5 MB após compressão.");
         setReceiptUri(await keepReceipt(processed.uri, processed.base64));

@@ -88,7 +88,9 @@ export function CreditCardPanel() {
   const current = currentInvoiceMonth(data.creditCard);
   const [selected, setSelected] = useState(current);
   const invoice = invoices.find((i) => i.month === selected) ?? { month: selected, items: [] as Transaction[], total: 0, dueDate: "" };
-  const futureTotal = invoices.filter((i) => i.month >= current).reduce((s, i) => s + i.total, 0);
+  // Fatura que já fechou mas ainda não venceu também ocupa o limite.
+  const today = localDateKey();
+  const futureTotal = invoices.filter((i) => i.month >= current || (i.dueDate && i.dueDate >= today)).reduce((s, i) => s + i.total, 0);
   const limit = data.creditCard.limit;
   const months = [addMonths(current, -1), current, addMonths(current, 1), addMonths(current, 2)];
   return (

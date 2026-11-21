@@ -82,6 +82,9 @@ export function payBill(data: AppData, bill: RecurringBill, month = monthKey()):
   // Confere o dado atual, não o da tela: dois toques rápidos não criam dois pagamentos.
   const current = data.recurringBills.find((b) => b.id === bill.id) ?? bill;
   if (current.paidMonths.includes(month)) return data;
+  // Já existe um pagamento pendente dessa conta no mês: marca ele como pago em vez de criar outro.
+  const pending = data.transactions.find((t) => !t.paid && t.recurringBillId === bill.id && t.dueDate?.slice(0, 7) === month);
+  if (pending) return markTransactionPaid(data, pending.id);
   const today = localDateKey();
   const transaction: Transaction = {
     id: createId(), kind: "expense", amount: bill.amount, merchant: bill.name, category: bill.category,
@@ -93,6 +96,21 @@ export function payBill(data: AppData, bill: RecurringBill, month = monthKey()):
     transactions: [transaction, ...data.transactions],
     recurringBills: data.recurringBills.map((b) => b.id === bill.id ? { ...b, paidMonths: [...b.paidMonths, month] } : b),
   };
+}
+
+/** Marca uma despesa como paga; se for o pagamento de uma conta fixa, a conta também fica "Paga" no mês. */
+export function markTransactionPaid(data: AppData, transactionId: string): AppData {
+  const t = data.transactions.find((x) => x.id === transactionId);
+  if (!t) return data;
+  const next = { ...data, transactions: data.transactions.map((x) => x.id === transactionId ? { ...x, paid: true } : x) };
+  return syncBillPaid(next, t.recurringBillId, t.dueDate?.slice(0, 7));
+}
+
+/** Despesa pendente que já aparece como a própria conta fixa (ativa) naquele mês: não mostrar duas vezes. */
+export function shownAsBill(bills: RecurringBill[], t: Transaction, months: string[]): boolean {
+  if (!t.recurringBillId || !t.dueDate) return false;
+  const month = t.dueDate.slice(0, 7);
+  return months.includes(month) && bills.some((b) => b.id === t.recurringBillId && b.active && !b.paidMonths.includes(month));
 }
 
 /** Remove um movimento; se ele era o pagamento de uma conta fixa, a conta volta a ficar "a pagar" naquele mês. */

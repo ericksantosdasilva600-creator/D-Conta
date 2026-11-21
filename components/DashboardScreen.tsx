@@ -9,7 +9,7 @@ import { PhraseCapture, QuickAddModal } from "@/components/QuickAdd";
 import { greeting, tipFor } from "@/lib/brand";
 import { useOptionalSupabaseSync } from "@/lib/supabase-sync";
 import { hasDemoData, removeDemoData } from "@/lib/demo-data";
-import { billStatus, cardInvoices, payBill } from "@/lib/finance-extra";
+import { billStatus, cardInvoices, markTransactionPaid, payBill, shownAsBill } from "@/lib/finance-extra";
 import { C, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -55,9 +55,9 @@ export function DashboardScreen() {
       const st = billStatus(bill);
       if (!st.paid && st.days <= 5) items.push({ key: `bill-${bill.id}`, title: bill.name, detail: "Conta fixa", days: st.days, amount: bill.amount, onPay: () => { updateData((c) => payBill(c, bill)); toast(`${bill.name} paga.`); } });
     });
-    data.transactions.filter((t) => t.kind === "expense" && !t.paid && t.dueDate).forEach((t) => {
+    data.transactions.filter((t) => t.kind === "expense" && !t.paid && t.dueDate && !shownAsBill(data.recurringBills, t, [localDateKey().slice(0, 7)])).forEach((t) => {
       const d = daysUntil(t.dueDate);
-      if (d !== null && d <= 5) items.push({ key: `tx-${t.id}`, title: t.merchant, detail: "Despesa pendente", days: d, amount: t.amount, onPay: () => { updateData((c) => ({ ...c, transactions: c.transactions.map((x) => x.id === t.id ? { ...x, paid: true } : x) })); toast("Despesa marcada como paga."); } });
+      if (d !== null && d <= 5) items.push({ key: `tx-${t.id}`, title: t.merchant, detail: "Despesa pendente", days: d, amount: t.amount, onPay: () => { updateData((c) => markTransactionPaid(c, t.id)); toast("Despesa marcada como paga."); } });
     });
     // A fatura que vence nos próximos dias costuma ser a que já fechou (mês anterior ao atual), então olha todas.
     const invoice = cardInvoices(data.transactions, data.creditCard).find((i) => { const d = daysUntil(i.dueDate); return i.total > 0 && d !== null && d >= 0 && d <= 7; });

@@ -80,7 +80,12 @@ export default function SettingsScreen() {
     if (categories.some((item) => item.toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR") && item !== original)) { setCategoryError("Já existe uma categoria com esse nome."); return; }
     const nextCategories = original ? categories.map((item) => item === original ? name : item) : [...categories, name];
     const transactions = original ? data.transactions.map((item) => item.kind === categoryDraft.kind && item.category === original ? { ...item, category: name } : item) : data.transactions;
-    updateData((current) => ({ ...current, [key]: nextCategories, transactions }));
+    const renameExpense = Boolean(original) && categoryDraft.kind === "expense";
+    updateData((current) => ({
+      ...current, [key]: nextCategories, transactions,
+      budgets: renameExpense ? current.budgets.map((b) => b.category === original ? { ...b, category: name } : b) : current.budgets,
+      recurringBills: renameExpense ? current.recurringBills.map((b) => b.category === original ? { ...b, category: name } : b) : current.recurringBills,
+    }));
     setCategoryDraft(null); setCategoryValue(""); setCategoryError("");
     showToast(original ? "Categoria renomeada." : "Categoria criada.");
   };

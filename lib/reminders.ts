@@ -3,6 +3,7 @@
  * Funções puras (sem React), usadas pelo site e pelo app nativo.
  */
 import type { AppData } from "./app-data";
+import { shownAsBill } from "./finance-extra";
 import { soundFor, type SoundId } from "./themes";
 
 export type ReminderRepeat = "once" | "minutes" | "hours" | "daily" | "weekly" | "monthly" | "days";
@@ -157,10 +158,12 @@ export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, 
   const startDay = dateKeyOf(from);
   const endDay = dateKeyOf(to);
   // Contas fixas: mês atual e próximo.
+  const billMonths: string[] = [];
   for (const bill of data.recurringBills.filter((b) => b.active)) {
     for (const offset of [0, 1]) {
       const base = at(startDay, 0); base.setDate(1); base.setMonth(base.getMonth() + offset);
       const month = dateKeyOf(base).slice(0, 7);
+      if (!billMonths.includes(month)) billMonths.push(month);
       if (bill.paidMonths.includes(month)) continue;
       const lastDay = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
       const due = `${month}-${pad(Math.min(bill.dueDay, lastDay))}`;
@@ -170,6 +173,8 @@ export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, 
   // Despesas pendentes com vencimento.
   for (const t of data.transactions) {
     if (t.kind !== "expense" || t.paid || !t.dueDate) continue;
+    // Já avisado como conta fixa ("bill:"): não repetir o mesmo aviso como despesa.
+    if (shownAsBill(data.recurringBills, t, billMonths)) continue;
     for (const d of prefs.billDaysBefore) push(`tx:${t.id}:${d}`, "Despesa pendente", `${t.merchant || "Uma despesa"} ${dueText(d)}.`, at(addDays(t.dueDate.slice(0, 10), -d), billMin), "moedas");
   }
   // Tarefas.

@@ -59,5 +59,7 @@ export function removeDemoData(data: AppData): AppData {
   const keep = <T extends { id: string }>(list: T[]) => list.filter((x) => !x.id.startsWith(DEMO));
   const completedByDate: Record<string, string[]> = {};
   Object.entries(data.completedByDate).forEach(([d, ids]) => { const rest = ids.filter((id) => !id.startsWith(DEMO)); if (rest.length) completedByDate[d] = rest; });
-  return { ...data, transactions: keep(data.transactions), recurringBills: keep(data.recurringBills), goals: keep(data.goals), debts: keep(data.debts), habits: keep(data.habits), tasks: keep(data.tasks), notes: keep(data.notes), studySubjects: keep(data.studySubjects), studyItems: keep(data.studyItems), healthLogs: keep(data.healthLogs), completedByDate };
+  // Pagamentos feitos a partir de contas fixas de exemplo também são de exemplo.
+  const transactions = keep(data.transactions).filter((t) => !t.recurringBillId?.startsWith(DEMO));
+  return { ...data, transactions, recurringBills: keep(data.recurringBills), goals: keep(data.goals), debts: keep(data.debts), habits: keep(data.habits), tasks: keep(data.tasks), notes: keep(data.notes), studySubjects: keep(data.studySubjects), studyItems: keep(data.studyItems), healthLogs: keep(data.healthLogs), completedByDate };
 }

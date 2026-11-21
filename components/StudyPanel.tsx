@@ -39,7 +39,7 @@ export function StudyPanel() {
         const d = daysUntil(item.dueDate);
         const when = !item.dueDate ? "Sem data" : d === null ? displayDate(item.dueDate) : d < 0 ? `Passou há ${Math.abs(d)} d` : d === 0 ? "Hoje" : d === 1 ? "Amanhã" : `Em ${d} dias · ${displayDate(item.dueDate)}`;
         return <Pressable key={item.id} onPress={() => { setEditing(item); setItemOpen(true); }} accessibilityRole="button" style={[row, item.done ? { opacity: 0.6 } : null]}>
-          <Pressable onPress={(e) => { e.stopPropagation(); toggle(item); }} accessibilityRole="checkbox" accessibilityState={{ checked: item.done }} accessibilityLabel={`Concluir ${item.title}`}><MaterialCommunityIcons name={item.done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={24} color={item.done ? C.green : C.muted} /></Pressable>
+          <Pressable onPress={(e) => { e.stopPropagation(); toggle(item); }} accessibilityRole="checkbox" accessibilityState={{ checked: item.done }} accessibilityLabel={item.done ? `Reabrir ${item.title}` : `Concluir ${item.title}`}><MaterialCommunityIcons name={item.done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={24} color={item.done ? C.green : C.muted} /></Pressable>
           <View style={{ flex: 1, minWidth: 0, gap: 3 }}><Text numberOfLines={1} style={[strong, item.done ? { textDecorationLine: "line-through" } : null]}>{item.title}</Text><Text style={muted}>{subjectName_(item.subjectId)} · {when}</Text></View>
           <Tag label={KIND_LABEL[item.kind]} tone={item.kind === "exam" ? (d !== null && d <= 3 && !item.done ? "coral" : "blue") : "muted"} icon={KIND_ICON[item.kind]} />
         </Pressable>;
