@@ -9,7 +9,7 @@ import { FinanceCharts } from "@/components/FinanceCharts";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { CreditCardPanel, DebtsPanel, GoalsPanel, ImportPanel, MonthSummaryPanel, RecurringBillsPanel } from "@/components/FinanceExtras";
 import { removeTransactionAndUnpay, splitInstallments, syncBillPaid } from "@/lib/finance-extra";
-import { ACCOUNTS, accountLabel, useAppData, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
+import { ACCOUNTS, accountLabel, useAppData, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type AccountId, type FinanceScope, type Priority, type Transaction, type TransactionKind } from "@/lib/app-data";
 import { toast } from "@/lib/toast";
 import { C, PRIORITY_LABELS, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
@@ -78,7 +78,9 @@ export function FinanceScreen({ autoCreate = false }: { autoCreate?: boolean } =
     const isNew = !data.transactions.some((item) => item.id === transaction.id);
     const created = isNew && installments > 1 ? splitInstallments(transaction, installments, data.creditCard) : [transaction];
     const existingCustom = categoryToAdd?.kind === "expense" ? data.customExpenseCategories : data.customIncomeCategories;
-    const duplicate = Boolean(categoryToAdd && existingCustom.some((item) => item.toLocaleLowerCase("pt-BR") === categoryToAdd.name.toLocaleLowerCase("pt-BR")));
+    const builtins = categoryToAdd?.kind === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+    // Compara também com as categorias que já vêm no app: "Mercado" não vira uma personalizada repetida.
+    const duplicate = Boolean(categoryToAdd && [...builtins, ...existingCustom].some((item) => item.toLocaleLowerCase("pt-BR") === categoryToAdd.name.toLocaleLowerCase("pt-BR")));
     const previous = data.transactions.find((item) => item.id === transaction.id);
     let updated: typeof data = {
       ...data,
@@ -205,8 +207,8 @@ function TransactionRow({ transaction, currency, onPress, onDelete, onTogglePaid
           {transaction.installment ? <Tag label={`Parcela ${transaction.installment}`} tone="muted" /> : null}
           {transaction.receiptUri ? <Tag label="Recibo" tone="blue" icon="receipt" /> : null}
         </View>
-        {transaction.kind === "expense" ? <Pressable onPress={(event) => { event.stopPropagation(); onTogglePaid(); }} accessibilityRole="button" accessibilityLabel={transaction.paid ? "Marcar despesa como pendente" : "Marcar despesa como paga"} style={paidAction}><MaterialCommunityIcons name={transaction.paid ? "checkbox-marked-circle-outline" : "circle-outline"} size={17} color={C.green} /><Text style={{ color: C.greenDark, fontFamily: SANS, fontSize: 11, fontWeight: "700" }}>{transaction.paid ? "Paga" : "Marcar paga"}</Text></Pressable> : null}
-        <Pressable onPress={(event) => { event.stopPropagation(); onDelete(); }} accessibilityRole="button" accessibilityLabel="Remover movimento" style={{ padding: 4, marginLeft: 4 }}><MaterialCommunityIcons name="delete-outline" size={18} color={C.muted} /></Pressable>
+        {transaction.kind === "expense" ? <Pressable onPress={(event) => { event.stopPropagation(); onTogglePaid(); }} accessibilityRole="button" accessibilityLabel={`${transaction.paid ? "Marcar como pendente" : "Marcar como paga"}: ${transaction.merchant || "despesa"}`} style={paidAction}><MaterialCommunityIcons name={transaction.paid ? "checkbox-marked-circle-outline" : "circle-outline"} size={17} color={C.green} /><Text style={{ color: C.greenDark, fontFamily: SANS, fontSize: 11, fontWeight: "700" }}>{transaction.paid ? "Paga" : "Marcar paga"}</Text></Pressable> : null}
+        <Pressable onPress={(event) => { event.stopPropagation(); onDelete(); }} accessibilityRole="button" accessibilityLabel={`Remover ${transaction.merchant || "movimento"}, ${money(transaction.amount, currency)}`} style={{ padding: 4, marginLeft: 4 }}><MaterialCommunityIcons name="delete-outline" size={18} color={C.muted} /></Pressable>
       </View>
       {transaction.notes ? <Text numberOfLines={2} style={{ color: C.muted, fontFamily: SANS, fontSize: 12, lineHeight: 18 }}>{transaction.notes}</Text> : null}
     </Pressable>

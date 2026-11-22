@@ -170,26 +170,26 @@ export function autoEvents(data: AppData, prefs: NotificationPrefs, from: Date, 
       for (const d of prefs.billDaysBefore) push(`bill:${bill.id}:${month}:${d}`, "Conta a pagar", `${bill.name} ${dueText(d)}.`, at(addDays(due, -d), billMin), "moedas");
     }
   }
-  // Despesas pendentes com vencimento.
+  // Despesas pendentes com vencimento. A data entra na chave: adiar o vencimento gera um aviso novo.
   for (const t of data.transactions) {
     if (t.kind !== "expense" || t.paid || !t.dueDate) continue;
     // Já avisado como conta fixa ("bill:"): não repetir o mesmo aviso como despesa.
     if (shownAsBill(data.recurringBills, t, billMonths)) continue;
-    for (const d of prefs.billDaysBefore) push(`tx:${t.id}:${d}`, "Despesa pendente", `${t.merchant || "Uma despesa"} ${dueText(d)}.`, at(addDays(t.dueDate.slice(0, 10), -d), billMin), "moedas");
+    for (const d of prefs.billDaysBefore) push(`tx:${t.id}:${t.dueDate.slice(0, 10)}:${d}`, "Despesa pendente", `${t.merchant || "Uma despesa"} ${dueText(d)}.`, at(addDays(t.dueDate.slice(0, 10), -d), billMin), "moedas");
   }
   // Tarefas.
   const taskMin = isTime(prefs.taskTime) ? minutesOf(prefs.taskTime) : 9 * 60;
   for (const task of data.tasks) {
     if (task.status === "done" || !task.dueDate || !task.remindAtDue) continue;
-    push(`task:${task.id}:0`, "Tarefa para hoje", task.title, at(task.dueDate.slice(0, 10), taskMin), soundFor(task.sound, task.title));
-    if (prefs.taskDayBefore) push(`task:${task.id}:1`, "Tarefa para amanhã", task.title, at(addDays(task.dueDate.slice(0, 10), -1), taskMin), soundFor(task.sound, task.title));
+    push(`task:${task.id}:${task.dueDate.slice(0, 10)}:0`, "Tarefa para hoje", task.title, at(task.dueDate.slice(0, 10), taskMin), soundFor(task.sound, task.title));
+    if (prefs.taskDayBefore) push(`task:${task.id}:${task.dueDate.slice(0, 10)}:1`, "Tarefa para amanhã", task.title, at(addDays(task.dueDate.slice(0, 10), -1), taskMin), soundFor(task.sound, task.title));
   }
   // Provas, trabalhos e leituras.
   const studyMin = isTime(prefs.studyTime) ? minutesOf(prefs.studyTime) : 19 * 60;
   const kindLabel = { exam: "Prova", assignment: "Trabalho", reading: "Leitura" } as const;
   for (const item of data.studyItems) {
     if (item.done || !item.dueDate) continue;
-    for (const d of prefs.studyDaysBefore) push(`study:${item.id}:${d}`, `${kindLabel[item.kind]} ${d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`}`, item.title, at(addDays(item.dueDate, -d), studyMin), "livro");
+    for (const d of prefs.studyDaysBefore) push(`study:${item.id}:${item.dueDate}:${d}`, `${kindLabel[item.kind]} ${d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`}`, item.title, at(addDays(item.dueDate, -d), studyMin), "livro");
   }
   // Hábitos e resumo diário: percorre os dias do intervalo.
   for (let day = startDay, guard = 0; day <= endDay && guard < 400; day = addDays(day, 1), guard++) {

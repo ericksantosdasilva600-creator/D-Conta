@@ -14,6 +14,17 @@ describe("dados de exemplo", () => {
     expect(clean.transactions.map((t) => t.id)).toEqual(["meu"]);
     expect(Object.values(clean.completedByDate).flat().some((id) => id.startsWith("demo-"))).toBe(false);
   });
+  it("não marca dias de hábitos de exemplo que não entraram e não duplica ao ligar de novo", () => {
+    const habit = (id: string, name: string) => ({ id, name, weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "", priority: "medium", archived: false, goalLabel: "" });
+    const base = { transactions: [], habits: [habit("a", "Beber 2 litros de água"), habit("b", "Ler 10 páginas")], completedByDate: {}, recurringBills: [], goals: [], debts: [], tasks: [], notes: [], studySubjects: [], studyItems: [], healthLogs: [] } as unknown as AppData;
+    const demo = addDemoData(base);
+    expect(demo.habits.map((h) => h.id)).toEqual(["a", "b"]);
+    expect(Object.values(demo.completedByDate).flat()).toEqual([]);
+    // Sem os movimentos de exemplo, ainda sobram contas e tarefas de exemplo: continua "com exemplo".
+    const partial = { ...demo, transactions: [] };
+    expect(hasDemoData(partial)).toBe(true);
+    expect(addDemoData(partial).recurringBills.length).toBe(partial.recurringBills.length);
+  });
 });
 
 describe("dicas personalizadas", () => {

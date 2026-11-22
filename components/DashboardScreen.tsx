@@ -9,7 +9,7 @@ import { PhraseCapture, QuickAddModal } from "@/components/QuickAdd";
 import { greeting, tipFor } from "@/lib/brand";
 import { useOptionalSupabaseSync } from "@/lib/supabase-sync";
 import { hasDemoData, removeDemoData } from "@/lib/demo-data";
-import { billStatus, cardInvoices, markTransactionPaid, payBill, shownAsBill } from "@/lib/finance-extra";
+import { addMonths, billStatus, cardInvoices, markTransactionPaid, monthKey, payBill, shownAsBill } from "@/lib/finance-extra";
 import { C, SANS } from "@/lib/design";
 import { daysUntil, displayDate, localDateKey, money } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -51,11 +51,16 @@ export function DashboardScreen() {
   const rawDateLabel = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
   const dueItems = useMemo(() => {
     const items: { key: string; title: string; detail: string; days: number; amount: number; onPay?: () => void }[] = [];
+    // Olha este mês e o próximo: no fim do mês, a conta do dia 2 já aparece (como nos avisos).
+    const m0 = monthKey(), months = [m0, addMonths(m0, 1)];
     data.recurringBills.filter((b) => b.active).forEach((bill) => {
-      const st = billStatus(bill);
-      if (!st.paid && st.days <= 5) items.push({ key: `bill-${bill.id}`, title: bill.name, detail: "Conta fixa", days: st.days, amount: bill.amount, onPay: () => { updateData((c) => payBill(c, bill)); toast(`${bill.name} paga.`); } });
+      for (const m of months) {
+        const st = billStatus(bill, m);
+        if (st.paid || st.days > 5 || (m !== m0 && st.days < 0)) continue;
+        items.push({ key: `bill-${bill.id}-${m}`, title: bill.name, detail: "Conta fixa", days: st.days, amount: bill.amount, onPay: () => { updateData((c) => payBill(c, bill, m)); toast(`${bill.name} paga.`); } });
+      }
     });
-    data.transactions.filter((t) => t.kind === "expense" && !t.paid && t.dueDate && !shownAsBill(data.recurringBills, t, [localDateKey().slice(0, 7)])).forEach((t) => {
+    data.transactions.filter((t) => t.kind === "expense" && !t.paid && t.dueDate && !shownAsBill(data.recurringBills, t, months)).forEach((t) => {
       const d = daysUntil(t.dueDate);
       if (d !== null && d <= 5) items.push({ key: `tx-${t.id}`, title: t.merchant, detail: "Despesa pendente", days: d, amount: t.amount, onPay: () => { updateData((c) => markTransactionPaid(c, t.id)); toast("Despesa marcada como paga."); } });
     });

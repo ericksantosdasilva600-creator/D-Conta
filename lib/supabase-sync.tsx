@@ -8,7 +8,7 @@ import { C, SANS } from "@/lib/design";
 import { sb, siteUrl, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/supabase";
 import * as WebBrowser from "expo-web-browser";
 
-export type CloudStatus = "signed_out" | "checking" | "synced" | "syncing" | "offline" | "error" | "choose" | "conflict";
+export type CloudStatus = "signed_out" | "checking" | "synced" | "syncing" | "offline" | "error" | "choose" | "conflict" | "upload";
 type Meta = { userId: string; revision: number; lastHash: string };
 type Remote = { data: unknown; revision: number } | null;
 type Ctx = {
@@ -34,6 +34,8 @@ export function hashOf(value: unknown) {
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
   return `${s.length}:${h >>> 0}`;
 }
+/** Telas que esperam a pessoa decidir: nada é enviado nem baixado sozinho enquanto estão abertas. */
+const waiting = (s: CloudStatus) => s === "choose" || s === "conflict" || s === "upload";
 const hasContent = (d: AppData) => d.transactions.length + d.notes.length + d.tasks.length + d.habits.length + d.recurringBills.length + d.goals.length + d.debts.length + d.studyItems.length > 0;
 const friendly = (msg: string) => {
   const m = msg.toLowerCase();
@@ -115,7 +117,7 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
 
   const pull = useCallback(async () => {
     if (!session || busy.current || !app.storageReady) return;
-    busy.current = true; setStatus((s) => s === "choose" || s === "conflict" ? s : "syncing");
+    busy.current = true; setStatus((s) => waiting(s) ? s : "syncing");
     try {
       const uid = session.user.id;
       const { data, error: err } = await sb().from("nyvo_state").select("data, revision").eq("user_id", uid).maybeSingle();
@@ -124,6 +126,8 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
       const m = meta.current?.userId === uid ? meta.current : null;
       const localHash = hashOf(cloudPayload(dataRef.current));
       if (!remote) {
+        // Conta vazia e aparelho com dados: confirma antes de enviar (um link com a sessão de outra pessoa não pode levar os dados embora).
+        if (!m && hasContent(dataRef.current)) { setStatus("upload"); return; }
         if (!(await push(uid, 0))) { busy.current = false; return void (await pull()); }
       } else if (!m) {
         const remoteHash = hashOf(cloudPayload(normalizeStoredData(remote.data)));
@@ -148,7 +152,7 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
 
   // Ao mudar algo: envia depois de 1,5 s.
   useEffect(() => {
-    if (!session || status === "choose" || status === "conflict" || !app.storageReady) return;
+    if (!session || waiting(status) || !app.storageReady) return;
     const m = meta.current;
     if (!m || m.userId !== session.user.id) return;
     if (hashOf(cloudPayload(app.data)) === m.lastHash) return;
@@ -163,7 +167,7 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
   // Ao voltar para o app e a cada 60 s: confere se outro aparelho mudou algo.
   useEffect(() => {
     if (!session) return;
-    const tick = () => { if (status !== "choose" && status !== "conflict") void pull(); };
+    const tick = () => { if (!waiting(status)) void pull(); };
     const id = setInterval(tick, 60000);
     const sub = AppState.addEventListener("change", (s) => { if (s === "active") tick(); });
     const onVis = () => { if (typeof document !== "undefined" && document.visibilityState === "visible") tick(); };
@@ -181,9 +185,16 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
     } catch (e) { setStatus("error"); setError(friendly(e instanceof Error ? e.message : String(e))); }
   };
 
+  const confirmUpload = async (send: boolean) => {
+    if (!session) return;
+    if (!send) { await sb().auth.signOut(); await saveMeta(null); setPendingRemote(null); setStatus("signed_out"); return; }
+    try { if (!(await push(session.user.id, 0))) await pull(); }
+    catch (e) { setStatus("error"); setError(friendly(e instanceof Error ? e.message : String(e))); }
+  };
+
   const value = useMemo<Ctx>(() => ({
     session, email: session?.user.email ?? "", status, error, lastSync,
-    label: status === "synced" ? "Sincronizado" : status === "syncing" || status === "checking" ? "Sincronizando…" : status === "offline" ? "Sem internet · salvo no aparelho" : status === "error" ? "Erro ao sincronizar" : status === "choose" || status === "conflict" ? "Escolha qual versão usar" : "Salvo neste aparelho",
+    label: status === "synced" ? "Sincronizado" : status === "syncing" || status === "checking" ? "Sincronizando…" : status === "offline" ? "Sem internet · salvo no aparelho" : status === "error" ? "Erro ao sincronizar" : status === "upload" ? "Confirme o envio dos dados" : status === "choose" || status === "conflict" ? "Escolha qual versão usar" : "Salvo neste aparelho",
     signIn: async (email, password) => { const { error: e } = await sb().auth.signInWithPassword({ email: email.trim(), password }); return e ? friendly(e.message) : null; },
     signUp: async (email, password) => { const { data, error: e } = await sb().auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: siteUrl() } }); if (e) return friendly(e.message); return data.session ? null : "CONFIRM"; },
     signInWithGoogle,
@@ -196,9 +207,16 @@ export function SupabaseSyncProvider({ children }: { children: React.ReactNode }
   return (
     <CloudCtx.Provider value={value}>
       {children}
-      <AppModal visible={status === "choose" || status === "conflict"} title={status === "conflict" ? "Mudanças em dois aparelhos" : "Já existem dados na sua conta"} subtitle={status === "conflict" ? "Você alterou o Dá Conta aqui e em outro aparelho ao mesmo tempo." : "Este aparelho também tem dados. Qual versão você quer manter?"} onClose={() => undefined} footer={<View style={{ gap: 9 }}>
+      <AppModal visible={status === "upload"} title="Enviar seus dados para esta conta?" subtitle={`Conta: ${session?.user.email || "sem e-mail"}`} onClose={() => undefined} footer={<View style={{ gap: 9 }}>
+        <PrimaryButton title="Enviar meus dados" icon="cloud-upload-outline" onPress={() => void confirmUpload(true)} />
+        <PrimaryButton title="Não é minha conta (sair)" tone="light" icon="logout" onPress={() => void confirmUpload(false)} />
+      </View>}>
+        <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>Os dados deste aparelho vão ficar guardados nessa conta e passam a sincronizar com ela. Se você não reconhece este e-mail, toque em sair: nada será enviado.</Text>
+      </AppModal>
+      <AppModal visible={status === "choose" || status === "conflict"} title={status === "conflict" ? "Mudanças em dois aparelhos" : "Já existem dados na sua conta"} subtitle={`${status === "conflict" ? "Você alterou o Dá Conta aqui e em outro aparelho ao mesmo tempo." : "Este aparelho também tem dados. Qual versão você quer manter?"} Conta: ${session?.user.email || "sem e-mail"}.`} onClose={() => undefined} footer={<View style={{ gap: 9 }}>
         <PrimaryButton title="Usar os dados da conta" icon="cloud-download-outline" onPress={() => void resolve("cloud")} />
         <PrimaryButton title="Usar os dados deste aparelho" tone="light" icon="cellphone-arrow-down" onPress={() => void resolve("device")} />
+        {status === "choose" ? <PrimaryButton title="Não é minha conta (sair)" tone="light" icon="logout" onPress={() => void confirmUpload(false)} /> : null}
       </View>}>
         <Text style={{ color: C.muted, fontFamily: SANS, fontSize: 13, lineHeight: 19 }}>A versão escolhida vai para todos os seus aparelhos. Se quiser guardar a outra, antes use Configurações › Copiar backup.</Text>
       </AppModal>

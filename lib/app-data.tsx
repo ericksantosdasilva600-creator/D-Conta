@@ -649,19 +649,39 @@ export function AppDataProvider({ children, accountId = null }: { children: Reac
 
   // Última versão recebida de outra aba (evento "storage"); não precisa ser regravada.
   const remoteSnapshot = useRef<string | null>(null);
+  // Gravação esperando os 180 ms (para gravar na hora se a aba for fechada).
+  const pendingWrite = useRef<{ key: string; serialized: string } | null>(null);
 
   useEffect(() => {
     if (!storageReady || loading) return;
     const key = currentStorageKey;
     const serialized = JSON.stringify(data);
-    if (serialized === remoteSnapshot.current) return;
-    const timer = setTimeout(() => {
+    if (serialized === remoteSnapshot.current) { pendingWrite.current = null; return; }
+    const write = () => {
+      pendingWrite.current = null;
       AsyncStorage.setItem(key, serialized).then(() => {
         setStorageError((current) => current?.startsWith("Não foi possível salvar") ? null : current);
       }).catch(() => setStorageError("Não foi possível salvar as alterações no aparelho. Verifique o espaço disponível e tente novamente."));
-    }, 180);
+    };
+    pendingWrite.current = { key, serialized };
+    const timer = setTimeout(write, 180);
     return () => clearTimeout(timer);
   }, [data, loading, storageReady, currentStorageKey]);
+
+  // Fechar ou esconder a aba logo depois de salvar algo: grava na hora, sem esperar os 180 ms.
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    const flush = () => {
+      const pending = pendingWrite.current;
+      if (!pending) return;
+      pendingWrite.current = null;
+      try { window.localStorage.setItem(pending.key, pending.serialized); } catch { /* sem espaço: o aviso aparece na próxima gravação */ }
+    };
+    const onHide = () => { if (document.visibilityState === "hidden") flush(); };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onHide);
+    return () => { window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", onHide); };
+  }, []);
 
   // Com o app aberto em duas abas, cada uma regravava o estado inteiro e apagava o que a outra salvou.
   // Ao ouvir o evento "storage", esta aba passa a usar os dados que a outra acabou de gravar.

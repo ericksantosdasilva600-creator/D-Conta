@@ -4,7 +4,9 @@ import { localDateKey } from "./format";
 const DEMO = "demo-";
 const day = (offset: number) => { const d = new Date(); d.setDate(d.getDate() + offset); return localDateKey(d); };
 
-export const hasDemoData = (data: AppData) => data.transactions.some((t) => t.id.startsWith(DEMO)) || data.habits.some((h) => h.id.startsWith(DEMO));
+/** Olha todas as listas: o aviso "remover exemplos" continua até sair tudo (contas, metas, tarefas...). */
+export const hasDemoData = (data: AppData) => [data.transactions, data.recurringBills, data.goals, data.debts, data.habits, data.tasks, data.notes, data.studySubjects, data.studyItems, data.healthLogs]
+  .some((list: { id: string }[]) => list.some((x) => x.id.startsWith(DEMO)));
 
 /** Dados de exemplo para explorar o Dá Conta. Todos os IDs começam com "demo-" e podem ser removidos de uma vez. */
 export function addDemoData(data: AppData): AppData {
@@ -21,9 +23,16 @@ export function addDemoData(data: AppData): AppData {
     tx("t8", "expense", 2100, "Mercado do mês passado", "Mercado", -35),
     tx("t9", "income", 3200, "Salário", "Salário", -34),
   ];
+  // Não duplica hábitos que a pessoa já criou com o mesmo nome (ex.: escolhidos no onboarding).
+  const demoHabits = ([
+    { id: DEMO + "h1", name: "Beber 2 litros de água", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "09:00", priority: "medium", archived: false, goalLabel: "Mais energia" },
+    { id: DEMO + "h2", name: "Ler 10 páginas", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "21:00", priority: "low", archived: false, goalLabel: "12 livros no ano" },
+  ] as AppData["habits"]).filter((h) => !data.habits.some((x) => x.name.trim().toLocaleLowerCase("pt-BR") === h.name.toLocaleLowerCase("pt-BR")));
+  const demoIds = new Set(demoHabits.map((h) => h.id));
   const habitDays = [-6, -5, -4, -3, -2, -1].map(day);
   const completedByDate = { ...data.completedByDate };
-  habitDays.forEach((d, i) => { completedByDate[d] = [...(completedByDate[d] ?? []), DEMO + "h1", ...(i % 2 ? [DEMO + "h2"] : [])]; });
+  // Só marca dias de hábitos de exemplo que entraram; senão a sequência aparece inflada.
+  habitDays.forEach((d, i) => { const add = [DEMO + "h1", ...(i % 2 ? [DEMO + "h2"] : [])].filter((id) => demoIds.has(id)); if (add.length) completedByDate[d] = [...(completedByDate[d] ?? []), ...add]; });
   return {
     ...data,
     transactions: [...transactions, ...data.transactions],
@@ -34,14 +43,7 @@ export function addDemoData(data: AppData): AppData {
     ],
     goals: [{ id: DEMO + "g1", name: "Reserva de emergência", target: 6000, saved: 1450, deadline: day(240) }, ...data.goals],
     debts: [{ id: DEMO + "d1", name: "Cartão rotativo", total: 1200, paid: 300, monthly: 200, interest: 12 }, ...data.debts],
-    // Não duplica hábitos que a pessoa já criou com o mesmo nome (ex.: escolhidos no onboarding).
-    habits: [
-      ...([
-        { id: DEMO + "h1", name: "Beber 2 litros de água", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "09:00", priority: "medium", archived: false, goalLabel: "Mais energia" },
-        { id: DEMO + "h2", name: "Ler 10 páginas", weekdays: [0, 1, 2, 3, 4, 5, 6], reminderTime: "21:00", priority: "low", archived: false, goalLabel: "12 livros no ano" },
-      ] as AppData["habits"]).filter((h) => !data.habits.some((x) => x.name.trim().toLocaleLowerCase("pt-BR") === h.name.toLocaleLowerCase("pt-BR"))),
-      ...data.habits,
-    ],
+    habits: [...demoHabits, ...data.habits],
     completedByDate,
     tasks: [
       { id: DEMO + "k1", title: "Enviar currículo", description: "Exemplo", status: "next", priority: "high", dueDate: day(0), project: "Carreira", linkedBudgetId: "", remindAtDue: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
