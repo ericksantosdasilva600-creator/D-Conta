@@ -1,7 +1,9 @@
 // Cálculos das calculadoras do Dá Conta. Tudo roda no navegador; nada é enviado.
 // Tabelas de 2026: Portaria Interministerial MPS/MF nº 13/2026 (INSS) e Leis 15.191/2025 e 15.270/2025 (IRRF).
+// Ano das tabelas abaixo. Trocou de ano? Siga ATUALIZAR-TABELAS.md (raiz do repositório) e rode `pnpm tabelas`.
 (function (root) {
-  var INSS = [[1621.00, 0.075], [2902.84, 0.09], [4354.27, 0.12], [8475.55, 0.14]];
+  var ANO_TABELAS = 2026;
+  var INSS =[[1621.00, 0.075], [2902.84, 0.09], [4354.27, 0.12], [8475.55, 0.14]];
   var IR = [[2428.80, 0, 0], [2826.65, 0.075, 182.16], [3751.05, 0.15, 394.16], [4664.68, 0.225, 675.49], [Infinity, 0.275, 908.73]];
   var DEPENDENTE = 189.59, SIMPLIFICADO = 607.20;
   function cents(v) { return Math.round(Number((v * 100).toFixed(6))) / 100; }
@@ -705,7 +707,7 @@
     for (var s = 1; s <= 52; s++) semanas.push(cents(inicial * s));
     return { semanas: semanas, total: cents(inicial * 1378) };
   }
-  root.DaContaCalc = { inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, metaFalta: metaFalta, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, calendarioContas: calendarioContas, icsContas: icsContas, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
+  root.DaContaCalc = { ANO_TABELAS: ANO_TABELAS, inss: inss, salarioLiquido: salarioLiquido, decimoTerceiro: decimoTerceiro, diasFerias: diasFerias, ferias: ferias, rescisao: rescisao, avosDecimo: avosDecimo, avosFerias: avosFerias, reserva: reserva, metaFalta: metaFalta, horasExtras: horasExtras, orcamento: orcamento, parcelamento: parcelamento, jurosCompostos: jurosCompostos, aliquotaIR: aliquotaIR, quantoRende: quantoRende, quitarDividas: quitarDividas, rotativo: rotativo, melhorDiaCartao: melhorDiaCartao, dividirConta: dividirConta, custoKm: custoKm, alcoolGasolina: alcoolGasolina, alugarFinanciar: alugarFinanciar, valorHora: valorHora, mei: mei, mediaNotas: mediaNotas, faltas: faltas, agua: agua, diasSem: diasSem, rastreador: rastreador, planilhaGastos: planilhaGastos, calendarioContas: calendarioContas, icsContas: icsContas, CATEGORIAS_GASTOS: CATEGORIAS_GASTOS, planoEstudos: planoEstudos, desafio52: desafio52 };
 
   if (typeof document === "undefined") return;
   var brl = function (v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); };
