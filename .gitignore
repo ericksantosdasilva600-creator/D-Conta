@@ -80,3 +80,8 @@ Thumbs.db
 .agentic-qe/
 .claude/proven-config.json
 .claude/.proven-config-version
+
+# Banco gerado pelo plugin agentdb (não é do projeto)
+agentdb.db
+agentdb.db-shm
+agentdb.db-wal
