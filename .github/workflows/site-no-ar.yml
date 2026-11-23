@@ -37,6 +37,16 @@ jobs:
             echo "FIM"
           } >> "$GITHUB_OUTPUT"
 
+      # O Supabase grátis pausa o banco depois de uns dias sem uso, e aí a contagem de visitas
+      # e o painel param. Uma leitura simples a cada execução conta como uso e evita a pausa.
+      # A chave é a publicável, a mesma que já está em site-static/conta.js.
+      - name: Manter o banco de visitas acordado
+        continue-on-error: true
+        run: |
+          curl -s -o /dev/null -w "Supabase respondeu %{http_code}\n" --max-time 30 \
+            -H "apikey: sb_publishable_PNm5tQk2MxZ41kqnucHhjQ_mN-yjQGn" \
+            "https://bxwcqljlbrwpasfkmdhc.supabase.co/rest/v1/nyvo_visits?select=id&limit=1"
+
       - name: Abrir ou fechar o aviso
         uses: actions/github-script@v7
         env:
