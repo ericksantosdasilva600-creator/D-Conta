@@ -75,3 +75,8 @@ Thumbs.db
 # estado de ferramentas das sessões automáticas
 .claude-flow/
 .swarm/
+
+# Arquivos gerados por plugins/ferramentas do ambiente (não fazem parte do projeto)
+.agentic-qe/
+.claude/proven-config.json
+.claude/.proven-config-version
