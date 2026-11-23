@@ -36,136 +36,213 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --forest: #0E4A3B; --green: #187A61; --mint: #D7EEE4; --paper: #F7F5EF;
-    --ink: #1C2925; --muted: #5B6A63; --line: #E3E0D6; --sun: #F4C24D; --surface: #FFFFFF;
+    color-scheme: light;
+    --bg: #F6F4ED; --surface: #FFFFFF; --surface-2: #FBFAF5;
+    --ink: #14211C; --muted: #566159; --line: #E7E3D8;
+    --forest: #0E4A3B; --forest-2: #0A3A2E; --green: #1C8366; --mint: #DCEFE6;
+    --sun: #F3C24C; --sun-ink: #2A2208;
+    --ink-on-forest: #EAF4EF; --muted-on-forest: #B9D6CB;
+    --shadow: 0 1px 2px rgba(16,40,32,.04), 0 12px 32px rgba(16,40,32,.08);
+    --shadow-lg: 0 30px 70px rgba(10,40,30,.30);
+    --radius: 20px; --radius-sm: 14px;
     --display: "Bricolage Grotesque", system-ui, sans-serif;
-    --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+    --body: "Inter", system-ui, -apple-system, sans-serif;
+    --maxw: 1140px;
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --paper: #111714; --ink: #E8EEEA; --muted: #A3B2AA; --line: #26302B; --surface: #18201C; --mint: #1D3A31; }
+    :root:not([data-theme="light"]) {
+      --bg: #0D1411; --surface: #141D19; --surface-2: #101814;
+      --ink: #E8EFEB; --muted: #9DB1A8; --line: #253029;
+      --forest: #0C3E31; --forest-2: #082A21; --green: #3FB893; --mint: #17362B;
+      --ink-on-forest: #EAF4EF; --muted-on-forest: #AFCCC1;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 14px 34px rgba(0,0,0,.45);
+      --shadow-lg: 0 30px 70px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
   }
+  :root[data-theme="dark"] {
+    --bg: #0D1411; --surface: #141D19; --surface-2: #101814;
+    --ink: #E8EFEB; --muted: #9DB1A8; --line: #253029;
+    --forest: #0C3E31; --forest-2: #082A21; --green: #3FB893; --mint: #17362B;
+    --ink-on-forest: #EAF4EF; --muted-on-forest: #AFCCC1;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 14px 34px rgba(0,0,0,.45);
+    --shadow-lg: 0 30px 70px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 18px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
-  a { color: inherit; }
-  :focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; border-radius: 6px; }
-  .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 17px/1.6 var(--body); -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  img { max-width: 100%; }
+  .wrap { width: 100%; max-width: var(--maxw); margin-inline: auto;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; text-wrap: balance; margin: 0; }
+  :focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; border-radius: 8px; }
+  .tnum { font-variant-numeric: tabular-nums; }
 
-  /* Topo */
-  .top { background: var(--forest); color: #F3F8F5; }
-  .bar { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 800 22px/1 var(--display); letter-spacing: -0.02em; }
-  .brand img { width: 36px; height: 36px; border-radius: 11px; }
-  .bar a.small { font-size: 15px; text-decoration: none; opacity: .85; }
-  .bar a.small:hover { opacity: 1; text-decoration: underline; }
+  .site-head { position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line); }
+  .head-row { display: flex; align-items: center; justify-content: space-between; padding-block: 14px; gap: 16px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); letter-spacing: -0.02em; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(145deg, var(--green), var(--forest)); display: grid; place-items: center; color: #fff; box-shadow: var(--shadow); }
+  .head-cta { display: inline-flex; align-items: center; gap: 12px; }
+  .link-muted { color: var(--muted); font-size: 15px; }
+  .link-muted:hover { color: var(--ink); }
 
-  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 40px 0 88px; }
-  .hero h1 { font: 800 clamp(44px, 6.4vw, 82px)/0.98 var(--display); letter-spacing: -0.035em; margin: 0 0 22px; text-wrap: balance; }
-  .hero p.lead { font-size: clamp(18px, 2vw, 21px); line-height: 1.55; max-width: 34ch; margin: 0 0 32px; color: #CFE3DA; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 52px; padding: 0 24px; border-radius: 14px; font: 600 16px/1 var(--body);
+    border: 1.5px solid transparent; cursor: pointer; transition: transform .12s ease, box-shadow .2s ease, background-color .15s, border-color .15s; }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn-sun { background: var(--sun); color: var(--sun-ink); box-shadow: 0 6px 20px rgba(243,194,76,.35); }
+  .btn-sun:hover { box-shadow: 0 10px 28px rgba(243,194,76,.5); transform: translateY(-1px); }
+  .btn-ghost { border-color: var(--line); color: var(--ink); background: var(--surface); }
+  .btn-ghost:hover { border-color: var(--green); }
+  .btn-on-forest { border-color: rgba(255,255,255,.3); color: #fff; }
+  .btn-on-forest:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+  .btn-sm { min-height: 44px; padding: 0 18px; font-size: 15px; }
+
+  .hero { position: relative; background:
+      radial-gradient(1200px 500px at 80% -10%, color-mix(in srgb, var(--green) 55%, var(--forest)), transparent 60%),
+      linear-gradient(170deg, var(--forest), var(--forest-2));
+    color: var(--ink-on-forest); overflow: hidden; padding-block: 72px 88px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1 var(--body);
+    letter-spacing: .04em; text-transform: uppercase; color: var(--muted-on-forest);
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+    padding: 8px 14px; border-radius: 999px; margin-bottom: 22px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sun); }
+  .hero h1 { font-size: clamp(42px, 6.2vw, 76px); line-height: .98; margin-bottom: 20px; }
+  .hero .lead { font-size: clamp(17px, 1.8vw, 20px); color: #D5E7DE; max-width: 38ch; margin: 0 0 30px; }
+  .hero .lead b { color: #fff; font-weight: 600; }
   .ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: 0 26px; border-radius: 16px; font: 700 17px/1 var(--body); text-decoration: none; transition: transform .12s ease, background-color .12s ease; }
-  .btn:active { transform: scale(.97); }
-  .btn.sun { background: var(--sun); color: #2A2208; }
-  .btn.sun:hover { background: #F7CF6B; }
-  .btn.ghost { color: #F3F8F5; border: 2px solid rgba(255,255,255,.35); }
-  .btn.ghost:hover { border-color: #fff; }
-  .facts { list-style: none; padding: 0; margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; color: #CFE3DA; }
-  .facts li::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); margin-right: 8px; vertical-align: 1px; }
-  .reassure { margin: 12px 0 0; font-size: 14px; line-height: 1.5; color: #CFE3DA; }
+  .reassure { margin: 16px 0 0; font-size: 14.5px; color: var(--muted-on-forest); display: flex; align-items: center; gap: 8px; }
+  .reassure svg { flex: none; }
+  .trust-row { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 30px 0 0; padding: 0; list-style: none; font-size: 14.5px; color: var(--muted-on-forest); }
+  .trust-row li { display: inline-flex; align-items: center; gap: 8px; }
+  .trust-row li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--sun); }
 
-  /* A demonstração: o momento principal da página */
-  .demo { position: relative; background: #F7F5EF; color: #1C2925; border-radius: 30px; padding: 22px; box-shadow: 0 30px 80px rgba(0,0,0,.35); max-width: 440px; justify-self: end; width: 100%; }
-  .demo .hello { font: 800 30px/1.1 var(--display); letter-spacing: -0.02em; margin: 2px 0 14px; }
-  .typer { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px; border: 2px solid #187A61; border-radius: 16px; background: #fff; font-size: 17px; }
-  .typer svg { flex: none; }
+  .demo { justify-self: end; width: 100%; max-width: 390px; background: var(--surface); color: var(--ink);
+    border-radius: 26px; padding: 20px; box-shadow: var(--shadow-lg); position: relative; }
+  .demo .greet { font: 800 24px/1.1 var(--display); letter-spacing: -0.02em; margin: 2px 2px 14px; }
+  .demo .replay { position: absolute; top: 16px; right: 16px; border: 0; background: transparent; color: var(--green); font: 600 13px var(--body); cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+  .typer { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 16px;
+    border: 1.5px solid var(--green); border-radius: 14px; background: var(--surface-2); font-size: 16px; }
   .typed { white-space: nowrap; overflow: hidden; }
-  .caret { width: 2px; height: 22px; background: #187A61; animation: blink 1s steps(1) infinite; }
+  .caret { width: 2px; height: 22px; background: var(--green); animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
-  .balance { margin-top: 16px; border-radius: 20px; background: #12503F; color: #fff; padding: 18px 20px; }
-  .balance small { display: block; font-size: 14px; opacity: .8; }
-  .balance strong { display: block; font: 800 38px/1.1 var(--display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-  .moves { margin-top: 14px; display: grid; gap: 10px; }
-  .move { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #E3E0D6; border-radius: 16px; padding: 12px 14px; font-size: 16px; }
-  .move .ic { width: 38px; height: 38px; border-radius: 12px; background: #D7EEE4; display: grid; place-items: center; flex: none; }
-  .move b { display: block; font-size: 16px; }
-  .move span { color: #5B6A63; font-size: 14px; }
-  .move .val { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .move.new { animation: drop .5s cubic-bezier(.2,.9,.3,1.2) both; border-color: #187A61; }
-  @keyframes drop { from { opacity: 0; transform: translateY(-18px) scale(.96); } to { opacity: 1; transform: none; } }
-  .toast { position: absolute; left: 22px; right: 22px; bottom: -22px; background: #1C2925; color: #fff; border-radius: 14px; padding: 13px 16px; font-size: 15px; font-weight: 700; display: flex; gap: 9px; align-items: center; opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; }
+  .balance { margin-top: 14px; border-radius: 16px; background: linear-gradient(150deg, var(--forest), var(--forest-2)); color: #fff; padding: 16px 18px; }
+  .balance small { display: block; font-size: 13px; opacity: .78; letter-spacing: .02em; }
+  .balance strong { display: block; font: 800 34px/1.1 var(--display); letter-spacing: -0.02em; }
+  .moves { margin-top: 12px; display: grid; gap: 10px; }
+  .move { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 11px 13px; font-size: 15px; }
+  .move .ic { width: 38px; height: 38px; border-radius: 11px; background: var(--mint); display: grid; place-items: center; flex: none; font-size: 19px; }
+  .move b { display: block; font-size: 15px; }
+  .move span { color: var(--muted); font-size: 13px; }
+  .move .val { margin-left: auto; font-weight: 700; }
+  .move.new { animation: drop .5s cubic-bezier(.2,.9,.3,1.2) both; border-color: var(--green); }
+  @keyframes drop { from { opacity: 0; transform: translateY(-16px) scale(.97); } to { opacity: 1; transform: none; } }
+  .toast { position: absolute; left: 20px; right: 20px; bottom: -20px; background: var(--ink); color: var(--bg);
+    border-radius: 13px; padding: 13px 16px; font-size: 14.5px; font-weight: 600; display: flex; gap: 9px; align-items: center;
+    opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; box-shadow: var(--shadow); }
   .toast.show { opacity: 1; transform: none; }
-  .replay { position: absolute; top: 18px; right: 18px; border: 0; background: transparent; color: #187A61; font: 700 14px var(--body); cursor: pointer; padding: 6px 8px; border-radius: 8px; }
 
-  /* Seções */
-  section { padding: 96px 0 0; }
-  h2 { font: 800 clamp(34px, 4.6vw, 54px)/1.02 var(--display); letter-spacing: -0.03em; margin: 0 0 14px; text-wrap: balance; }
-  .intro { color: var(--muted); max-width: 52ch; margin: 0 0 40px; }
+  section { padding-block: clamp(64px, 9vw, 104px); }
+  .sec-head { max-width: 640px; margin-bottom: 48px; }
+  .kicker { font: 600 13px/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+  h2 { font-size: clamp(30px, 4.3vw, 48px); line-height: 1.04; }
+  .sec-head p { color: var(--muted); font-size: 18px; margin: 14px 0 0; }
 
-  .screens { display: grid; grid-template-columns: repeat(5, 1fr); gap: 22px; align-items: start; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .feat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .2s ease, border-color .18s; }
+  .feat:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--green) 40%, var(--line)); box-shadow: 0 1px 2px rgba(16,40,32,.05), 0 20px 44px rgba(16,40,32,.12); }
+  .feat .fic { width: 50px; height: 50px; border-radius: 14px; background: var(--mint); color: var(--forest); display: grid; place-items: center; margin-bottom: 18px; }
+  :root[data-theme="dark"] .feat .fic, :root:not([data-theme="light"]) .feat .fic { color: var(--green); }
+  .feat h3 { font-size: 21px; margin-bottom: 8px; }
+  .feat p { color: var(--muted); font-size: 15.5px; margin: 0; }
+
+  .band { background: var(--surface); border-block: 1px solid var(--line); }
+  .screens { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; align-items: start; }
   .screens figure { margin: 0; }
-  .screens figure:nth-child(even) { margin-top: 48px; }
-  .phone { border-radius: 30px; padding: 7px; background: #1C2925; box-shadow: 0 18px 40px rgba(14,74,59,.18); }
-  .phone img { display: block; width: 100%; height: auto; border-radius: 24px; aspect-ratio: 585 / 1266; object-fit: cover; object-position: top; background: #F7F5EF; }
-  figcaption { margin-top: 14px; font-size: 16px; line-height: 1.45; }
-  figcaption b { display: block; font: 700 19px/1.2 var(--display); margin-bottom: 3px; }
-  figcaption span { color: var(--muted); }
+  .screens figure:nth-child(even) { margin-top: 38px; }
+  .phone { border-radius: 26px; padding: 7px; background: var(--forest); box-shadow: var(--shadow); }
+  .phone img { display: block; width: 100%; height: auto; border-radius: 20px; aspect-ratio: 585 / 1266; object-fit: cover; object-position: top; background: var(--surface-2); }
+  .screens figcaption { margin-top: 13px; }
+  .screens figcaption b { display: block; font: 700 17px/1.2 var(--display); margin-bottom: 3px; }
+  .screens figcaption span { color: var(--muted); font-size: 14px; }
 
-  .steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; counter-reset: s; }
-  .steps li { counter-increment: s; border-top: 3px solid var(--green); padding-top: 18px; }
-  .steps li::before { content: counter(s); display: block; font: 800 46px/1 var(--display); color: var(--green); margin-bottom: 10px; }
-  .steps b { display: block; font: 700 21px/1.25 var(--display); margin-bottom: 6px; }
-  .steps p { margin: 0; color: var(--muted); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; counter-reset: s; }
+  .step { counter-increment: s; }
+  .step .num { font: 800 15px/1 var(--display); color: var(--sun-ink); background: var(--sun); width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px; }
+  .step .num::before { content: counter(s); }
+  .step h3 { font-size: 20px; margin-bottom: 8px; }
+  .step p { color: var(--muted); font-size: 15.5px; margin: 0; }
 
-  .trust { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
-  .trust ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 18px; }
-  .trust li { padding-left: 34px; position: relative; }
-  .trust li svg { position: absolute; left: 0; top: 4px; }
-  .trust li b { display: block; }
-  .trust li span { color: var(--muted); }
+  .trust-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: start; }
+  .trust-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .trust-list li { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+  .trust-list .ck { width: 30px; height: 30px; border-radius: 9px; background: var(--mint); color: var(--forest); display: grid; place-items: center; flex: none; }
+  :root[data-theme="dark"] .trust-list .ck, :root:not([data-theme="light"]) .trust-list .ck { color: var(--green); }
+  .trust-list b { display: block; font-weight: 600; }
+  .trust-list span { color: var(--muted); font-size: 15px; }
 
-  .guides { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .guides a { display: block; height: 100%; text-decoration: none; padding: 22px 22px 24px; border-radius: 22px; background: var(--surface); border: 1px solid var(--line); transition: border-color .15s; }
-  .guides a:hover { border-color: var(--green); }
-  .guides b { display: block; font: 700 21px/1.25 var(--display); margin-bottom: 8px; }
-  .guides span { color: var(--muted); font-size: 16px; }
-  .faq { max-width: 760px; }
-  .faq details { border-bottom: 1px solid var(--line); padding: 4px 0; }
-  .faq summary { cursor: pointer; list-style: none; padding: 16px 36px 16px 0; font: 700 20px/1.35 var(--display); position: relative; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 22px;
+    box-shadow: var(--shadow); transition: transform .16s ease, border-color .16s; }
+  .card:hover { transform: translateY(-3px); border-color: var(--green); }
+  .card b { display: block; font: 700 17px/1.3 var(--display); margin-bottom: 6px; }
+  .card span { color: var(--muted); font-size: 14.5px; display: block; }
+  .card .arrow { color: var(--green); font-size: 14px; font-weight: 600; margin-top: 12px; }
+
+  .faq { max-width: 780px; }
+  .faq details { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); margin-bottom: 12px; overflow: hidden; }
+  .faq summary { cursor: pointer; list-style: none; padding: 20px 52px 20px 22px; font: 700 18px/1.4 var(--display); position: relative; }
   .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: "+"; position: absolute; right: 4px; top: 12px; font: 400 28px/1 var(--body); color: var(--green); }
+  .faq summary::after { content: "+"; position: absolute; right: 22px; top: 16px; font: 400 26px/1 var(--body); color: var(--green); }
   .faq details[open] summary::after { content: "−"; }
-  .faq p { margin: 0 0 18px; color: var(--muted); max-width: 64ch; }
-  .end { margin: 110px 0 0; background: var(--mint); border-radius: 36px; padding: 64px 48px; text-align: center; }
-  .end h2 { margin-bottom: 12px; }
-  .end p { color: var(--muted); margin: 0 auto 28px; max-width: 46ch; }
-  .end .btn.sun { background: var(--green); color: #fff; }
-  .end .btn.sun:hover { background: #136852; }
+  .faq p { margin: 0; padding: 0 22px 20px; color: var(--muted); font-size: 15.5px; }
 
-  footer { padding: 48px 0 56px; color: var(--muted); font-size: 15px; display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: space-between; }
-  footer nav { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+  .final { text-align: center; }
+  .final-card { background: linear-gradient(160deg, var(--forest), var(--forest-2)); color: var(--ink-on-forest);
+    border-radius: 28px; padding: clamp(40px, 7vw, 72px) 28px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+  .final-card::after { content: ""; position: absolute; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(243,194,76,.22), transparent 70%); top: -120px; right: -80px; }
+  .final h2 { color: #fff; font-size: clamp(30px, 4.6vw, 52px); }
+  .final p { color: #D5E7DE; max-width: 46ch; margin: 16px auto 28px; font-size: 18px; }
 
-  @media (max-width: 960px) {
-    .hero { grid-template-columns: 1fr; gap: 44px; padding-bottom: 72px; }
-    .demo { justify-self: stretch; max-width: none; }
-    .screens { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 62%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; margin-inline: -16px; padding-inline: 16px; }
-    .screens figure { scroll-snap-align: start; }
+  footer { border-top: 1px solid var(--line); padding-block: 40px; color: var(--muted); font-size: 14.5px; }
+  .foot-row { display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 20px; }
+  footer nav a:hover { color: var(--ink); }
+
+  .reveal { opacity: 1; }
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
+    .reveal.in { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 920px) {
+    .hero-grid, .trust-grid { grid-template-columns: 1fr; gap: 40px; }
+    .demo { justify-self: start; }
+    .features, .steps, .cards { grid-template-columns: 1fr 1fr; }
+    .screens { grid-template-columns: repeat(3, 1fr); }
     .screens figure:nth-child(even) { margin-top: 0; }
-    .steps, .trust, .guides { grid-template-columns: 1fr; gap: 26px; }
-    .guides { gap: 14px; }
-    section { padding-top: 72px; }
-    .end { padding: 44px 22px; border-radius: 28px; margin-top: 80px; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important; }
-    html { scroll-behavior: auto; }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    .features, .steps, .cards, .screens { grid-template-columns: 1fr 1fr; }
+    .head-cta .link-muted { display: none; }
+    .hero { padding-bottom: 64px; }
   }
-  .film { display: grid; grid-template-columns: 1fr 340px; gap: 56px; align-items: center; }
-  .film video { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; background: var(--forest); border-radius: 28px; box-shadow: 0 24px 60px rgba(14,74,59,.22); }
-  .film .btn { margin-top: 10px; }
-  @media (max-width: 960px) { .film { grid-template-columns: 1fr; gap: 28px; } .film video { max-width: 340px; margin-inline: auto; } }
 </style>
 <script type="application/ld+json">
 {
@@ -220,130 +297,169 @@
 </script>
 </head>
 <body>
-<header class="top">
-  <div class="wrap">
-    <div class="bar">
-      <a class="brand" href="./?ver=1" aria-label="Dá Conta, início"><img src="icon-192.png" alt="">Dá Conta</a>
-      <a class="small" href="./app/">Já uso o Dá Conta</a>
-    </div>
-    <div class="hero">
-      <div>
-        <h1>Você dá conta. A gente organiza.</h1>
-        <p class="lead">Dinheiro, contas do mês, hábitos, provas e tarefas num app só. Escreva do jeito que fala — “gastei 45 no mercado” — e pronto: o Dá Conta entende e organiza para você.</p>
-        <div class="ctas">
-          <a class="btn sun" href="./app/">Começar grátis</a>
-          <a class="btn ghost" href="#como">Ver como funciona</a>
-        </div>
-        <p class="reassure">Não precisa instalar nem criar conta — abre direto no navegador, de graça.</p>
-        <ul class="facts" aria-label="Por que usar">
-          <li>Grátis e sem anúncios</li>
-          <li>Funciona sem criar conta</li>
-          <li>Celular e computador</li>
-        </ul>
-      </div>
 
-      <div class="demo" aria-label="Demonstração: registrar um gasto escrevendo uma frase">
-        <button class="replay" type="button" id="replay">Ver de novo</button>
-        <div class="hello">Boa noite, Ana.</div>
-        <div class="typer" role="img" aria-label="Campo de texto com a frase: gastei 45 no mercado">
-          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#187A61" d="M11 15H6l7-14v8h5l-7 14z"/></svg>
-          <span class="typed" id="typed"></span><span class="caret" aria-hidden="true"></span>
-        </div>
-        <div class="balance"><small>Saldo de novembro</small><strong id="saldo">R$ 2.842,20</strong></div>
-        <div class="moves" id="moves">
-          <div class="move"><div class="ic" aria-hidden="true">⛽</div><div><b>Posto Shell</b><span>Combustível · ontem</span></div><div class="val">−R$ 150,00</div></div>
-        </div>
-        <div class="toast" id="toast" role="status" aria-live="polite">✓ Despesa de R$ 45,00 salva em Mercado.</div>
-      </div>
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="./?ver=1" aria-label="Dá Conta, início">
+      <span class="mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 14h3v6H4zM10 8h3v12h-3zM16 11h3v9h-3z" fill="currentColor"/></svg></span>
+      Dá Conta
+    </a>
+    <div class="head-cta">
+      <a class="link-muted" href="#como">Como funciona</a>
+      <a class="link-muted" href="#ferramentas">Ferramentas</a>
+      <a class="btn btn-sun btn-sm" href="./app/">Começar grátis</a>
     </div>
   </div>
 </header>
 
-<main class="wrap">
-  <section id="video" aria-labelledby="t-video">
-    <div class="film">
-      <div>
-        <h2 id="t-video">Veja o Dá Conta em 30 segundos</h2>
-        <p class="intro">Dá o play para ver como registrar um gasto com uma frase e como dinheiro, hábitos e tarefas ficam no mesmo lugar.</p>
-        <a class="btn sun" href="./app/">Começar grátis</a>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> Grátis · sem anúncios · sem cadastro</span>
+      <h1>Você dá conta.<br>A gente organiza.</h1>
+      <p class="lead">Dinheiro, contas do mês, hábitos, provas e tarefas num app só. Escreva do jeito que fala — <b>“gastei 45 no mercado”</b> — e pronto: o Dá Conta entende e organiza para você.</p>
+      <div class="ctas">
+        <a class="btn btn-sun" href="./app/">Começar grátis</a>
+        <a class="btn btn-on-forest" href="#como">Ver como funciona</a>
       </div>
-      <video controls playsinline preload="none" poster="apresentacao/daconta-video-capa.jpg" width="1080" height="1920" aria-label="Vídeo de apresentação do Dá Conta">
-        <source src="apresentacao/daconta-video.mp4" type="video/mp4">
-      </video>
-    </div>
-  </section>
-
-  <section aria-labelledby="t-telas">
-    <h2 id="t-telas">O que você encontra lá dentro</h2>
-    <p class="intro">Telas reais do Dá Conta com dados de exemplo. Cada parte funciona sozinha, mas todas aparecem juntas na tela Hoje.</p>
-    <div class="screens">
-      <figure><div class="phone"><img src="apresentacao/hoje.webp" alt="Tela Hoje com hábitos do dia, progresso, sequência de 7 dias e tarefas com prazo" loading="lazy" width="585" height="1266"></div><figcaption><b>Hoje</b><span>O que vence, os hábitos do dia e o que fazer, numa tela só.</span></figcaption></figure>
-      <figure><div class="phone"><img src="apresentacao/financas.webp" alt="Tela de Finanças com resumo do mês: entrou R$ 3.200, saiu R$ 402,80" loading="lazy" width="585" height="1266"></div><figcaption><b>Finanças</b><span>Resumo do mês, contas fixas, cartão, metas e dívidas.</span></figcaption></figure>
-      <figure><div class="phone"><img src="apresentacao/habitos.webp" alt="Tela de Hábitos e Saúde com rotinas e registro de água" loading="lazy" width="585" height="1266"></div><figcaption><b>Hábitos e saúde</b><span>Rotinas com lembrete, água, treino e leitura.</span></figcaption></figure>
-      <figure><div class="phone"><img src="apresentacao/tarefas.webp" alt="Tela de Tarefas com prioridades e prazos" loading="lazy" width="585" height="1266"></div><figcaption><b>Tarefas e estudos</b><span>Prazos, provas, trabalhos e Pomodoro.</span></figcaption></figure>
-      <figure><div class="phone"><img src="apresentacao/graficos.webp" alt="Gráficos de entradas e saídas por mês e de gastos por categoria" loading="lazy" width="585" height="1266"></div><figcaption><b>Gráficos</b><span>Para onde foi o dinheiro e como andam seus hábitos.</span></figcaption></figure>
-    </div>
-  </section>
-
-  <section id="como" aria-labelledby="t-como">
-    <h2 id="t-como">Começa em três passos</h2>
-    <p class="intro">Leva menos de um minuto. Não precisa de cadastro para testar.</p>
-    <ol class="steps">
-      <li><b>Diga seu nome e o que quer organizar</b><p>Dinheiro, estudos, hábitos ou tarefas. A tela inicial muda conforme a sua escolha.</p></li>
-      <li><b>Registre o primeiro gasto ou hábito</b><p>Escreva “gastei 45 no mercado” ou marque “beber água”. O Dá Conta entende e guarda.</p></li>
-      <li><b>Deixe o Dá Conta lembrar por você</b><p>Avisos de contas a vencer, provas e hábitos, no horário que você escolher.</p></li>
-    </ol>
-  </section>
-
-  <section aria-labelledby="t-dados">
-    <div class="trust">
-      <div>
-        <h2 id="t-dados">Seus dados continuam seus</h2>
-        <p class="intro">O Dá Conta foi feito para organizar a sua vida, não para vender anúncios.</p>
-      </div>
-      <ul>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--green)" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><b>Sem conta, tudo fica no seu aparelho</b><span>Nada sai do celular ou do navegador.</span></li>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--green)" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><b>Com conta grátis, sincroniza</b><span>Use no celular e no notebook e não perca nada ao trocar de aparelho.</span></li>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--green)" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><b>Nunca pedimos CPF, cartão ou senha do banco</b><span>Você digita só o que quiser acompanhar.</span></li>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--green)" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><b>Você pode copiar ou apagar tudo</b><span>Backup e exclusão ficam em Configurações, conforme a LGPD.</span></li>
+      <p class="reassure">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" fill="#F3C24C"/></svg>
+        Não precisa instalar nem criar conta — abre direto no navegador.
+      </p>
+      <ul class="trust-row">
+        <li>Funciona no celular e no PC</li>
+        <li>Seus dados ficam com você</li>
+        <li>Feito no Brasil</li>
       </ul>
     </div>
-  </section>
 
-  <section aria-labelledby="t-calc">
-    <h2 id="t-calc">Ferramentas grátis</h2>
-    <ul class="guides">
-      <li><a href="calculadoras/13-salario.html"><b>Calculadora de 13º salário 2026</b><span>Veja as parcelas e o valor líquido em segundos.</span></a></li>
-      <li><a href="calculadoras/salario-liquido.html"><b>Calculadora de salário líquido</b><span>Quanto cai na conta com as tabelas de 2026.</span></a></li>
-      <li><a href="calculadoras/reserva-de-emergencia.html"><b>Calculadora de reserva de emergência</b><span>Sua meta e em quantos meses você chega lá.</span></a></li>
-      <li><a href="calculadoras/"><b>Ver todas as ferramentas</b><span>Horas extras, juros do rotativo do cartão, melhor dia para comprar no cartão, plano para quitar dívidas, dividir a conta entre amigos, custo por km do carro, álcool ou gasolina, alugar ou financiar imóvel, quanto cobrar por hora, calculadora de MEI, média de notas e faltas permitidas na faculdade, planejador de estudos para provas, quanto beber de água por dia, contador de dias sem um mau hábito, rastreador de hábitos para imprimir, quanto falta para minha meta, calendário de contas do mês, planilha de gastos grátis em Excel, juros compostos, quanto rende a poupança, parcelamento, orçamento, desafio das 52 semanas e Pomodoro.</span></a></li>
-    </ul>
-  </section>
+    <div class="demo" aria-label="Demonstração: registrar um gasto escrevendo uma frase">
+      <button class="replay" type="button" id="replay">Ver de novo</button>
+      <div class="greet">Boa noite, Ana.</div>
+      <div class="typer" role="img" aria-label="Campo de texto com a frase: gastei 45 no mercado">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1C8366" d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+        <span class="typed" id="typed"></span><span class="caret" aria-hidden="true"></span>
+      </div>
+      <div class="balance"><small>Saldo de novembro</small><strong class="tnum" id="saldo">R$ 2.842,20</strong></div>
+      <div class="moves" id="moves">
+        <div class="move"><div class="ic" aria-hidden="true">⛽</div><div><b>Posto Shell</b><span>Combustível · ontem</span></div><div class="val tnum">−R$ 150,00</div></div>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite">✓ Despesa de R$ 45,00 salva em Mercado.</div>
+    </div>
+  </div>
+</section>
 
-  <section aria-labelledby="t-guias">
-    <h2 id="t-guias">Guias rápidos</h2>
-    <p class="intro">Dicas práticas para começar, mesmo que você nunca tenha usado um app de organização.</p>
-    <ul class="guides">
-      <li><a href="guias/como-comecar-a-guardar-dinheiro.html"><b>Como começar a guardar dinheiro</b><span>Guardar no dia do pagamento, começar com pouco, onde deixar a reserva e manter o hábito.</span></a></li>
-      <li><a href="guias/financas-com-salario-minimo.html"><b>Finanças para quem ganha um salário mínimo</b><span>Quanto cai na conta em 2026, orçamento de exemplo, guardar com pouco e fugir de juros.</span></a></li>
-      <li><a href="guias/como-montar-um-orcamento.html"><b>Como montar um orçamento mensal</b><span>Quanto entra, contas fixas, 50-30-20 e guardar primeiro, com exemplo de R$ 2.500.</span></a></li>
-      <li><a href="guias/como-sair-do-rotativo.html"><b>Como sair do rotativo do cartão</b><span>Quanto você deve, parcelamento, empréstimo ou portabilidade, e como não voltar.</span></a></li>
-      <li><a href="guias/o-que-fazer-com-o-13.html"><b>O que fazer com o 13º salário</b><span>Dívidas caras, contas de janeiro, reserva e festas com limite, em 6 passos.</span></a></li>
-      <li><a href="guias/planilha-caderno-ou-app.html"><b>Planilha, caderno ou app?</b><span>Uma comparação honesta para escolher como controlar os gastos, com o que o Dá Conta não faz.</span></a></li>
-      <li><a href="guias/controle-de-gastos.html"><b>Como controlar seus gastos sem planilha</b><span>Um método de 10 minutos por semana para saber para onde vai o seu dinheiro.</span></a></li>
-      <li><a href="guias/criar-habitos.html"><b>Como criar hábitos que duram</b><span>Água, leitura e academia: comece pequeno e acompanhe a sequência.</span></a></li>
-      <li><a href="guias/organizacao-para-estudantes.html"><b>Organização para estudantes</b><span>Mapa do semestre, orçamento com bolsa ou estágio, contas da república e semana-modelo.</span></a></li>
-      <li><a href="guias/como-estudar-para-concursos.html"><b>Como estudar para concursos</b><span>Edital, ciclo de estudos, revisão, questões e os custos da preparação no orçamento.</span></a></li>
-      <li><a href="guias/organizar-estudos.html"><b>Como organizar os estudos da faculdade</b><span>Provas, trabalhos e Pomodoro sem esquecer nenhum prazo.</span></a></li>
-    </ul>
-  </section>
+<main>
+<section id="recursos">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Tudo num lugar só</div>
+      <h2>Sua vida inteira, organizada sem esforço</h2>
+      <p>Cada parte funciona sozinha, mas todas aparecem juntas na tela Hoje. Você escolhe o que quer acompanhar.</p>
+    </div>
+    <div class="features">
+      <div class="feat reveal"><div class="fic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 10h18M6 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/></svg></div><h3>Dinheiro</h3><p>Gastos e receitas por categoria, saldo do mês, contas fixas, cartão, metas e dívidas — tudo em gráficos claros.</p></div>
+      <div class="feat reveal"><div class="fic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><h3>Contas a vencer</h3><p>Avisos no dia e no horário que você escolher. Nunca mais pague juro por esquecer um boleto.</p></div>
+      <div class="feat reveal"><div class="fic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.3-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.7-7 10-7 10z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>Hábitos e saúde</h3><p>Rotinas com lembrete, água, treino e leitura. Acompanhe a sua sequência e não quebre a corrente.</p></div>
+      <div class="feat reveal"><div class="fic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6l8-3 8 3-8 3-8-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 10v5c0 1 1.8 2 4 2s4-1 4-2v-5" stroke="currentColor" stroke-width="2"/></svg></div><h3>Estudos</h3><p>Matérias, provas e trabalhos com data, e Pomodoro para estudar em blocos de foco de verdade.</p></div>
+      <div class="feat reveal"><div class="fic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 11l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2"/></svg></div><h3>Tarefas</h3><p>Prioridades e prazos sem app separado. O que importa hoje aparece primeiro, o resto espera a vez.</p></div>
+      <div class="feat reveal"><div class="fic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Gráficos</h3><p>Para onde foi o dinheiro e como andam seus hábitos — numa olhada, sem planilha e sem complicação.</p></div>
+    </div>
+  </div>
+</section>
 
-  <div class="ad-slot" hidden aria-label="Publicidade"></div>
+<section class="band" id="telas">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Telas reais</div>
+      <h2>O que você encontra lá dentro</h2>
+      <p>Telas reais do Dá Conta com dados de exemplo. Simples de usar desde o primeiro minuto.</p>
+    </div>
+    <div class="screens">
+      <figure class="reveal"><div class="phone"><img src="apresentacao/hoje.webp" alt="Tela Hoje com hábitos do dia, progresso, sequência de 7 dias e tarefas com prazo" loading="lazy" width="585" height="1266"></div><figcaption><b>Hoje</b><span>O que vence, os hábitos e o que fazer, numa tela só.</span></figcaption></figure>
+      <figure class="reveal"><div class="phone"><img src="apresentacao/financas.webp" alt="Tela de Finanças com resumo do mês: entrou R$ 3.200, saiu R$ 402,80" loading="lazy" width="585" height="1266"></div><figcaption><b>Finanças</b><span>Resumo do mês, contas fixas, cartão, metas e dívidas.</span></figcaption></figure>
+      <figure class="reveal"><div class="phone"><img src="apresentacao/habitos.webp" alt="Tela de Hábitos e Saúde com rotinas e registro de água" loading="lazy" width="585" height="1266"></div><figcaption><b>Hábitos e saúde</b><span>Rotinas com lembrete, água, treino e leitura.</span></figcaption></figure>
+      <figure class="reveal"><div class="phone"><img src="apresentacao/tarefas.webp" alt="Tela de Tarefas com prioridades e prazos" loading="lazy" width="585" height="1266"></div><figcaption><b>Tarefas e estudos</b><span>Prazos, provas, trabalhos e Pomodoro.</span></figcaption></figure>
+      <figure class="reveal"><div class="phone"><img src="apresentacao/graficos.webp" alt="Gráficos de entradas e saídas por mês e de gastos por categoria" loading="lazy" width="585" height="1266"></div><figcaption><b>Gráficos</b><span>Para onde foi o dinheiro e como andam seus hábitos.</span></figcaption></figure>
+    </div>
+  </div>
+</section>
 
-  <section aria-labelledby="t-faq">
-    <h2 id="t-faq">Perguntas frequentes</h2>
-    <div class="faq">
-      <details><summary>O Dá Conta é grátis?</summary><p>Sim. O Dá Conta é gratuito e não tem anúncios. Você pode usar todas as funções sem pagar nada.</p></details>
+<section id="como">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Começa em menos de um minuto</div>
+      <h2>Três passos e o Dá Conta cuida do resto</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="num" aria-hidden="true"></div><h3>Diga o que quer organizar</h3><p>Dinheiro, estudos, hábitos ou tarefas. A tela inicial muda conforme a sua escolha.</p></div>
+      <div class="step reveal"><div class="num" aria-hidden="true"></div><h3>Escreva do jeito que fala</h3><p>“Gastei 45 no mercado” ou “beber água”. O Dá Conta entende e guarda no lugar certo.</p></div>
+      <div class="step reveal"><div class="num" aria-hidden="true"></div><h3>Deixe ele lembrar por você</h3><p>Avisos de contas, provas e hábitos no horário que você escolher. Você só vive a sua vida.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="dados">
+  <div class="wrap">
+    <div class="trust-grid">
+      <div class="reveal">
+        <div class="kicker">Privacidade de verdade</div>
+        <h2>Seus dados continuam seus</h2>
+        <p style="color:var(--muted);font-size:18px;margin-top:14px;">O Dá Conta foi feito para organizar a sua vida, não para vender anúncios nem seus dados.</p>
+      </div>
+      <ul class="trust-list reveal">
+        <li><span class="ck"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span><div><b>Sem conta, tudo fica no seu aparelho</b><span>Nada sai do celular ou do navegador.</span></div></li>
+        <li><span class="ck"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span><div><b>Com conta grátis, sincroniza</b><span>Use no celular e no notebook e não perca nada ao trocar de aparelho.</span></div></li>
+        <li><span class="ck"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span><div><b>Nunca pedimos CPF, cartão ou senha do banco</b><span>Você digita só o que quiser acompanhar.</span></div></li>
+        <li><span class="ck"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span><div><b>Você pode copiar ou apagar tudo</b><span>Backup e exclusão em Configurações, conforme a LGPD.</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="ferramentas">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Ferramentas grátis</div>
+      <h2>Calculadoras que resolvem na hora</h2>
+      <p>Sem instalar nada, direto no navegador — com as tabelas de 2026.</p>
+    </div>
+    <div class="cards">
+      <a class="card reveal" href="calculadoras/salario-liquido.html"><b>Calculadora de salário líquido</b><span>Quanto cai na conta com as tabelas de 2026.</span><span class="arrow">Abrir →</span></a>
+      <a class="card reveal" href="calculadoras/13-salario.html"><b>Calculadora de 13º salário 2026</b><span>As parcelas e o valor líquido em segundos.</span><span class="arrow">Abrir →</span></a>
+      <a class="card reveal" href="calculadoras/reserva-de-emergencia.html"><b>Reserva de emergência</b><span>Sua meta e em quantos meses você chega lá.</span><span class="arrow">Abrir →</span></a>
+      <a class="card reveal" href="calculadoras/"><b>Ver todas as ferramentas</b><span>Horas extras, juros do cartão, MEI, metas, poupança, Pomodoro e muito mais.</span><span class="arrow">Ver tudo →</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="guias">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Guias rápidos</div>
+      <h2>Aprenda a organizar, mesmo começando do zero</h2>
+    </div>
+    <div class="cards">
+      <a class="card reveal" href="guias/como-comecar-a-guardar-dinheiro.html"><b>Como começar a guardar dinheiro</b><span>No dia do pagamento, começar com pouco e manter o hábito.</span><span class="arrow">Ler →</span></a>
+      <a class="card reveal" href="guias/como-montar-um-orcamento.html"><b>Como montar um orçamento mensal</b><span>Quanto entra, contas fixas, 50-30-20 e guardar primeiro.</span><span class="arrow">Ler →</span></a>
+      <a class="card reveal" href="guias/como-sair-do-rotativo.html"><b>Como sair do rotativo do cartão</b><span>Parcelamento, portabilidade e como não voltar a dever.</span><span class="arrow">Ler →</span></a>
+      <a class="card reveal" href="guias/controle-de-gastos.html"><b>Controlar gastos sem planilha</b><span>Um método de 10 minutos por semana.</span><span class="arrow">Ler →</span></a>
+      <a class="card reveal" href="guias/criar-habitos.html"><b>Como criar hábitos que duram</b><span>Água, leitura e academia: comece pequeno.</span><span class="arrow">Ler →</span></a>
+      <a class="card reveal" href="guias/organizacao-para-estudantes.html"><b>Organização para estudantes</b><span>Mapa do semestre, provas, trabalhos e a semana-modelo.</span><span class="arrow">Ler →</span></a>
+    </div>
+  </div>
+</section>
+
+<div class="ad-slot" hidden aria-label="Publicidade"></div>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Perguntas frequentes</div>
+      <h2>O que todo mundo pergunta antes de começar</h2>
+    </div>
+    <div class="faq reveal">
+      <details open><summary>O Dá Conta é grátis?</summary><p>Sim. O Dá Conta é gratuito e não tem anúncios. Você pode usar todas as funções sem pagar nada.</p></details>
       <details><summary>Vai ter versão paga?</summary><p>Estamos preparando o Dá Conta Pro, com relatórios avançados e mais personalização. Ainda não está à venda e nada é cobrado. O que você usa hoje continua grátis, e dá para pedir aviso do lançamento no app, em Configurações › Ajuda.</p></details>
       <details><summary>Preciso criar conta para usar?</summary><p>Não. Sem conta, seus dados ficam salvos só no seu aparelho. Se quiser usar no celular e no computador ao mesmo tempo, ou não perder nada ao trocar de celular, crie uma conta grátis com e-mail e senha.</p></details>
       <details><summary>O Dá Conta substitui a planilha de gastos?</summary><p>Para a maioria das pessoas, sim. Você registra gastos e receitas, separa por categoria, acompanha o saldo do mês, contas fixas, fatura do cartão, metas e dívidas, e vê tudo em gráficos. Também dá para importar o extrato do banco em OFX ou CSV.</p></details>
@@ -351,23 +467,30 @@
       <details><summary>Serve para estudante organizar provas e trabalhos?</summary><p>Serve. Em Tarefas e Estudos você cadastra matérias, provas, trabalhos e leituras com data, e usa o Pomodoro para estudar em blocos de foco.</p></details>
       <details><summary>Tem app para Android ou iPhone?</summary><p>O Dá Conta funciona no navegador de qualquer celular e pode ser adicionado à tela inicial como um app. A versão para Android na Play Store está a caminho.</p></details>
     </div>
-  </section>
-
-  <div class="end">
-    <h2>Teste agora, de graça</h2>
-    <p>Abre no navegador do celular ou do computador. Para usar como app, toque em “Adicionar à tela inicial”.</p>
-    <a class="btn sun" href="./app/">Abrir o Dá Conta</a>
   </div>
+</section>
 
-  <footer>
-    <span>Dá Conta, feito em Tangará da Serra (MT). Versão Android em breve na Play Store.</span>
+<section class="final">
+  <div class="wrap">
+    <div class="final-card reveal">
+      <h2>Comece hoje. De graça.</h2>
+      <p>Abre no navegador do celular ou do computador. Para usar como app, toque em “Adicionar à tela inicial”.</p>
+      <a class="btn btn-sun" href="./app/">Abrir o Dá Conta</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>Dá Conta — feito em Tangará da Serra (MT). Você dá conta. A gente organiza.</span>
     <nav aria-label="Rodapé">
       <a href="./app/">Abrir o app</a>
       <a href="./privacidade.html">Privacidade e termos</a>
       <a href="mailto:ericksantosdasilva600@gmail.com?subject=Dá Conta">Fale com a gente</a>
     </nav>
-  </footer>
-</main>
+  </div>
+</footer>
 
 <script>
 (() => {
@@ -376,6 +499,7 @@
   const saldo = document.getElementById("saldo");
   const moves = document.getElementById("moves");
   const toast = document.getElementById("toast");
+  const replay = document.getElementById("replay");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fmt = (v) => "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   let timers = [];
@@ -383,27 +507,38 @@
   const addMove = (animate) => {
     const el = document.createElement("div");
     el.className = "move" + (animate ? " new" : "");
-    el.innerHTML = '<div class="ic" aria-hidden="true">🛒</div><div><b>Mercado</b><span>Escrito agora mesmo</span></div><div class="val">−R$ 45,00</div>';
+    el.innerHTML = '<div class="ic" aria-hidden="true">🛒</div><div><b>Mercado</b><span>Escrito agora mesmo</span></div><div class="val tnum">−R$ 45,00</div>';
     moves.prepend(el);
   };
   const reset = () => {
     timers.forEach(clearTimeout); timers = [];
-    typed.textContent = ""; saldo.textContent = fmt(2842.2); toast.classList.remove("show");
-    while (moves.children.length > 1) moves.firstElementChild.remove();
+    if (typed) typed.textContent = ""; if (saldo) saldo.textContent = fmt(2842.2);
+    if (toast) toast.classList.remove("show");
+    while (moves && moves.children.length > 1) moves.firstElementChild.remove();
   };
   const run = () => {
+    if (!typed) return;
     reset();
     if (reduce) { typed.textContent = phrase; saldo.textContent = fmt(2797.2); addMove(false); toast.classList.add("show"); return; }
-    [...phrase].forEach((ch, i) => later(() => { typed.textContent += ch; }, 600 + i * 70));
-    const done = 600 + phrase.length * 70 + 450;
+    [...phrase].forEach((ch, i) => later(() => { typed.textContent += ch; }, 500 + i * 65));
+    const done = 500 + phrase.length * 65 + 400;
     later(() => { typed.textContent = ""; addMove(true); toast.classList.add("show"); }, done);
-    const start = 2842.2, end = 2797.2, steps = 18;
+    const start = 2842.2, end = 2797.2, steps = 16;
     for (let s = 1; s <= steps; s++) later(() => { saldo.textContent = fmt(start - (start - end) * (s / steps)); }, done + 120 + s * 28);
-    later(() => toast.classList.remove("show"), done + 3200);
+    later(() => { toast.classList.remove("show"); }, done + 2600);
   };
-  document.getElementById("replay").addEventListener("click", run);
-  const io = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { run(); io.disconnect(); } }, { threshold: 0.4 });
-  io.observe(document.querySelector(".demo"));
+  if (replay) replay.addEventListener("click", run);
+  later(run, 400);
+
+  const els = document.querySelectorAll(".reveal");
+  if (!reduce && "IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    els.forEach((el) => io.observe(el));
+  } else {
+    els.forEach((el) => el.classList.add("in"));
+  }
 })();
 </script>
 <script src="ads.js" defer></script>
